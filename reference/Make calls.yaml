@@ -1,0 +1,246 @@
+openapi: 3.1.0
+info:
+  title: Make Calls
+  version: '1.0'
+  summary: Use your Sonetel account to make Callback calls to your contacts
+  description: |-
+    Use the callback service offered by Sonetel to make latency-free international calls using your mobile phones at the cost of a [local call](https://sonetel.com/callprices/).
+
+    ## What is callback?
+
+    In a callback call, you provide two phone numbers to Sonetel using the callback API. Our system calls both the numbers one-by-one and connects the calls together.
+
+    The first number is usually your phone number and the second one is for the person you wish to speak to.
+
+    Our system first makes a call to the first phone number you provided. After this call is answered, our system then calls the second phone number. As soon as the second call has been answered successfully, we will connect both the calls.
+
+    ## How can I start a call?
+
+    To initiate a callback, issue a POST request to `/make-calls/call/call-back` and include your access token in the Authorization header.
+
+    The request body must be JSON with the following properties:
+
+    - `call1`: The first phone number that we will call. This must your phone number.
+    - `call2`: The second number that we will call i.e. the number of the person you want to speak to.
+    - `show1`: The caller ID shown to the `call1` number. We recommend you use the default value `automatic`.
+    - `show2`: The caller Id shown to the person you wish to speak to i.e. `call2`. We recommend using `automatic` as that ensures our system selects the best number to be shown.
+
+    **Important**: Please note that the person that gets the first call i.e. the number in the `call1` field must be your phone number or a number associated with your company such as a staff member or a colleague.
+
+    <!-- theme: warning -->
+    > ### Robocalls
+    > 
+    > Our service **cannot be used** for initiating automated marketing calls (robocalls). Doing so may lead to the account being terminated.
+
+    ## How much does it cost?
+
+    You will be charged for 2 phone calls - one to you and the other one to the person you wish to speak to.
+
+    You can view our [prices for outbound](https://sonetel.com/callprices/) calls at our website.
+
+    ## How does automatic caller ID is shown?
+
+    When both `show1` and `show2` are set to automatic then, in the first part of the call (i.e. when we call you) you will see a phone number owned by Sonetel as the caller ID.
+
+    When you answer, the second person that is being called will see the caller ID based on the following rules:
+
+    1. A Sonetel number assigned to you with business package enabled or a number that is free with Premium.
+    2. If more than one phone number is assigned to you, then the number in the country of the person being called will be shown. If you do not have a phone number in the same country, we will use another phone number assigned to you.
+    3. If there are no eligible phone numbers assigned to you, then any eligible number assigned to your Sonetel account (connected to voicemail or IVR, etc.) will be used as the caller ID.
+    4. If you do not have any phone numbers that can be used as caller ID, then your verified mobile number will be used as the caller ID.
+
+    ## Can I show my number to the person I am calling?
+
+    Yes, but there are certain limitations that you must keep in mind.
+
+    1. If you have verified your mobile number with Sonetel, then you can show that number as the caller ID to the person you are calling.
+    2. If you have purchased phone numbers from Sonetel then they can be shown as caller ID provided that they have the Business Package enabled or, are assigned for free with Premium or website chat.
+
+    For example, if you have a number +14015550000 that is assigned to you for free with Premium, then you can set `show2:14015550000` in the request and this number will be used as your caller ID.
+
+    Similarly, you can use your verified mobile number (the complete number with the country code) in `show2` to show it as the caller ID.
+  contact: {}
+servers:
+  - url: 'https://beta-api.sonetel.com/'
+    description: Production
+  - url: 'https://chat-api.sonetel.com/'
+    description: Staging
+paths:
+  /make-calls/call/call-back:
+    post:
+      summary: Start a callback call
+      operationId: post-make-calls-call-call-back
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                  response:
+                    type: object
+                    properties:
+                      session_id:
+                        type: string
+                        minLength: 1
+                    required:
+                      - session_id
+                required:
+                  - statusCode
+                  - response
+                x-examples:
+                  example-1:
+                    statusCode: 202
+                    response:
+                      session_id: e492825719344831ae3367f4de4ffeb0
+      parameters:
+        - schema:
+            type: string
+            default: application/json;charset=UTF-8
+          in: header
+          name: Content-Type
+          description: application/json;charset=UTF-8
+          required: true
+        - schema:
+            type: string
+            default: no-cache
+          in: header
+          name: Cache-Control
+          description: no-cache
+        - schema:
+            type: string
+            default: Bearer <ACCESS_TOKEN>
+          in: header
+          name: Authorization
+          description: Bearer <ACCESS_TOKEN>
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: ''
+              type: object
+              x-examples:
+                example-1:
+                  app_id: sonetel-web
+                  call1: '+919985922774'
+                  call2: '+919891429955'
+                  show_1: automatic
+                  show_2: automatic
+              properties:
+                app_id:
+                  type: string
+                  minLength: 1
+                  description: Optional. A unique identifier for your app that you can set.
+                call1:
+                  type: string
+                  minLength: 1
+                  description: The phone number of the first number that will be called. Only after this call is answered will our system attempt to call the 2nd number.
+                call2:
+                  type: string
+                  minLength: 1
+                  description: The 2nd phone number that will be called.
+                show_1:
+                  type: string
+                  minLength: 1
+                  description: The caller ID to show the 1st phone number.
+                  default: automatic
+                show_2:
+                  type: string
+                  minLength: 1
+                  description: The caller ID to show the 2nd phone number.
+                  default: automatic
+              required:
+                - call1
+                - call2
+                - show_1
+                - show_2
+            examples:
+              Example:
+                value:
+                  app_id: your_app_name_or_id
+                  call1: '+12025550000'
+                  call2: '+14045551111'
+                  show_1: automatic
+                  show_2: automatic
+      description: |-
+        # Start a callback call
+
+        Use our Callback API to make international or local calls between 2 phone numbers.
+
+        ## Authentication
+
+        The call-back API requires authentication before it can initiate calls.
+
+        Use our [auth API](Authentication.yaml/paths/~1oauth~1token) to generate an Oauth2 bearer token. Pass the token in the `Authorization` header to authenticate your request.
+
+        Here is a sample request.
+
+        ```c
+        curl \
+          --location \
+          --request POST 'https://beta-api.sonetel.com/make-calls/call/call-back' \
+          --header 'Content-Type: application/json' \
+          --header 'Authorization: Bearer <ACCESS_TOKEN>' \
+        --data-raw {"app_id" : "myCallbackAppv1.2", "call1":"+12125550000", "call2":"+4680000000", "show_1":"automatic", "show_2":"automatic"}'
+        ```
+      security:
+        - Production:
+            - password
+components:
+  schemas:
+    User:
+      title: User
+      type: object
+      description: ''
+      examples:
+        - id: 142
+          firstName: Alice
+          lastName: Smith
+          email: alice.smith@gmail.com
+          dateOfBirth: '1997-10-31'
+          emailVerified: true
+          signUpDate: '2019-08-24'
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the given user.
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        dateOfBirth:
+          type: string
+          format: date
+          example: '1997-10-31'
+        emailVerified:
+          type: boolean
+          description: Set to true if the user's email has been verified.
+        createDate:
+          type: string
+          format: date
+          description: The date that the user was created.
+      required:
+        - id
+        - firstName
+        - lastName
+        - email
+        - emailVerified
+  securitySchemes:
+    Production:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          refreshUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          scopes: {}
+      description: ''
+security:
+  - Production: []

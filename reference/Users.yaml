@@ -1,0 +1,1304 @@
+openapi: 3.1.0
+info:
+  title: Users
+  version: '1.0'
+  summary: User API
+  description: |-
+    Every user in your account is available as a resource via the API. All users have a unique identity, a userId, which can be used to access this resource as well as other resources that are linked to the user.
+
+    Users can be fetched, created, updated and deleted via the API. Users can also be searched using filters such as email address and their names.
+
+    Use this collection of `/user` API endpoints to manage your user accounts.
+
+    ## Types of users
+
+    You can add two types of users to your Sonetel account:
+
+    1. **Admin** - has access to all functions in an account such as making payments, adding/removing other users, managing phone numbers and so on.
+    2. **Regular** - has limited access to your account. They can only manage their call settings and other personal details. They cannot manage other users, voice apps or your phone numbers.
+
+    When an account is created, a default admin user is automatically created as part of the account creation. There is always, at-least, one admin user in an account.
+
+    Both admin and regular users have access to our web and mobile [apps](https://sonetel.com/en/help/help-topics/getting-started/how-can-i-get-started/). They can use these apps to make calls, handle incoming customer chat or communicate internally with other team members.
+
+
+    ## Operations supported
+
+    This endpoint currently supports the following operations:
+
+    1. [List all users](Users.yaml/paths/~1account~1{accountid}~1user/get)
+    2. [Add new user](Users.yaml/paths/~1account~1{accountid}~1user/post)
+    3. [Get user profile](Users.yaml/paths/~1account~1{accountid}~1user~1{userid}/get)
+    4. [Update user profile](Users.yaml/paths/~1account~1{accountid}~1user~1{userid}/put)
+    5. [Delete a user](Users.yaml/paths/~1account~1{accountid}~1user~1{userid}/delete)
+    6. [Update call settings](Users.yaml/paths/~1account~1{accountid}~1user~1{userid}~1call/post)
+  contact: {}
+servers:
+  - url: 'https://chat-api.sonetel.com'
+    description: Staging
+  - url: 'https://beta-api.sonetel.com'
+    description: Production
+paths:
+  '/account/{accountid}/user':
+    post:
+      summary: Add new user
+      operationId: post-user
+      responses:
+        '200':
+          description: User Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User-GET'
+              examples: {}
+        '400':
+          description: Missing Required Information
+        '409':
+          description: Email Already Taken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User-Update'
+            examples:
+              Add regular user:
+                value:
+                  user_fname: Jane
+                  user_lname: Doe
+                  email: user1@example.com
+                  password: pa$$word
+                  location:
+                    country: USA
+                    area_code: '212'
+              Add admin user:
+                value:
+                  user_fname: John
+                  user_lname: Doe
+                  email: user2@example.com
+                  password: pa$$word
+                  type: admin
+        description: ''
+      description: |
+        # Add new user
+
+        Add a new user to your account by issuing a POST request to the `/user` endpoint.
+
+        You must include the user's details such as their first and last names, password and email address in order to successfully create their account.
+
+        > The user's email address must be a unique i.e. not in use by any other user in our system.
+
+        You can optionally include the `"type" : "admin"` property as well if you wish to add a new admin user.
+
+        ## User settings
+
+        Some of the user's preferences can be modified 
+      parameters:
+        - schema:
+            type: string
+            default: application/json
+          in: header
+          name: Content-Type
+          description: application/json
+          required: true
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          description: Bearer <access_token>
+          required: true
+    parameters:
+      - schema:
+          type: number
+        name: accountid
+        in: path
+        required: true
+        description: Your Sonetel account ID.
+    get:
+      summary: List all users
+      operationId: getaccount-accountid-user
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                x-examples:
+                  example-1:
+                    resource: null
+                    status: success
+                    response:
+                      - user_fname: John
+                        max_conversations: 3
+                        language: eng
+                        auto_translate: false
+                        language_id: 41
+                        title: Sales Manager
+                        type: regular
+                        user_lname: Doe
+                        tags: conversations
+                        password_status: OK
+                        account_id: '2000000'
+                        user_jid: 59f9c80c-aaaa-1111-bbbb-cccc3333dddd@eu01.sonetel.com
+                        sonetel-id: 59f9c80c-aaaa-1111-bbbb-cccc3333dddd@sonetel.com
+                        user_id: '2016383950'
+                        company_name: Acme Inc
+                        created_date: '20210716T00:00:00Z'
+                        email: user@example.com
+                        notifications: 0
+                      - user_fname: John
+                        max_conversations: 3
+                        language: eng
+                        auto_translate: false
+                        language_id: 41
+                        title: ''
+                        type: admin
+                        user_lname: Doe
+                        tags: conversations
+                        password_status: OK
+                        account_id: '2000000'
+                        user_jid: fa2033d0-aaaa-1111-bbbb-cccc3333dddd@eu01.sonetel.com
+                        sonetel-id: fa2033d0-aaaa-1111-bbbb-cccc3333dddd@sonetel.com
+                        user_id: '201000000'
+                        company_name: Acme Inc
+                        created_date: '20210716T00:00:00Z'
+                        email: user@example.com
+                        notifications: 0
+                properties:
+                  resource: {}
+                  status:
+                    type: string
+                    minLength: 1
+                  response:
+                    type: array
+                    uniqueItems: true
+                    minItems: 1
+                    items:
+                      type: object
+                      properties:
+                        user_fname:
+                          type: string
+                          minLength: 1
+                          description: The first name of the user
+                        max_conversations:
+                          type: number
+                          description: The maximum number of customer conversations the user can handle simultaneously
+                        language:
+                          type: string
+                          minLength: 1
+                          description: Three letter ISO code of the user's account language.
+                        auto_translate:
+                          type: boolean
+                        language_id:
+                          type: number
+                          description: An internal numeric code of the user's account language.
+                        title:
+                          type: string
+                          minLength: 1
+                          description: 'The user''s job title for example, Sales Engineer, CEO, etc.'
+                        type:
+                          type: string
+                          minLength: 1
+                          description: Privilege level of user i.e. admin or regular
+                        user_lname:
+                          type: string
+                          minLength: 1
+                          description: The last name of the user.
+                        tags:
+                          type: string
+                          minLength: 1
+                          description: Internal identifier used by Sonetel.
+                        password_status:
+                          type: string
+                          minLength: 1
+                          description: |-
+                            A user’s access via password may be blocked if there are many attempts to use an incorrect password, either while signing in to the web portal or while connecting a SIP phone. This field indicates the current status of the password. This can take the following values.
+
+                            - `ok`: Indicates that access via password is OK.
+                            - `1` or `2`: There has been one(1) or two(2) attempts to connect with an incorrect password.
+                            - `locked`: The password is locked out and must be reset.
+                        account_id:
+                          type: string
+                          minLength: 1
+                          description: The Sonetel account ID of the account that the user is linked to.
+                        user_jid:
+                          type: string
+                          minLength: 1
+                          description: The User’s Jabber Id.
+                        sonetel-id:
+                          type: string
+                          minLength: 1
+                          description: A unique identifier for the user used by Jabber.
+                        user_id:
+                          type: string
+                          minLength: 1
+                          description: Unique Id of the Sonetel user.
+                        company_name:
+                          type: string
+                          minLength: 1
+                          description: Name of the company the user is linked to.
+                        created_date:
+                          type: string
+                          minLength: 1
+                          description: The date & time when the user's account was created.
+                        email:
+                          type: string
+                          minLength: 1
+                          description: The user's email address.
+                        notifications:
+                          type: number
+                          description: Number of unread notifications for the user.
+                      required:
+                        - user_fname
+                        - max_conversations
+                        - language
+                        - auto_translate
+                        - language_id
+                        - title
+                        - type
+                        - user_lname
+                        - tags
+                        - password_status
+                        - account_id
+                        - user_jid
+                        - sonetel-id
+                        - user_id
+                        - company_name
+                        - created_date
+                        - email
+                        - notifications
+                required:
+                  - status
+                  - response
+              examples:
+                Example:
+                  value:
+                    resource: null
+                    status: success
+                    response:
+                      - user_fname: John
+                        max_conversations: 3
+                        language: eng
+                        auto_translate: false
+                        language_id: 41
+                        title: Sales Manager
+                        type: regular
+                        user_lname: Doe
+                        tags: conversations
+                        password_status: OK
+                        account_id: '0000000'
+                        user_jid: 1a1a1a1a-a2a2-4343-a0a0-d0d0d0d0d0d0@eu01.sonetel.com
+                        sonetel-id: 1a1a1a1a-a2a2-4343-a0a0-d0d0d0d0d0d0@sonetel.com
+                        user_id: '2016383950'
+                        company_name: Acme Inc
+                        created_date: '20210716T00:00:00Z'
+                        email: john.doe@example.com
+                        notifications: 0
+                      - user_fname: Adam
+                        max_conversations: 3
+                        language: eng
+                        auto_translate: false
+                        language_id: 41
+                        title: ''
+                        type: admin
+                        user_lname: Smith
+                        tags: conversations
+                        password_status: OK
+                        account_id: '0000000'
+                        user_jid: 1b1b1b1b-a2a2-4343-a0a0-d0d0d0d0d0d0@eu01.sonetel.com
+                        sonetel-id: 1b1b1ba1b-a2a2-4343-a0a0-d0d0d0d0d0d0@sonetel.com
+                        user_id: '2016383956'
+                        company_name: Acme Inc
+                        created_date: '20210716T00:00:00Z'
+                        email: adam.smith@example.com
+                        notifications: 0
+      description: |-
+        # List all users
+
+        Use this endpoint to either get a list of all the users present in your account or search for a specific user.
+
+        ## List all users
+
+        To get a list of all users, issue a GET request to `/account/{accountid}/user`. The response contains a list of all the users along with their details such as their unique user id, email address, created date and so on.
+
+        ## Search for a user
+
+        To search for a specific user, add one of the query parameters listed below. For example, to search for a user whose email address contains the word 'manager' use `/account/{accountid}/user?email=manager`
+      security:
+        - Production: []
+        - Staging: []
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: name
+          description: Name of the user you want to search for. Entering the partial name will return all the users with matching names.
+        - schema:
+            type: string
+          in: query
+          name: email
+          description: Email address of the user you want to search for. Entering a partial email address will return all the users with matching emails.
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          required: true
+          description: Bearer <access_token>
+  '/account/{accountid}/user/{userid}':
+    parameters:
+      - schema:
+          type: string
+        name: accountid
+        in: path
+        required: true
+        description: A unique ID assigned to each Sonetel account.
+      - schema:
+          type: string
+        name: userid
+        in: path
+        required: true
+        description: 'A unique ID assigned to each user in an account. Get a list of all users in your account using `GET /account/{accountid}/user`'
+    get:
+      summary: Get user profile
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User-GET'
+              examples: {}
+      operationId: get-account-accountid-user-userid
+      description: |-
+        # Get user profile
+
+        Get the details of a user's profile such as their name, email address, title and so on.
+
+        You need to pass the user's unique user ID as a path parameter with the request.
+      security:
+        - Production: []
+      parameters:
+        - schema:
+            type: string
+          in: header
+          description: Bearer <access_token>
+          name: Authorization
+          required: true
+    put:
+      summary: Update user profile
+      operationId: put-account-accountid-user-userid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User-GET'
+      description: |-
+        # Update user profile
+
+        Use this endpoint to update the user's profile such as their name or title. You need the user's unique ID (get it from [here](Users.yaml/paths/~1account~1{accountid}~1user/get)) and must pass the updated settings in the requuest body.
+
+        For example, to update the user's title, use the following request
+
+        ```c
+        curl \
+          --location --request PUT 'https://beta-api.sonetel.com/account/{accountid}/user/{userid}' \
+          --header 'Content-Type: application/json' \
+          --header 'Authorization: Bearer ACCESS_TOKEN' \
+          --data-raw '{"title":"USER_TITLE"}'
+        ```
+
+
+        A success response will contain the updated user resource.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User-Update'
+      parameters:
+        - schema:
+            type: string
+            default: application/json
+          in: header
+          name: Content-Type
+          description: application/json
+          required: true
+        - schema:
+            type: string
+          in: header
+          description: Bearer <access_token>
+          name: Authorization
+          required: true
+    delete:
+      summary: Delete a user
+      operationId: delete-account-accountid-user-userid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                properties:
+                  resource: {}
+                  status:
+                    type: string
+                    minLength: 1
+                  response:
+                    type: string
+                    minLength: 1
+                required:
+                  - status
+                  - response
+                x-examples:
+                  example-1:
+                    resource: null
+                    status: success
+                    response: User deleted successfully
+              examples:
+                Example:
+                  value:
+                    resource: null
+                    status: success
+                    response: User deleted successfully
+      description: |-
+        # Delete a user
+
+        In order to delete a user from your Sonetel account, issue a DELETE request to this endpoint.
+
+        You will need the user's unique ID in order to delete their account.
+
+        If a phone number is connected to the user, please ensure that it is conncted to a different user or location otherwise incoming calls will not work once the user is deleted.
+
+        <!-- theme: danger -->
+        > Once a user has been deleted, it is impossible to restore their account or the user settings.
+      security:
+        - Production: []
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          description: Bearer <access_token>
+          required: true
+  '/account/{accountid}/user/{userid}/call':
+    parameters:
+      - schema:
+          type: string
+        name: accountid
+        in: path
+        required: true
+        description: Your Sonetel account ID
+      - schema:
+          type: string
+        name: userid
+        in: path
+        required: true
+        description: The unique ID of the user whose settings are to be updated
+    post:
+      summary: Update call settings
+      operationId: post-account-accountid-user-userid-call
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User-Call-Settings'
+              examples: {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User-Call-Settings'
+            examples: {}
+        description: ''
+      parameters:
+        - schema:
+            type: string
+            default: application/json
+          in: header
+          name: Content-Type
+          required: true
+          description: application/json
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          description: Bearer <access_token>
+          required: true
+      description: |
+        # Update call settings
+
+        You can customize what happens when a user receives an incoming phone call. This includes settings that define what phones should ring, for how many seconds, and what caller-Id should be sent to the phones.
+
+        All this is done by defining two actions in the user's incoming call settings, one each for first and second (fallback) action. The system attempts the `first_action`, and if it is unsuccessful (the call doesn’t connect), the instructions in the `second_action` are followed.
+
+        An action is a collection of related properties that control how the incoming call to a user is handled under relevant conditions.
+
+        > ### Sonetel Number as Caller ID
+        > 
+        > Only if a phone number has the [business package](https://sonetel.com/business-package/) enabled, or is free with [Premium](https://sonetel.com/premium/), can it be shown as the caller ID. In addition to this, you also need to complete your [account verification](https://app.sonetel.com/account-settings/account-verification).
+
+        <!--
+        type: tab
+        title: Incoming Call Settings
+        -->
+
+
+        You can use one of the following properties to change the way incoming calls to a user are handled. 
+
+        |Property|Description|
+        |--------|-----------|
+        |action|The action to be taken. See the section on action properties below for details. It can take the following values.<br>- `ring`: ring a set of phones connected to the user such as a SIP phone the user is registered from or their verified mobile number.<br>- `forward`: forward the calls to a destination such as a voicemail box, SIP address or another phone number.<br>- `disconnect`: disconnect the call|
+        |to|The type of function on which the action is to be taken, depending on the action. See the section on action properties below for details.|
+        |id|The unique id of the function based on the `action` and `to`. See the section on action properties below for details.|
+        |show|The caller-Id that is shown on the phone(s) receiving the call. This field is not relevant when forwarding to voicapps or in case the action is “disconnect”. It can accept the following values:<br>- `caller`: show the caller's phone number<br>- `none`: No caller Id is shown<br>- `Your Sonetel number`: The Sonetel phone number that was called will be displayed as the caller ID. However, the number can be shown as caller ID only if it is on the [business package](https://sonetel.com/business-package/) or free with [Premium](https://sonetel.com/premium/).|
+        |ring_time|The number of seconds that the phones should ring. This only applies when the action is “ring” or “forward”.<br>Also, when forwarding calls to another user, please note that the ring settings of the user to whom the call is forwarded-to would override the settings specified here. The value of this field can be between 5 and 30.|
+
+        > ### Difference between `ring` and `forward`
+        >
+        > The `ring` action allows the user to send an incoming call to all phones that they are connected to. For example, if they have registered their account from an IP phone and have also added 2 verified mobile numbers to their profile then the ring action can be used to send the calls to all the 3 phones or a specific type of phone. If they want, they can choose to send the calls only to their SIP phones by setting `action:ring` and `to:sipphones`. 
+        >
+        > In contrast to this, the `forward` action is used to send the call to another destination such as a SIP address or landline number not linked to the user.
+
+        #### Action properties
+
+        The table below specifies the scenarios for answering calls and the possible values that the fields can take each scenario.
+
+        |Scenario|action|to|id|
+        |--------|-----------|--------|-----------|
+        |Ring all phones of the user|ring|myphones|-|
+        |Ring all SIP phones of the user|ring|sipphones|-|
+        |Ring one of the user's (non-SIP) phones|ring|phone|phoneid (see below for details)|
+        |Forward to the user's voicemail|forward|voicemail|-|
+        |Forward to another user|forward|user|userid of the user to whom the calls are being forwarded|
+        |Forward to a mobile or landline|forward|phnum|The number where the call should be forwarded. For example, "+14045550000". It is best to enter phone numbers in the +E164 format with the country code and area code.|
+        |Forward to a voice app such as a welcome menu|forward|voice app|appId of the voice app|
+        |Forward to a SIP address|forward|sip|\[sip:\]sip_uri@domain_or_ip\[:port\]|
+        |Disconnect the call|disconnect|-|-|
+
+        > ### Get the phoneid
+        >
+        > Issue a GET request to the `/account/{accountid}/user/{userid}/phones` endpoint in order to get a list of phones connected to the user and their respective phoneids
+
+        <!--
+        type: tab
+        title: Outgoing Call Settings
+        -->
+
+        The outgoing settings are used when a user makes an outgoing call from Sonetel. For e.g. a when a user makes a call to a landline using their mobile app.
+
+        Currently, only the caller-Id to be shown to the called number is available as a setting.
+
+        |Property|Description|
+        |--------|-----------|
+        |show|The caller-id shown when a user makes an outgoing call. Possible values:<br>- **auto**: the caller ID is automatically selected by the system<br>- **none**: No caller Id is shown. <br>- **Your Sonetel number**: If you have a Sonetel number that is eligible to be shown as the caller ID in outgoing calls, then you can select that.|
+
+        More information about how automatic caller ID works is given in the [FAQs](../docs/Getting Started/7-FAQs.md).
+
+        <!-- type: tab-end -->
+      security:
+        - Production: []
+    get:
+      summary: Get call settings
+      operationId: get-account-accountid-user-userid-call
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User-Call-Settings'
+      description: Issue a GET request to the /call endpoint in order to fetch the user's current call settings.
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          description: Bearer <access_token>
+          required: true
+      security:
+        - Production: []
+components:
+  schemas:
+    User:
+      title: User-Create
+      type: object
+      description: This model is used to create a user
+      examples:
+        - user_fname: string
+          user_lame: string
+          email: user@example.com
+          password: pa$$word
+          type: regular
+      properties:
+        user_fname:
+          type: string
+          description: The first name of the user.
+        user_lame:
+          type: string
+          description: The last name of the user.
+        email:
+          type: string
+          format: email
+          description: The user's email address - used to log in to their account and receive important emails from Sonetel.
+        password:
+          type: string
+          format: password
+          description: The user's password.
+        type:
+          type: string
+          enum:
+            - regular
+            - admin
+          description: Type of user you wish to add i.e. `regular` or `admin`. If you omit this property then a regular user is added by default.
+      required:
+        - user_fname
+        - user_lame
+        - email
+        - password
+    User-GET:
+      description: User Schema
+      type: object
+      x-examples:
+        example-1:
+          resource: null
+          status: success
+          response:
+            user_fname: John
+            max_conversations: 2
+            numbers:
+              - number_id: '61709'
+                number_type: e.164
+                number: '13470000000'
+              - number_id: '61710'
+                number_type: e.164
+                number: '46852000000'
+              - number_id: '64618'
+                number_type: internal
+                number: '150'
+              - number_id: '137074'
+                number_type: e.164
+                number: '81300000000'
+              - number_id: '149273'
+                number_type: inum
+                number: '880000000000001'
+            phones:
+              - phone_id: '2001962457'
+                phnum: '+16705550000'
+                phone_type: regular
+                phone_name: Mobile
+                receive_calls: 'yes'
+                verified: 'yes'
+                is_primary: true
+                sip_details: null
+            language: eng
+            auto_translate: false
+            language_id: 41
+            title: CEO and Founder
+            type: admin
+            user_lname: Smith
+            tags: phonenumber
+            password_status: OK
+            account_id: '20000000'
+            user_jid: 2000000000@eu01.sonetel.com
+            sonetel-id: 2000000000@sonetel.com
+            user_id: '2000000000'
+            company_name: Sonetel
+            location:
+              country: SWE
+              area_code: '8'
+              timezone: null
+              timezone_id: 4
+            created_date: '20121105T00:00:00Z'
+            email: user@example.com
+            notifications: 0
+      title: ''
+      examples:
+        - resource: null
+          status: success
+          response:
+            - user_fname: John
+              max_conversations: 3
+              language: eng
+              auto_translate: false
+              language_id: 41
+              title: Sales Manager
+              type: regular
+              user_lname: Doe
+              tags: conversations
+              password_status: OK
+              account_id: '0000000'
+              user_jid: 1a1a1a1a-a2a2-4343-a0a0-d0d0d0d0d0d0@eu01.sonetel.com
+              sonetel-id: 1a1a1a1a-a2a2-4343-a0a0-d0d0d0d0d0d0@sonetel.com
+              user_id: '2016383950'
+              company_name: Acme Inc
+              created_date: '20210716T00:00:00Z'
+              email: john.doe@example.com
+              notifications: 0
+      properties:
+        resource:
+          type: string
+          description: Name of the resource accessed
+        status:
+          type: string
+          minLength: 1
+          description: Status of the response i.e. success or failed
+        response:
+          type: object
+          required:
+            - user_fname
+            - max_conversations
+            - language
+            - auto_translate
+            - language_id
+            - type
+            - user_lname
+            - password_status
+            - account_id
+            - user_jid
+            - sonetel-id
+            - user_id
+            - company_name
+            - created_date
+            - email
+            - notifications
+            - password
+          properties:
+            user_fname:
+              type: string
+              minLength: 1
+              description: The user's first name
+            max_conversations:
+              type: number
+              description: The maximum number of customer conversations the user can handle simultaneously
+            numbers:
+              type: array
+              uniqueItems: true
+              minItems: 1
+              description: The "numbers" represents Sonetel numbers assigned to the user including the user's extension.
+              items:
+                type: object
+                properties:
+                  number_id:
+                    type: string
+                    minLength: 1
+                    description: Unique Id of the number
+                  number_type:
+                    type: string
+                    minLength: 1
+                    description: |-
+                      This can take the following values
+
+                      - "internal": The user's extension
+                      - "phnum": Local number anywhere worldwide from Sonetel connected to the user
+                  number:
+                    type: string
+                    minLength: 1
+                    description: 'The E164 phone number. In the case of extension, it is the short number assigned to the user (usually between 3 to 5 digits).'
+                required:
+                  - number_id
+                  - number_type
+                  - number
+            phones:
+              type: array
+              uniqueItems: true
+              minItems: 1
+              description: List of the phones (SIP phones or verified mobile numbers) linked to the user's profile that can used for answering calls.
+              items:
+                type: object
+                properties:
+                  phone_id:
+                    type: string
+                    minLength: 1
+                    description: Unique ID of the phone.
+                  phnum:
+                    type: string
+                    minLength: 1
+                    description: The actual phone number that is used to forward incoming calls. Applied to non-SIP phones.
+                  phone_type:
+                    type: string
+                    minLength: 1
+                    description: The type of phone i.e. sip or regular
+                  phone_name:
+                    type: string
+                    minLength: 1
+                    description: User's chosen name for the phone number
+                  receive_calls:
+                    type: string
+                    minLength: 1
+                    description: 'Flag that indicates if incoming calls to the user should be sent to this phone. In case of SIP phones, this field is not applicable.'
+                  verified:
+                    type: string
+                    minLength: 1
+                    description: Read only field Flag that indicates if the phone is verified or not
+                    readOnly: true
+                  is_primary:
+                    type: boolean
+                    description: Flag that indicates if this number must be used as the default for callback/callthru calls. This field is only applicable for verified mobile numbers. Only verified mobile numbers can be set as primary.
+                  sip_details:
+                    description: 'Details of the SIP phones, if connected.'
+                    type: object
+                    properties:
+                      registered:
+                        type: string
+                        description: Flag indicating if the SIP phone is registered
+                      registered_since:
+                        type: string
+                        description: The date/time since when the SIP phone is registered to Sonetel.
+                      auto_provision:
+                        type: string
+                        description: |-
+                          Flag that indicates if the SIP phone is automatically provisioned. Sonetel ready phones can be automatically provisioned.
+                          In the current version of the API, a phone cannot be added to Sonetel for automatic provisioning.
+                      address:
+                        type: string
+                        description: The SIP address of the phone. This address is automatically specified by the phone to Sonetel using SIP when it registers to Sonetel.
+                      useragent:
+                        type: string
+                        description: The SIP device information published by the SIP phone while registering to Sonetel.
+                      mac:
+                        type: string
+                        description: The MAC address of the SIP phone.
+                required:
+                  - phone_id
+                  - phnum
+                  - phone_type
+                  - phone_name
+                  - receive_calls
+                  - verified
+                  - is_primary
+            language:
+              type: string
+              minLength: 1
+              description: Three letter ISO code of the user's account language.
+            auto_translate:
+              type: boolean
+              description: Flag to indicate whether automatic translation is turned on for the user. Reserved for future use.
+            language_id:
+              type: number
+              description: An internal numeric code of the user's account language.
+            title:
+              type: string
+              description: 'The user''s job title for example, Sales Engineer, CEO, etc.'
+            type:
+              type: string
+              minLength: 1
+              description: Privilege level of user i.e. admin or regular.
+            user_lname:
+              type: string
+              minLength: 1
+              description: The last name of the user.
+            password_status:
+              type: string
+              minLength: 1
+              description: |-
+                A user's access via password may be blocked if there are many attempts to use an incorrect password, either while signing in to the web portal or while connecting a SIP phone. This field indicates the current status of the password. It can take the following values.
+
+                - "ok": Indicates that access via password is OK.
+                - "1" or "2": There has been one(1) or two(2) attempts to connect with an incorrect password.
+                - "locked": The password is locked out and must be reset.
+              enum:
+                - ok
+                - '1'
+                - '2'
+                - locked
+              readOnly: true
+            account_id:
+              type: string
+              minLength: 1
+              description: The Sonetel account ID of the account the user is a part of.
+              readOnly: true
+            user_jid:
+              type: string
+              minLength: 1
+              description: The User's Jabber Id.
+            sonetel-id:
+              type: string
+              minLength: 1
+              description: User's unique id in Sonetel. This will be currently <uuid>@sonetel.com
+            user_id:
+              type: string
+              minLength: 1
+              description: Unique Id of the Sonetel user.
+            company_name:
+              type: string
+              minLength: 1
+              description: The name of the company the user is part of.
+            location:
+              type: object
+              description: 'User''''s location details such as country, area code and timezone.'
+              properties:
+                country:
+                  type: string
+                  minLength: 1
+                  description: The user's country. Has an affect on how the user dials phone numbers
+                area_code:
+                  type: string
+                  minLength: 1
+                  description: The user's telephone area code.
+                timezone:
+                  description: The user's timezone.
+                  type: string
+                timezone_id:
+                  type: number
+                  description: An internal numeric identifier for the user's timezone.
+              required:
+                - country
+                - area_code
+            created_date:
+              type: string
+              minLength: 1
+              description: The date and time the user was created.
+            email:
+              type: string
+              minLength: 1
+              description: The user's email address.
+            notifications:
+              type: number
+              description: The number of unread in-app notifications.
+            password:
+              type: string
+              format: password
+              description: The user's login password.
+      required:
+        - status
+        - response
+    User-Update:
+      description: ''
+      type: object
+      x-examples:
+        example-1:
+          user_fname: Henrik
+          max_conversations: 2
+          numbers:
+            - number_type: e.164
+              number: '13477081610'
+            - number_type: e.164
+              number: '46852506011'
+          phones:
+            - phnum: '+46708956010'
+              phone_type: regular
+              phone_name: Mobile
+              receive_calls: 'yes'
+              verified: 'yes'
+              is_primary: true
+          language: eng
+          auto_translate: false
+          language_id: 41
+          title: CEO and Founder
+          type: admin
+          user_lname: Thome
+          tags: phonenumber
+          location:
+            country: SWE
+            area_code: '8'
+            timezone: null
+            timezone_id: 4
+          email: henrik@sonetel.com
+          notifications: 0
+      properties:
+        user_fname:
+          type: string
+          minLength: 1
+          description: User's first name
+        max_conversations:
+          type: number
+          description: The maximum number of customer conversations the user can handle simultaneously
+        phones:
+          type: array
+          uniqueItems: true
+          minItems: 1
+          description: List of the phones (SIP phones or verified mobile numbers) linked to the user's profile that can used for call forwarding.
+          items:
+            type: object
+            properties:
+              phnum:
+                type: string
+                minLength: 1
+                description: The actual phone number that is used to forward incoming calls. Applied to non-SIP phones.
+              phone_type:
+                type: string
+                minLength: 1
+                description: |
+                  The type of phone i.e. sip or regular
+                enum:
+                  - sip
+                  - regular
+              phone_name:
+                type: string
+                minLength: 1
+                description: User's chosen name for the phone number
+              receive_calls:
+                type: string
+                minLength: 1
+                description: 'Flag that indicates if incoming calls to the user should be sent to this phone. In case of SIP phones, this field is not applicable.'
+              verified:
+                type: string
+                minLength: 1
+                description: Read only field Flag that indicates if the phone is verified or not
+                readOnly: true
+        language:
+          type: string
+          minLength: 1
+          description: Three letter ISO code of the user's account language.
+        language_id:
+          type: number
+          description: An internal numeric code of the user's account language.
+        title:
+          type: string
+          minLength: 1
+          description: 'The user''s job title for example, Sales Engineer, CEO, etc.'
+        type:
+          type: string
+          minLength: 1
+          description: Privilege level of user i.e. admin or regular.
+          enum:
+            - admin
+            - regular
+        user_lname:
+          type: string
+          minLength: 1
+          description: The last name of the user.
+        location:
+          type: object
+          description: 'User''s location details such as country, area code and timezone.'
+          properties:
+            country:
+              type: string
+              minLength: 1
+              description: The user's country. Has an affect on how the user dials phone numbers.
+            area_code:
+              type: string
+              minLength: 1
+              description: The user's telephone area code.
+            timezone:
+              type: string
+              description: The user's timezone.
+            timezone_id:
+              type: number
+              description: An internal numeric identifier for the user's timezone.
+        email:
+          type: string
+          minLength: 1
+          description: The user's email address.
+          format: email
+        password:
+          type: string
+          format: password
+          description: The user's login password.
+      required:
+        - user_fname
+        - user_lname
+        - email
+        - password
+    SuccessResponse:
+      description: ''
+      type: object
+      properties:
+        response:
+          type: object
+          properties: {}
+          required: []
+        resource:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          minLength: 1
+      required:
+        - response
+        - resource
+        - status
+      x-examples:
+        example-1:
+          response: {}
+          resource: Resource name
+          status: success
+    User-Response:
+      description: ''
+      type: object
+      x-examples:
+        example-1:
+          response:
+            detail: Error string
+            code: Error code
+          resource: Resource accessed
+          status: failed
+      examples: []
+      title: User-Response
+      properties:
+        response:
+          type: object
+          properties:
+            detail:
+              type: string
+              minLength: 1
+            code:
+              type: string
+              minLength: 1
+        resource:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          minLength: 1
+    User-Call-Settings:
+      description: The object that defines the user's call settings
+      type: object
+      x-examples:
+        example-1:
+          incoming:
+            second_action:
+              action: forward
+              to: voicemail
+            first_action:
+              show: caller
+              action: forward
+              ring_time: '20'
+              to: phnum
+              id: '+12025550000'
+            standard_action:
+              action: ring
+              ring_time: '10'
+              to: internet_internet
+          outgoing:
+            show: auto
+            callthru-pin: ''
+      examples:
+        - incoming:
+            second_action:
+              action: forward
+              to: voicemail
+            first_action:
+              show: caller
+              action: ring
+              ring_time: '25'
+              to: sipphones
+          outgoing:
+            show: auto
+      properties:
+        incoming:
+          type: object
+          description: A collection of properties that define how incoming calls to the user should be handled.
+          properties:
+            second_action:
+              type: object
+              description: The action to take if the call is not handled by the destination defined in the `first_action`.
+              properties:
+                action:
+                  type: string
+                  minLength: 1
+                  description: The action to take when an incoming call reaches the user.
+                to:
+                  type: string
+                  description: The type of function on which the action is to be taken.
+                  minLength: 3
+                  enum:
+                    - myphones
+                    - sipphones
+                    - phone
+                    - voicemail
+                    - phnum
+                    - sip
+                    - voiceapp
+              required:
+                - action
+                - to
+            first_action:
+              type: object
+              description: Defines how an incoming call to the user should be handled.
+              properties:
+                show:
+                  type: string
+                  minLength: 1
+                  description: The caller ID shown when you receive an incoming call.
+                action:
+                  type: string
+                  minLength: 1
+                  description: The action to take when an incoming call reaches the user.
+                ring_time:
+                  type: string
+                  minLength: 1
+                  description: The number of seconds that the incoming call should ring. Only applies when the action is `ring` or `forward`.
+                to:
+                  type: string
+                  description: The type of function on which the action is to be taken.
+                  enum:
+                    - myphones
+                    - sipphones
+                    - phone
+                    - voicemail
+                    - user
+                    - phnum
+                    - voiceapp
+                    - sip
+                  minLength: 3
+                id:
+                  type: string
+                  minLength: 1
+                  description: The unique id of the destination to which the incoming call should be sent.
+              required:
+                - show
+                - action
+                - ring_time
+                - to
+                - id
+            standard_action:
+              type: object
+              required:
+                - action
+                - ring_time
+                - to
+              description: Specifies how WebRTC calls (i.e. calls made using our apps) are handled.
+              properties:
+                action:
+                  type: string
+                  minLength: 1
+                  description: The action to take.
+                ring_time:
+                  type: string
+                  minLength: 1
+                  description: The number of seconds the call should ring before disconnecting.
+                to:
+                  type: string
+                  minLength: 1
+                  description: The destination where the call should connect.
+        outgoing:
+          type: object
+          description: A collection of properties that control how outgoing calls are handled. At the moment it is only possible to select the caller ID shown to the person you call.
+          properties:
+            show:
+              type: string
+              minLength: 1
+              description: 'The caller-id shown when a user makes an outgoing call. Accepts `auto`, `none` or an eligible Sonetel number.'
+            callthru-pin:
+              type: string
+              deprecated: true
+              description: Deprecated property used for our old manual Call Thru service.
+          required:
+            - show
+  securitySchemes:
+    Production:
+      type: oauth2
+      flows:
+        password:
+          scopes: {}
+          tokenUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          refreshUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+      description: ''
+    Staging:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: 'https://chat-api.sonetel.com/SonetelAuth/1.3/oauth/token'
+          refreshUrl: 'https://chat-api.sonetel.com/SonetelAuth/1.3/oauth/token'
+          scopes: {}
+security:
+  - Production: []
+  - Staging: []
