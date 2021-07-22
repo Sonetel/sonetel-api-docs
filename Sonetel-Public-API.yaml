@@ -1,7 +1,7 @@
 openapi: 3.1.0
 
 info:
-  title: Sonetel-Public-API
+  title: Sonetel Developer Documentation
   version: '1.0'
   description:
     $ref: 'description.yml#/introduction'
@@ -33,11 +33,11 @@ tags:
 paths:
   /account/{accountid}/phonenumbersubscription:
     get:
-      $ref: 'reference/Phone Numbers.yaml'
+      $ref: 'reference/phone_numbers.yaml'
   
   /account/{accountid}/phonenumbersubscription:
     post:
-      $ref: 'reference/Phone Numbers.yaml'
+      $ref: 'reference/phone_numbers.yaml'
 
 components:
   securitySchemes:
@@ -78,7 +78,7 @@ components:
         type: tab
         title: Python
         -->
-        
+
         ```python
         import requests
         import urllib.parse
