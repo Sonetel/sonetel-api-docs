@@ -1,0 +1,130 @@
+openapi: 3.1.0
+
+info:
+  title: Sonetel-Public-API
+  version: '1.0'
+  description:
+    $ref: 'description.yml#/introduction'
+
+contact:
+  name: Sonetel API Support
+  email: api.support@sonetel.com
+termsOfService: 'https://sonetel.com/en/help/help-topics/terms-conditions/terms-conditions/'
+
+servers:
+  - url: 'https://beta-api.sonetel.com'
+    description: production
+  - url: 'https://chat-api.sonetel.com'
+    description: staging
+
+tags:
+  - name: Phone Numbers
+    description: >-
+     Sonetel offers phone numbers from 50+ countries. Use our phone number management APIs to browse & purchase new phone numbers as well as manage your existing phone number subscriptions.
+
+  - name: Users
+    description: >-
+    Every user in your account is available as a resource via the API. All users have a unique identity, a userId, which can be used to access this resource as well as other resources that are linked to the user. 
+    
+    Users can be fetched, created, updated and deleted via the API. Users can also be searched using filters such as email address and their names.
+    
+    Use this collection of `/user` API endpoints to manage your user accounts.
+
+paths:
+  /account/{accountid}/phonenumbersubscription:
+    get:
+      $ref: 'reference/Phone Numbers.yaml'
+  
+  /account/{accountid}/phonenumbersubscription:
+    post:
+      $ref: 'reference/Phone Numbers.yaml'
+
+components:
+  securitySchemes:
+    bearer_auth:
+      type: http
+      scheme: bearer
+      description:
+        ## OAuth Authentication
+
+        All API requests that deal with private data such as user details, phone number subscriptions and so on require authentication in the form of a [bearer token](https://www.oauth.com/oauth2-servers/differences-between-oauth-1-2/bearer-tokens/).
+
+        You can use this endpoint to create a token using your registered email address & password. This token is passed in the Authorization header of the request.
+
+        Copy the `access_token` from the response body and add it to the request header to authenticate your API requests. Usage: `Authorization: Bearer <ACCESS_TOKEN>`
+
+        <!-- theme: info -->
+
+        > Access tokens have an expiry of 24 hours. Use the `refresh_token` to generate a new access token.
+
+        <!--
+        type: tab
+        title: curl
+        -->
+
+        ```c
+        curl \
+          -u sonetel-web:sonetel-web \
+          --request POST 'https://api.sonetel.com/SonetelAuth/beta/oauth/token' \
+          --header 'Accept: application/json' \
+          --header 'Content-Type: application/x-www-form-urlencoded' \
+          --form 'grant_type=password' \
+          --form 'password=YOUR_SONETEL_PASSWORD' \
+          --form 'refresh=yes' \
+          --form 'username=YOUR_SONETEL_USERNAME'
+        ```
+
+        <!--
+        type: tab
+        title: Python
+        -->
+        
+        ```python
+        import requests
+        import urllib.parse
+        import os
+
+        '''
+        This script uses the Content-Type 'application/x-www-form-urlencoded' to demonstrate that your application can use either 'multipart/form-data' or 'application/x-www-form-urlencoded' when requesting for an access token.
+        '''
+
+        url = "https://api.sonetel.com/SonetelAuth/beta/oauth/token"
+
+        '''
+        This script assumes that your Sonetel credentials are present as environment variables.
+
+        Do not hard code your credentials in your application, use the security best practices to protect your credentials from being compromised.
+        '''
+
+        sonetelUsername = os.environ.get('SonetelUsername')
+        sonetelPassword = os.environ.get('SonetelPassword')
+        grantType = 'password'
+
+        payload= { 
+            'grant_type' : grantType,
+            'password' : sonetelPassword,
+            'refresh' :'yes',
+            'username' :  sonetelUsername
+            }
+
+        payloadEncoded = urllib.parse.urlencode(payload)
+
+        headers = {
+          'Accept': 'application/json, text/plain',
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+
+        response = requests.request(
+            "POST", 
+            url, 
+            data=payloadEncoded, 
+            headers=headers
+            )
+
+        if response.status_code == 200:
+            print(response.json())
+        else:
+            print(response.text)
+        ```
+
+        <!-- type: tab-end -->
