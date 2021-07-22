@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.0.0
 
 info:
   title: Sonetel Developer Documentation
@@ -6,10 +6,10 @@ info:
   description:
     $ref: 'description.yml#/introduction'
 
-contact:
-  name: Sonetel API Support
-  email: api.support@sonetel.com
-termsOfService: 'https://sonetel.com/en/help/help-topics/terms-conditions/terms-conditions/'
+  contact:
+    name: Sonetel API Support
+    email: api.support@sonetel.com
+  termsOfService: 'https://sonetel.com/en/help/help-topics/terms-conditions/terms-conditions/'
 
 servers:
   - url: 'https://beta-api.sonetel.com'
