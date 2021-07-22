@@ -1,4 +1,4 @@
-introduction:
+introduction: |
   The Sonetel API is a powerful REST web-service that enables you to integrate your business processes with [Sonetel's SaaS Communication platform](https://developer.sonetel.com). It allows you to efficiently manage your account, users as well as phone number resources.
 
 The current version of the API supports the following.
