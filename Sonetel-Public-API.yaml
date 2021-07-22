@@ -16,39 +16,22 @@ servers:
     description: production
 
 tags:
-  - name: 1-Click Applications
-    description: >-
-      1-Click applications are pre-built Droplet images or Kubernetes apps with software,
-      features, and configuration details already set up for you. They can be found in the
-      [DigitalOcean Marketplace](https://www.digitalocean.com/docs/marketplace).
-
   - name: Account
-    description: Provides information about your current account.
-
-  - name: Actions
     description: >-
-      Actions are records of events that have occurred on the resources in your account.
-      These can be things like rebooting a Droplet, or transferring an image to a new region.
+      View information about your Sonetel account and update some settings such as language & timezone.
 
-      An action object is created every time one of these actions is initiated. The action
-      object contains information about the current status of the action, start and complete
-      timestamps, and the associated resource type and ID.
+  - name: Users
+    description: Lets you manage the users in your account.
 
-      Every action that creates an action object is available through this endpoint. Completed
-      actions are not removed from this list and are always available for querying.
-
-  - name: Apps
+  - name: Phone Numbers
     description: >-
-      App Platform is a Platform-as-a-Service (PaaS) offering from DigitalOcean that allows
-      developers to publish code directly to DigitalOcean servers without worrying about the
-      underlying infrastructure.
+      Purchase phone numbers from 50+ countries across the world
 
-      Most API operations are centered around a few core object types. Following are the
-      definitions of these types. These definitions will be omitted from the operation-specific
-      documentation.
+  - name: Make Calls
+    description: >-
+      Make international calls using Sonetel's award winning service at the cost of local calls.
 
-      For documentation on app specifications (`AppSpec` objects), please refer to the
-      [product documentation](https://www.digitalocean.com/docs/app-platform/references/app-specification-reference/).
+      Use our Callback call API to place calls to your contacts.
 
 paths:
   /account/{accountid}/phonenumbersubscription:
