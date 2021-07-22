@@ -14,37 +14,57 @@ info:
 servers:
   - url: 'https://beta-api.sonetel.com'
     description: production
-  - url: 'https://chat-api.sonetel.com'
-    description: staging
 
 tags:
-  - name: Phone Numbers
+  - name: 1-Click Applications
     description: >-
-     Sonetel offers phone numbers from 50+ countries. Use our phone number management APIs to browse & purchase new phone numbers as well as manage your existing phone number subscriptions.
+      1-Click applications are pre-built Droplet images or Kubernetes apps with software,
+      features, and configuration details already set up for you. They can be found in the
+      [DigitalOcean Marketplace](https://www.digitalocean.com/docs/marketplace).
 
-  - name: Users
+  - name: Account
+    description: Provides information about your current account.
+
+  - name: Actions
     description: >-
-    Every user in your account is available as a resource via the API. All users have a unique identity, a userId, which can be used to access this resource as well as other resources that are linked to the user. 
-    
-    Users can be fetched, created, updated and deleted via the API. Users can also be searched using filters such as email address and their names.
-    
-    Use this collection of `/user` API endpoints to manage your user accounts.
+      Actions are records of events that have occurred on the resources in your account.
+      These can be things like rebooting a Droplet, or transferring an image to a new region.
+
+      An action object is created every time one of these actions is initiated. The action
+      object contains information about the current status of the action, start and complete
+      timestamps, and the associated resource type and ID.
+
+      Every action that creates an action object is available through this endpoint. Completed
+      actions are not removed from this list and are always available for querying.
+
+  - name: Apps
+    description: >-
+      App Platform is a Platform-as-a-Service (PaaS) offering from DigitalOcean that allows
+      developers to publish code directly to DigitalOcean servers without worrying about the
+      underlying infrastructure.
+
+      Most API operations are centered around a few core object types. Following are the
+      definitions of these types. These definitions will be omitted from the operation-specific
+      documentation.
+
+      For documentation on app specifications (`AppSpec` objects), please refer to the
+      [product documentation](https://www.digitalocean.com/docs/app-platform/references/app-specification-reference/).
 
 paths:
   /account/{accountid}/phonenumbersubscription:
     get:
-      $ref: 'reference/phone_numbers.yaml'
+      $ref: '#/reference/phone_numbers.yaml'
   
   /account/{accountid}/phonenumbersubscription:
     post:
-      $ref: 'reference/phone_numbers.yaml'
+      $ref: '#/reference/phone_numbers.yaml'
 
 components:
   securitySchemes:
     bearer_auth:
       type: http
       scheme: bearer
-      description:
+      description: |
         ## OAuth Authentication
 
         All API requests that deal with private data such as user details, phone number subscriptions and so on require authentication in the form of a [bearer token](https://www.oauth.com/oauth2-servers/differences-between-oauth-1-2/bearer-tokens/).
@@ -128,3 +148,6 @@ components:
         ```
 
         <!-- type: tab-end -->
+
+security:
+  - bearer_auth: []
