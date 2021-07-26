@@ -24,16 +24,6 @@ For example, if the request is processed successfully, the following JSON respon
 
 > **Important**: A 200 OK response doesn't imply that the API request was successful. Check the ```status``` field for the status of the API response. See [Error Codes](5-Error-Codes.md) for more information.
 
-## HTTP Response Codes
-
-** \*Add information about HTTP response codes here\* **
-
-HTTP Response | Request Status | Description |
---------------|----------------|-------------
-200 | Success | Returned when the API has processed the request and is returning a JSON response.
-4xx | ? | ?
-5xx | ? | ?|
-
 
 ## Partial response
 
@@ -44,6 +34,4 @@ Partial response enables just that. It allows you to specify the list of fields 
 This saves bandwidth, which may be important when the API is consumed by mobile apps, and also enables the API to be customized to your needs.
 
 You can specify what fields you need in a comma separated list under the filter “fields". The following format applies ```/resource?fields=field1,field2,field3```.
-
-
 

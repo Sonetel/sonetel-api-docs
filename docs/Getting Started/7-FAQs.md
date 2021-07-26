@@ -5,7 +5,7 @@
 ### Where can I get the API credentials?
 The API uses tokens generated using the OAuth2 framework to authenticate API requests.
 
-Read more about [how to authenticate API requests](3-Authentication.md).
+Read more about [how to authenticate API requests](../../reference/Authentication.yaml).
 
 ### What username do I need to generate a token?
 
@@ -13,7 +13,7 @@ The username is the email address you used at the time of signing up. It is the 
 
 ### How can I find my account ID?
 
-Issue a `GET` request to `https://beta-api.sonetel.com/account/` with your access token. The response object contains the basic details about your account including the account_id.
+Issue a `GET` request to `https://public-api.sonetel.com/account/` with your access token. The response object contains the basic details about your account including the account_id.
 
 If you receive an error response to the above request, use the following workaround to find your account ID
 1. Sign in to your account from app.sonetel.com
@@ -32,19 +32,6 @@ The token has to be included in the header of the request. `Authorization: Beare
 
 You can read more about [bearer tokens here](https://www.oauth.com/oauth2-servers/differences-between-oauth-1-2/bearer-tokens/).
 
-### How does versioning work in your API?
-
-The API version is formatted as major.minor.
-
-Usually, a change in the minor version of the API ensures backward compatibility within the same major version.
-
-For example, version 2.05 of the API would be backward compatible with 2.03, but not 1.55.
-
-However, please note that backward compatibility is not guaranteed and there may be instances where minor version upgrades may result in loss of backward  compatibility. This will, however, be clearly specified from time to time.
-
-The latest version of the API is available at ```https://api.sonetel.com```. To
-access a specific version of the API specify the version in the URI. For example: ```https://api.sonetel.com/1.4/```
-
 
 ## Service
 
@@ -60,9 +47,7 @@ Optional upgrades to Premium and Enterprise plans provide discounted pricing, fa
 
 If you need help with our API, please contact [api.support@sonetel.com](mailto:api.support@sonetel.com).
 
-Free accounts - that are not on any paid plans - can get free support for upto 3 days after signing up. Accounts that are on our Premium plan can enjoy support for upto 5 days after sign-up.
-
-Enterprise and Enterprise+ plans can contact api.support@sonetel.com for assistance any time.
+Please look at our website for information on the [available support plans](https://developer.sonetel.com/plans).
 
 ### How does caller ID work?
 

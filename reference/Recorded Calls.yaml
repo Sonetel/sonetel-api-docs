@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Recorded calls
-  version: '1.0'
+  version: '2.0'
   summary: The API allows the user to download list of recorded calls and the files
   description: |-
     Calls or conferences handled using your Sonetel account can be recorded using the call recording function. The recorded calls are stored in Sonetel and can be managed via the Call recording API.
@@ -13,9 +13,11 @@ info:
     > 2. enable the [call recording function](https://app.sonetel.com/account-settings/call-recording/settings) from your account.
 
 
-    Call recordings are either linked to a user or an account. For example, if a user makes an outgoing call that is recorded then the recording will be linked to this user with their `used_id`. On the other hand, if a phone number in your account is connected to a SIP address, then the incoming calls that are recorded are linked to the account and not to any user.
+    Call recordings are either linked to a user or an account.
 
-    A recording object can also contain the details for accessing the recording file as well as the details of the call that was recorded. See the sections 'Download a recording' and 'Get call details' below for more details.
+    For example, if a user makes an outgoing call that is recorded then the recording will be linked to this user with their `user_id`. On the other hand, let's say a phone number in your account is connected to a SIP address or a voice app, then the recordings of the incoming calls are linked to the account and not to any user.
+
+    A recording object can also contain the details for accessing the recording file as well as the details of the call that was recorded. See the sections *Download a recording* and *Get call details* below for more details.
 
     Access to the `/call-recording` API is limited to users with admin privileges.
 
@@ -48,13 +50,13 @@ info:
 
     ## Download a recording
 
-    In order to download the audio file containint the call recording, add the `fields=file_access_details` query parameter to the API request.
+    In order to download the audio file containint the call recording, add the query parameter `fields=file_access_details`  to the API request.
 
-    Example: `https://beta-api.sonetel.com/call-recording/6y25Gth432?fields=file_access_details`
+    Example: `https://public-api.sonetel.com/call-recording/6y25Gth432?fields=file_access_details`
 
     > In the above example, `6y25Gth432` is the unique `call_recording_id` of the recording you wish to download. Get a list of all recordings by issuing a GET request to `/call-recording?account_id=YOUR_SONETEL_ACCOUNT_ID`.
 
-    A successful response will return the following response. Use the URL provided in the `file_access_details` object to download the file.
+    A successful request will return the following response. Use the `url` property in the `file_access_details` object to download the file.
 
     ```json
     {
@@ -83,9 +85,9 @@ info:
 
     ## Get call details
 
-    In order to get the details of the call along with the call recording, add the `fields=voice_call_details` query parameter to the API request.
+    In order to get the details of the call along with the call recording, add the query parameter `fields=voice_call_details` to the API request.
 
-    Example: `https://beta-api.sonetel.com/call-recording/6y25Gth432?fields=voice_call_details`
+    Example: `https://public-api.sonetel.com/call-recording/6y25Gth432?fields=voice_call_details`
 
     A successful response will return the following response.
 
@@ -138,11 +140,13 @@ info:
     Incoming calls can only be recorded on phone numbers with the [business package](https://sonetel.com/en/help/help-topics/telephony/business-package-for-phone-numbers/) or ones that are free with [website](https://sonetel.com/en/help/help-topics/telephony/free-phone-number/) or [Premium](https://sonetel.com/en/help/help-topics/telephony/phone-numbers-free-with-premium/).
 
     Additionally, the call recording service has some [fair usage limitations](https://sonetel.com/en/help/help-topics/telephony/free-call-recording/).
+  contact:
+    name: Sonetel API Support
+    email: api.support@sonetel.com
+  termsOfService: 'https://sonetel.com/en/help/help-topics/terms-conditions/terms-conditions/'
 servers:
-  - url: 'https://beta-api.sonetel.com'
+  - url: 'https://public-api.sonetel.com'
     description: Production
-  - url: 'https://chat-api.sonetel.com'
-    description: Staging
 paths:
   '/call-recording/{recording-id}':
     parameters:
@@ -173,7 +177,7 @@ paths:
 
         To retrieve a specific call recording, you can issue a GET request to the resource with the `call_recording_id` as a path parameter.
 
-        Example: `GET https://api.sonetel.com/call-recording/6y25Gth432`
+        Example: `GET https://public-api.sonetel.com/call-recording/6y25Gth432`
 
         ### Successful response 
 
@@ -189,17 +193,17 @@ paths:
             }
         ```
 
-        ### Get the userid and accountid fields
+        ### Get the userid and accountid
 
-        Instructions on how to find your account ID can be found in our [FAQ section](../docs/Getting Started/7-FAQs.md).
+        Instructions on how to find your account ID can be found in our [FAQ section](https://docs.sonetel.com/docs/sonetel-documentation/docs/Getting%20Started/7-FAQs.md#how-can-i-find-my-account-id).
 
-        The userid for all your users can be fetched by issuing a GET request to [/account/{accountid}/user](Users.yaml/paths/~1account~1{accountid}~1user/get).
+        The userid for all your users can be fetched by issuing a GET request to `/account/{accountid}/user`.
 
         ### Additional fields
 
         To include additional information in the response, add the query parameter `fields` with one or more values listed below.
 
-        Example: `https://beta-api.sonetel.com/call-recording/6y25Gth432?fields=file,voice_call_details`
+        Example: `https://public-api.sonetel.com/call-recording/6y25Gth432?fields=file,voice_call_details`
       parameters:
         - schema:
             type: string
@@ -240,13 +244,15 @@ paths:
         ```c
         curl \
           --location \
-          --request DELETE 'https://api.sonetel.com/call-recording/a12B34DE567' \
+          --request DELETE 'https://public-api.sonetel.com/call-recording/a12B34DE567' \
           --header 'Authorization: Bearer ACCESS_TOKEN'
         ```
 
         <!-- theme: warning -->
 
-        > Once deleted, it may not be possible to recover call recordings.
+        > ### Warning
+        > 
+        > Once deleted, it is not possible to recover call recordings.
       parameters:
         - schema:
             type: string
@@ -276,13 +282,11 @@ paths:
 
         Allows you to list all the call recordings in your account.
 
-        By adding one or more of the query parametrers listed below, you can also search for the recordings.
-
-        For example, to search for recordings linked to a specific user you can search using their user ID like `/call-recording?account_id=YOUR_ACCOUNT_ID&user_id=UNIQUE_USER_ID`
+        Filter the recordings by adding one or more of the query perameters listed below. For example, to search for recordings linked to a specific user you can search using their user ID: `/call-recording?account_id=YOUR_ACCOUNT_ID&user_id=UNIQUE_USER_ID`
 
         > Please remember to add the `?account_id=YOUR_SONETEL_ACCOUNT_ID` query parameter to the URL
 
-        To know how to find your account ID, please have a look [here](../account.yaml).
+        To know how to find your account ID, please have a look at the `/account` endpoint.
       parameters:
         - schema:
             type: string
@@ -868,15 +872,6 @@ components:
             account.admin.read: Account admin read
             account.admin.write: Account admin write
           refreshUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
-    Staging:
-      type: oauth2
-      flows:
-        password:
-          tokenUrl: 'https://chat-api.sonetel.com/SonetelAuth/1.3/oauth/token'
-          refreshUrl: 'https://chat-api.sonetel.com/SonetelAuth/1.3/oauth/token'
-          scopes:
-            account.admin.read: Account admin read
-            account.admin.write: Account admin write
 security:
   - Production: []
   - Staging: []
