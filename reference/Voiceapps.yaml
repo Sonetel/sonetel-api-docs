@@ -3,7 +3,7 @@ info:
   title: Manage voice apps
   version: '1.0'
   summary: Manage voiceapps under a Sonetel account
-  description: |
+  description: |-
     # Manage voice apps
 
     Voice applications in your account can be managed using the `/account/{accountid}/voiceapp` resource.
@@ -13,6 +13,21 @@ info:
     Every voiceapp has a `voice` field, which determines its properties such as language and accent played to callers when interacting with the voiceapp.
 
     Sonetel provides ready-made voices that can be used in your voiceapp. Additionally, messages in a voiceapp can be customized by replacing the default messages with your own messages. When an account is created, two default voice apps, an ivr and voicemail are automatically created.
+
+
+    ### Prompts
+
+    A Prompt represents a voice message in a voice app. Prompts can be created, retrieved, deleted and updated with the exception that voiceapps have a set of default prompts that cannot be created or deleted.
+
+    Each prompt has a unique `prompt_id`, through which it is referenced in the voice app. The `prompt_id` can be specified in the action properties in the voice app to have the voice message played under defined condition. For example, play (*action*) a specific prompt (*prompt_id*) when digit 3 is pressed (*condition*) by the user.
+
+    Every prompt has a voice message associated with it. When the prompt is created, the voice message file can subsequently be uploaded to the prompt. The uploaded file is then set as its voice message. Alternately, a voice message file can be recorded by calling in to the prompt recording function (*22) from a SIP phone.
+
+    When a voice app is created, default prompts in a voice app are automatically created along with it. For all default prompts, Sonetel provides standard pre-recorded voice messages. The voice setting in the voice app defines the language and the corresponding standard voice message that is played when the prompt is used.
+
+    For example, if you set the voice as `en`, the prompt that plays a welcome message to the caller, would play the audio message “Welcome” in an English, male voice. If you change the voice to “se”, the message changes to the equivalent message in a Swedish, male voice.
+
+    > Default prompts can also be customized in the same way as regular prompts, by uploading a voice file or via the prompt recording function.
 servers:
   - url: 'https://public-api.sonetel.com'
     description: Production
@@ -24,16 +39,20 @@ paths:
         name: accountid
         in: path
         required: true
+        description: Your Sonetel account ID
     get:
-      summary: Get voiceapps in account
+      summary: Get all voice apps
       tags: []
       responses:
         '200':
-          $ref: '#/components/responses/Sonetel-voiceapp-response'
+          $ref: '#/components/responses/List-voiceapps'
         '404':
           description: User Not Found
       operationId: get-voiceapps-account
-      description: Retrieve a list of all the voiceapps in your account
+      description: |-
+        # Get all voice apps
+
+        Retrieve a list of all the voiceapps in your account.
       parameters:
         - schema:
             type: string
@@ -42,7 +61,7 @@ paths:
           description: Bearer <access_token>
           required: true
     post:
-      summary: Create voiceapp
+      summary: Create new voice app
       operationId: create-voiceapp-account
       responses:
         '200':
@@ -65,6 +84,14 @@ paths:
           name: Content-Type
           description: application/json
           required: true
+      description: |
+        # Create new voice app
+
+        In addition to the default voiceapps available in your Sonetel account, you can create as many custom voiceapps as you want.
+
+        Voiceapps can be created via a POST request to the voice app list resource i.e. `POST https://public-api.sonetel.com/account/YOUR_ACCOUNT_ID/voiceapp`.
+
+        The body of the request contains a JSON representation of the app's properties such as its name and type. These are described below. The response to a successful request carries the resource representation of the newly created voiceapp.
   '/account/{accountid}/voiceapp/{voiceappid}':
     parameters:
       - schema:
@@ -80,7 +107,7 @@ paths:
         required: true
         description: The unique ID of the voice app you wish to manage.
     get:
-      summary: Get Voiceapp by Id
+      summary: Get voice app by ID
       operationId: get-account-voiceappid
       responses:
         '200':
@@ -93,288 +120,20 @@ paths:
           description: Bearer <access_token>
           required: true
     put:
-      summary: Update voiceapp by Id
+      summary: Update voiceapp by ID
       operationId: update-account-voiceappid
       responses:
         '200':
           $ref: '#/components/responses/Voiceapp-response'
-      description: ''
+      description: |
+        # Update voiceapp by ID
+
+        Voice apps can be updated by issuing a PUT to the account. For example, `PUT https://public-api.sonetel.com/account/YOUR_ACCOUNT_ID/voiceapp/VOICEAPP_ID`.
       requestBody:
         content:
           application/json:
             schema:
-              description: ''
-              type: object
-              properties:
-                app_id:
-                  type: string
-                  minLength: 1
-                name:
-                  type: string
-                  minLength: 1
-                app_type:
-                  type: string
-                  minLength: 1
-                shortcode:
-                  type: string
-                  minLength: 1
-                sip_address:
-                  type: string
-                  minLength: 1
-                voice:
-                  type: string
-                  minLength: 1
-                play_welcome:
-                  type: string
-                  minLength: 1
-                get_extension:
-                  type: string
-                  minLength: 1
-                play_menu:
-                  type: string
-                  minLength: 1
-                menu:
-                  type: object
-                  properties:
-                    digit_0:
-                      type: object
-                      properties:
-                        action:
-                          type: string
-                        to:
-                          type: string
-                        id:
-                          type: string
-                      required:
-                        - action
-                        - to
-                        - id
-                    digit_1:
-                      type: object
-                      properties:
-                        action:
-                          type: string
-                          minLength: 1
-                        to:
-                          type: string
-                          minLength: 1
-                        id:
-                          type: string
-                          minLength: 1
-                      required:
-                        - action
-                        - to
-                        - id
-                    digit_2:
-                      type: object
-                      properties:
-                        action:
-                          type: string
-                          minLength: 1
-                        to:
-                          type: string
-                          minLength: 1
-                        id:
-                          type: string
-                          minLength: 1
-                      required:
-                        - action
-                        - to
-                        - id
-                    digit_3:
-                      type: object
-                      properties:
-                        action:
-                          type: string
-                          minLength: 1
-                        to:
-                          type: string
-                          minLength: 1
-                        id:
-                          type: string
-                          minLength: 1
-                      required:
-                        - action
-                        - to
-                        - id
-                    digit_4:
-                      type: object
-                      properties:
-                        action:
-                          type: string
-                        to:
-                          type: string
-                        id:
-                          type: string
-                      required:
-                        - action
-                        - to
-                        - id
-                    digit_5:
-                      type: object
-                      properties:
-                        action:
-                          type: string
-                        to:
-                          type: string
-                        id:
-                          type: string
-                      required:
-                        - action
-                        - to
-                        - id
-                    digit_6:
-                      type: object
-                      properties:
-                        action:
-                          type: string
-                        to:
-                          type: string
-                        id:
-                          type: string
-                      required:
-                        - action
-                        - to
-                        - id
-                    digit_7:
-                      type: object
-                      properties:
-                        action:
-                          type: string
-                        to:
-                          type: string
-                        id:
-                          type: string
-                      required:
-                        - action
-                        - to
-                        - id
-                    digit_8:
-                      type: object
-                      properties:
-                        action:
-                          type: string
-                        to:
-                          type: string
-                        id:
-                          type: string
-                      required:
-                        - action
-                        - to
-                        - id
-                    timeout:
-                      type: object
-                      properties:
-                        action:
-                          type: string
-                          minLength: 1
-                        to:
-                          type: string
-                          minLength: 1
-                        id:
-                          type: string
-                          minLength: 1
-                      required:
-                        - action
-                        - to
-                        - id
-                    digit_9:
-                      type: object
-                      properties:
-                        action:
-                          type: string
-                        to:
-                          type: string
-                        id:
-                          type: string
-                      required:
-                        - action
-                        - to
-                        - id
-                  required:
-                    - digit_0
-                    - digit_1
-                    - digit_2
-                    - digit_3
-                    - digit_4
-                    - digit_5
-                    - digit_6
-                    - digit_7
-                    - digit_8
-                    - timeout
-                    - digit_9
-                tts_allowed:
-                  type: string
-                  minLength: 1
-              required:
-                - app_id
-                - name
-                - app_type
-                - shortcode
-                - sip_address
-                - voice
-                - play_welcome
-                - get_extension
-                - play_menu
-                - menu
-                - tts_allowed
-              x-examples:
-                example-1:
-                  app_id: VAdhy6q1oioz
-                  name: Sai test menu
-                  app_type: ivr
-                  shortcode: '*21*2'
-                  sip_address: VAdhy6q1oioz@sonetel.net
-                  voice: en
-                  play_welcome: 'yes'
-                  get_extension: 'no'
-                  play_menu: 'yes'
-                  menu:
-                    digit_0:
-                      action: ''
-                      to: ''
-                      id: ''
-                    digit_1:
-                      action: call
-                      to: user
-                      id: '2016364344'
-                    digit_2:
-                      action: call
-                      to: phnum
-                      id: '+919866241476'
-                    digit_3:
-                      action: connect
-                      to: app
-                      id: VAdhy6q1oioi
-                    digit_4:
-                      action: ''
-                      to: ''
-                      id: ''
-                    digit_5:
-                      action: ''
-                      to: ''
-                      id: ''
-                    digit_6:
-                      action: ''
-                      to: ''
-                      id: ''
-                    digit_7:
-                      action: ''
-                      to: ''
-                      id: ''
-                    digit_8:
-                      action: ''
-                      to: ''
-                      id: ''
-                    timeout:
-                      action: play
-                      to: prompt
-                      id: PRiodhy6q1ozoz
-                    digit_9:
-                      action: ''
-                      to: ''
-                      id: ''
-                  tts_allowed: 'yes'
+              $ref: '#/components/schemas/Voiceapp'
       parameters:
         - schema:
             type: string
@@ -399,6 +158,10 @@ paths:
           in: header
           name: Authorization
           description: Bearer <access_token>
+      description: |-
+        # Delete a voiceapp
+
+        Voice apps can be deleted by issuing a DELETE to the voiceapp resource i.e. `DELETE https://public-api.sonetel.com/account/YOUR_ACCOUNT_ID/voiceapp/VOICEAPP_ID`
   '/account/{accountid}/voiceapp/{voiceappid}/prompt/{promptid}':
     parameters:
       - schema:
@@ -412,7 +175,7 @@ paths:
         name: voiceappid
         in: path
         required: true
-        description: Unique ID of the voice app you wish to manage
+        description: Unique ID of the voiceapp you wish to manage
       - schema:
           type: string
         name: promptid
@@ -420,10 +183,15 @@ paths:
         required: true
         description: Unique ID of the voice prompt you wish to manage
     get:
-      summary: GET Prompts by prompt-id
+      summary: Get prompts by ID
       tags: []
       operationId: get-voiceapp-prompt-id
-      description: Retrieve the information of the user with the matching user ID.
+      description: |
+        # Get prompts by ID
+
+        A prompt represents a voice message in a voice app.
+
+        Use this endpoint to get a list of all the prompts associated with a voiceapp.
       parameters:
         - schema:
             type: string
@@ -436,21 +204,8 @@ paths:
           $ref: '#/components/responses/List-prompt'
         '404':
           description: Not Found
-    post:
-      summary: Create a custom prompt in a voiceapp
-      operationId: replace-voiceapp-promptid
-      responses:
-        '200':
-          description: OK
-      parameters:
-        - schema:
-            type: string
-          in: header
-          name: Authorization
-          description: Bearer <access_token>
-          required: true
     put:
-      summary: Update prompt by Prompt-id
+      summary: Update prompt by ID
       operationId: Replace-voiceapp-promptid
       responses:
         '200':
@@ -462,8 +217,12 @@ paths:
           name: Authorization
           description: Bearer <access_token>
           required: true
+      description: |-
+        Update the prompt by issuing a PUT request to the `/prompt/{promptid}` endpoint.
+
+        At the moment, you can only update the name of a prompt. The voice message played by the prompt can be updated by issuing a POST request to the `/prompt/{promptid}/message` endpoint.
     delete:
-      summary: Change prompt to default (Delete custom)
+      summary: Delete custom prompt (restore default)
       operationId: delete-voiceapp-promptid
       responses:
         '200':
@@ -477,35 +236,16 @@ paths:
           required: true
   '/account/{accountid}/voiceapp/{voiceappid}/prompt':
     post:
-      summary: Create New Prompt under a voiceapp
+      summary: Create new prompt under a voiceapp
       operationId: post-user
       responses:
         '200':
           $ref: '#/components/responses/List-prompt'
-        '400':
-          description: Missing Required Information
-        '409':
-          description: Email Already Taken
       requestBody:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                firstName:
-                  type: string
-                lastName:
-                  type: string
-                email:
-                  type: string
-                dateOfBirth:
-                  type: string
-                  format: date
-              required:
-                - firstName
-                - lastName
-                - email
-                - dateOfBirth
+              $ref: '#/components/schemas/Create-Prompt'
             examples: {}
         description: ''
       description: Create a custom prompt
@@ -523,7 +263,7 @@ paths:
           required: true
           description: application/json
     get:
-      summary: Get list of prompts under a voiceapp
+      summary: List prompts linked to voice app
       operationId: get-user
       responses:
         '200':
@@ -548,7 +288,7 @@ paths:
         in: path
         required: true
         description: The unique ID of the voiceapp you wish to manage
-  /message:
+  '/prompt/{promptid}/message':
     get:
       summary: Get a prompt message details
       tags: []
@@ -562,14 +302,20 @@ paths:
           description: Bearer <access_token>
           required: true
     post:
-      summary: Upload a prompt to Sonetel account
+      summary: Add custom message to a prompt
       operationId: upload-message
       responses:
         '200':
           description: OK
+    parameters:
+      - schema:
+          type: string
+        name: promptid
+        in: path
+        required: true
 components:
   schemas:
-    Create-Voiceapp:
+    Voiceapp:
       description: ''
       type: object
       x-examples:
@@ -629,20 +375,17 @@ components:
               action: call
               to: other
               id: '+12025550000'
-        - app_id: zx982GdXet
-          name: Main VoiceMail
+        - name: Main VoiceMail
           app_type: mailbox
-          shortcode: '*12'
-          sip_address: zx982GdXet@sonetel.net
           voice: en-fe
           greeting_prompt: 'yes'
           goodbye_prompt: 'yes'
           deliver_to: email
           deliver_to_details: user@example.com
+      title: ''
       properties:
         app_type:
           type: string
-          minLength: 1
           description: The type of voiceapp being created.
           enum:
             - ivr
@@ -650,11 +393,9 @@ components:
             - sysprompt
         play_menu:
           type: string
-          minLength: 1
           description: A flag that indicates if the interactive voice menu function(receive digits from callers to take actions) is active or not.
         name:
           type: string
-          minLength: 1
           description: The name of the voiceapp
         voice:
           type: string
@@ -885,7 +626,18 @@ components:
       title: Create-Prompt
       type: object
       properties:
-        id:
+        name:
+          type: string
+          description: A descriptive name of the prompt defined by the customer.
+      required:
+        - name
+    Update-Prompt:
+      title: Update-Prompt
+      type: object
+      properties:
+        prompt_id:
+          type: string
+        name:
           type: string
   securitySchemes:
     Production:
@@ -1310,41 +1062,58 @@ components:
                 app_id:
                   type: string
                   minLength: 1
+                  description: The Unique ID of the voiceapp
                 name:
                   type: string
                   minLength: 1
+                  description: A descriptive name for the voiceapp
                 app_type:
                   type: string
                   minLength: 1
+                  description: 'The type of app i.e. IVR, etc.'
+                  enum:
+                    - ivr
+                    - mailbox
+                    - sysprompt
                 shortcode:
                   type: string
                   minLength: 1
+                  description: The dial code that can be dialed or setup as a forwarding destination to connect calls to the voice app.
                 sip_address:
                   type: string
                   minLength: 1
+                  description: The SIP address of the voice app
                 voice:
                   type: string
                   minLength: 1
+                  description: The set of pre-recorded voice prompts for the voice app
                 play_welcome:
                   type: string
                   minLength: 1
+                  description: A flag that indicates if the Welcome message is played or not.
+                  enum:
+                    - 'yes'
+                    - 'no'
                 get_extension:
                   type: string
                   minLength: 1
+                  description: A flag that indicates if the auto-attendant function is active.
+                  enum:
+                    - 'yes'
+                    - 'no'
                 play_menu:
                   type: string
                   minLength: 1
+                  description: A flag that indicates if the interactive voice menu function(receive digits from callers to take actions) is active or not.
+                  enum:
+                    - 'yes'
+                    - 'no'
                 menu:
                   type: object
-                  required:
-                    - digit_5
+                  description: The voice response menu that defines the digits and the actions taken on each digit press
                   properties:
                     digit_0:
                       type: object
-                      required:
-                        - action
-                        - to
-                        - id
                       properties:
                         action:
                           type: string
@@ -1354,10 +1123,6 @@ components:
                           type: string
                     digit_1:
                       type: object
-                      required:
-                        - action
-                        - to
-                        - id
                       properties:
                         action:
                           type: string
@@ -1370,10 +1135,6 @@ components:
                           minLength: 1
                     digit_2:
                       type: object
-                      required:
-                        - action
-                        - to
-                        - id
                       properties:
                         action:
                           type: string
@@ -1386,10 +1147,6 @@ components:
                           minLength: 1
                     digit_3:
                       type: object
-                      required:
-                        - action
-                        - to
-                        - id
                       properties:
                         action:
                           type: string
@@ -1402,10 +1159,6 @@ components:
                           minLength: 1
                     digit_4:
                       type: object
-                      required:
-                        - action
-                        - to
-                        - id
                       properties:
                         action:
                           type: string
@@ -1415,10 +1168,6 @@ components:
                           type: string
                     digit_5:
                       type: object
-                      required:
-                        - action
-                        - to
-                        - id
                       properties:
                         action:
                           type: string
@@ -1428,10 +1177,6 @@ components:
                           type: string
                     digit_6:
                       type: object
-                      required:
-                        - action
-                        - to
-                        - id
                       properties:
                         action:
                           type: string
@@ -1441,10 +1186,6 @@ components:
                           type: string
                     digit_7:
                       type: object
-                      required:
-                        - action
-                        - to
-                        - id
                       properties:
                         action:
                           type: string
@@ -1454,10 +1195,6 @@ components:
                           type: string
                     digit_8:
                       type: object
-                      required:
-                        - action
-                        - to
-                        - id
                       properties:
                         action:
                           type: string
@@ -1467,10 +1204,6 @@ components:
                           type: string
                     timeout:
                       type: object
-                      required:
-                        - action
-                        - to
-                        - id
                       properties:
                         action:
                           type: string
@@ -1483,10 +1216,6 @@ components:
                           minLength: 1
                     digit_9:
                       type: object
-                      required:
-                        - action
-                        - to
-                        - id
                       properties:
                         action:
                           type: string
@@ -1497,75 +1226,141 @@ components:
                 tts_allowed:
                   type: string
                   minLength: 1
-              required:
-                - app_id
-                - name
-                - app_type
-                - shortcode
-                - sip_address
-                - voice
-                - play_welcome
-                - get_extension
-                - play_menu
-                - tts_allowed
+                error_voice:
+                  type: string
+                  description: The voice that applies for playing system messages. This field applies in case the app_type is “sysprompt”.
+                error_repeat_voice:
+                  type: string
+                  description: |-
+                    In case the same system message is required to be played in two different voices, the `error_repeat_voice` field specifies the voice for playing the system messages in a second voice.
+
+                    This may be used in case there are two different languages in which the error message needs to be played to the callers.
+
+                    This field applies in case the app_type is “sysprompt”.
+                greeting_prompt:
+                  type: string
+                  description: |-
+                    A flag that indicates if a greeting message is played when a caller reaches the voicemail.
+
+                    This field applies in case the app_type is `mailbox`.
+                  enum:
+                    - 'yes'
+                    - 'no'
+                goodbye_prompt:
+                  type: string
+                  description: A flag that indicates if a goodbye message is played when a caller has left a voicemail message. This field applies in case the app_type is `mailbox`
+                  enum:
+                    - 'yes'
+                    - 'no'
+                deliver_to:
+                  type: string
+                  description: |-
+                    Voicemails are delivered as email attachments. This field can specify either a user or an email address to which the voicemail are delivered.
+
+                    This field applies in case the app_type is “mailbox”
+                  enum:
+                    - user
+                    - email
+                deliver_to_details:
+                  type: string
+                  description: |-
+                    If `deliver_to` is a user, this field takes the `user_id` of the user. The email is delivered to the email address of the user configured in the Sonetel account.
+                    If `deliver_to` is an email, this field takes the email address to which the voicemail is delivered.
           examples:
-            example-1:
+            Example:
               value:
-                - app_id: string
-                  name: string
-                  app_type: string
-                  shortcode: string
-                  sip_address: string
-                  voice: string
-                  play_welcome: string
-                  get_extension: string
-                  play_menu: string
-                  menu:
-                    digit_0:
-                      action: string
-                      to: string
-                      id: string
-                    digit_1:
-                      action: string
-                      to: string
-                      id: string
-                    digit_2:
-                      action: string
-                      to: string
-                      id: string
-                    digit_3:
-                      action: string
-                      to: string
-                      id: string
-                    digit_4:
-                      action: string
-                      to: string
-                      id: string
-                    digit_5:
-                      action: string
-                      to: string
-                      id: string
-                    digit_6:
-                      action: string
-                      to: string
-                      id: string
-                    digit_7:
-                      action: string
-                      to: string
-                      id: string
-                    digit_8:
-                      action: string
-                      to: string
-                      id: string
-                    timeout:
-                      action: string
-                      to: string
-                      id: string
-                    digit_9:
-                      action: string
-                      to: string
-                      id: string
-                  tts_allowed: string
+                resource: voiceapp
+                response:
+                  - app_id: ABc8sjNMs
+                    name: Main menu Test
+                    app_type: ivr
+                    shortcode: '*21'
+                    sip_address: ABc8sjNMs@sonetel.net
+                    voice: hin-fe
+                    play_welcome: 'yes'
+                    get_extension: 'no'
+                    play_menu: 'yes'
+                    menu:
+                      digit_0:
+                        action: ''
+                        to: ''
+                        id: ''
+                      digit_1:
+                        action: call
+                        to: user
+                        id: '2000000000'
+                      digit_2:
+                        action: play
+                        to: prompt
+                        id: PRiw9azqjoioa
+                      digit_3:
+                        action: call
+                        to: phnum
+                        id: '+46800000000'
+                      digit_4:
+                        action: ''
+                        to: ''
+                        id: ''
+                      digit_5:
+                        action: ''
+                        to: ''
+                        id: ''
+                      digit_6:
+                        action: ''
+                        to: ''
+                        id: ''
+                      digit_7:
+                        action: ''
+                        to: ''
+                        id: ''
+                      digit_8:
+                        action: ''
+                        to: ''
+                        id: ''
+                      timeout:
+                        action: connect
+                        to: app
+                        id: ABc8sjNMs
+                      digit_9:
+                        action: ''
+                        to: ''
+                        id: ''
+                    tts_allowed: 'yes'
+                  - app_id: VA9dcbao9oi
+                    name: Sales Team Voicemail
+                    app_type: mailbox
+                    shortcode: '*12'
+                    sip_address: VA9dcbao9oi@sonetel.net
+                    voice: en-fe
+                    greeting_prompt: 'no'
+                    goodbye_prompt: 'no'
+                    deliver_to: email
+                    deliver_to_details: sales@example.com
+                    tts_allowed: 'yes'
+                  - app_id: A9azaxo9o9
+                    name: Support Mailbox
+                    app_type: mailbox
+                    shortcode: '*12*3'
+                    sip_address: A9azaxo9o9@sonetel.net
+                    voice: en-fe
+                    greeting_prompt: 'no'
+                    goodbye_prompt: 'no'
+                    deliver_to: user
+                    deliver_to_details: '2000000000'
+                    tts_allowed: 'yes'
+                  - app_id: VA9acdfreoi
+                    name: System Prompt
+                    app_type: sysprompts
+                    error_voice: en
+                    error_repeat_voice: en-fe
+                    usermailbox_voice: en
+                    tts_allowed: 'yes'
+                status: success
+      headers:
+        Content-Type:
+          schema:
+            type: string
+          description: application/json;charset=UTF-8
     Sonetel-voiceapp-response:
       description: Example response
       content:
@@ -1597,7 +1392,7 @@ components:
             type: string
           description: application/json
     List-prompt:
-      description: Example response
+      description: ''
       content:
         application/json:
           schema:

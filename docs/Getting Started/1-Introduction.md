@@ -10,7 +10,7 @@ The current version of the API supports the following.
 
 Function | Description |
 |---------|---------|
-| [Account](../../account.yaml) | View & manage your Sonetel account details |
+| [Account](../../reference/account.yaml) | View & manage your Sonetel account details |
 | [Authentication](../../reference/Authentication.yaml) | Generate tokens that your applications can use to access the resources in your account.
 | [Make calls](../../reference/Make%20calls.yaml) | Make callback calls using your Sonetel account.|
 | [Phone numbers](../../reference/Phone%20Numbers.yaml) | Manage your existing phone numbers or purchase new ones. |
