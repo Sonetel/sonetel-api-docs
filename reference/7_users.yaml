@@ -362,7 +362,7 @@ paths:
       description: |-
         # Update user profile
 
-        Use this endpoint to update the user's profile such as their name or title. You need the user's unique ID (get it from [here](Users.yaml/paths/~1account~1{accountid}~1user/get)) and must pass the updated settings in the requuest body.
+        Use this endpoint to update the user's profile such as their name or title. You need the user's unique ID (get it from [here](7_users.yaml/paths/~1account~1{accountid}~1user/get)) and must pass the updated settings in the requuest body.
 
         For example, to update the user's title, use the following request
 
@@ -564,7 +564,7 @@ paths:
         |--------|-----------|
         |show|The caller-id shown when a user makes an outgoing call. Possible values:<br>- **auto**: the caller ID is automatically selected by the system<br>- **none**: No caller Id is shown. <br>- **Your Sonetel number**: If you have a Sonetel number that is eligible to be shown as the caller ID in outgoing calls, then you can select that.|
 
-        More information about how automatic caller ID works is given in the [FAQs](../docs/Getting Started/7-FAQs.md).
+        More information about how automatic caller ID works is given in the [FAQs](../docs/Getting%20Started/7-FAQs.md).
 
         <!-- type: tab-end -->
       security:

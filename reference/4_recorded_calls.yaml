@@ -45,7 +45,7 @@ info:
     Add the required filters as query parameters. For example, to limit the results to recordings created between 1st Jan 2021 and 3rd Feb 2021, use the following URI.
 
     ```
-    https://beta-api.sonetel.com/call-recording?account_id=YOUR_SONETEL_ACCOUNT_ID&created_date_min=20210203T23:59:59Z&created_date_max=20210101T00:00:00Z
+    https://public-api.sonetel.com/call-recording?account_id={accountid}&created_date_min=20210203T23:59:59Z&created_date_max=20210101T00:00:00Z
     ```
 
     ## Download a recording
@@ -54,7 +54,7 @@ info:
 
     Example: `https://public-api.sonetel.com/call-recording/6y25Gth432?fields=file_access_details`
 
-    > In the above example, `6y25Gth432` is the unique `call_recording_id` of the recording you wish to download. Get a list of all recordings by issuing a GET request to `/call-recording?account_id=YOUR_SONETEL_ACCOUNT_ID`.
+    > In the above example, `6y25Gth432` is the unique `call_recording_id` of the recording you wish to download. Get a list of all recordings by issuing a GET request to `/call-recording?account_id={accountid}`.
 
     A successful request will return the following response. Use the `url` property in the `file_access_details` object to download the file.
 
@@ -282,9 +282,9 @@ paths:
 
         Allows you to list all the call recordings in your account.
 
-        Filter the recordings by adding one or more of the query perameters listed below. For example, to search for recordings linked to a specific user you can search using their user ID: `/call-recording?account_id=YOUR_ACCOUNT_ID&user_id=UNIQUE_USER_ID`
+        Filter the recordings by adding one or more of the query perameters listed below. For example, to search for recordings linked to a specific user you can search using their user ID: `/call-recording?account_id={accountid}&user_id={userid}`
 
-        > Please remember to add the `?account_id=YOUR_SONETEL_ACCOUNT_ID` query parameter to the URL
+        > Please remember to add the `?account_id={accountid}` query parameter to the URL
 
         To know how to find your account ID, please have a look at the `/account` endpoint.
       parameters:

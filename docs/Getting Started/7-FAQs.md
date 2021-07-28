@@ -5,7 +5,7 @@
 ### Where can I get the API credentials?
 The API uses tokens generated using the OAuth2 framework to authenticate API requests.
 
-Read more about [how to authenticate API requests](../../reference/Authentication.yaml).
+Read more about [how to authenticate API requests](../../reference/1_authentication.yaml).
 
 ### What username do I need to generate a token?
 
@@ -22,7 +22,7 @@ If you receive an error response to the above request, use the following workaro
 
 ### What is a bearer token?
 
-The access token [issued by our API](../../reference/Authentication.yaml) is a bearer token.
+The access token [issued by our API](../../reference/1_authentication.yaml) is a bearer token.
 
 These are long cryptic strings that are required by client applications to access protected API resources.
 

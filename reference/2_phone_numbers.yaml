@@ -10,17 +10,17 @@ info:
 
     Use the `/phonenumbersubscription` resource to manage your phone numbers i.e. change the call forwarding, return the numbers and so on.
 
-    You can [get a list](Number%20Management.yaml/paths/account~1{accountid}~1phonenumbersubscription/get) of all the numbers assigned to you, the date when the next subscription charges will be applied, how incoming calls to them are handled and much more.
+    You can [get a list](2_phone_numbers.yaml/paths/account~1{accountid}~1phonenumbersubscription/get) of all the numbers assigned to you, the date when the next subscription charges will be applied, how incoming calls to them are handled and much more.
 
     Issue a `PUT` or `DELETE` request to update the subscription or remove it from your account.
 
     ## Order new numbers
 
-    Need a new phone number? Use the [/country](Phone%20Numbers.yaml/paths/~1country/get), [/numberstocksummary](Phone%20Numbers.yaml/paths/~1numberstocksummary~1{country}/get) and [/availablephonenumber](Phone%20Numbers.yaml/paths/~1numberstocksummary~1{country}~1availablephonenumber/get) resources to have a look at the available phone number stock.
+    Need a new phone number? Use the [/country](2_phone_numbers.yaml/paths/~1country/get), [/numberstocksummary](2_phone_numbers.yaml/paths/~1numberstocksummary~1{country}/get) and [/availablephonenumber](2_phone_numbers.yaml/paths/~1numberstocksummary~1{country}~1availablephonenumber/get) resources to have a look at the available phone number stock.
 
-    Once you have identified a suitable phone number, use the [/phonenumbersubscription](Phone%20Numbers.yaml/paths/account~1{accountid}~1phonenumbersubscription/post) endpoint to purchase it.
+    Once you have identified a suitable phone number, use the [/phonenumbersubscription](2_phone_numbers.yaml/paths/account~1{accountid}~1phonenumbersubscription/post) endpoint to purchase it.
 
-    > Browsing the available phone number stock does not require authentication. However, you will need to provide your [access_token](Authentication.yaml/paths/~1oauth~1token/post) to use the phone number subscription endpoints.
+    > Browsing the available phone number stock does not require authentication. However, you will need to provide your [access_token](1_authentication.yaml/paths/~1oauth~1token/post) to use the phone number subscription endpoints.
   termsOfService: 'https://sonetel.com/en/help/help-topics/terms-conditions/terms-conditions/'
   contact:
     email: api.support@sonetel.com

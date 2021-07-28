@@ -10,12 +10,13 @@ The current version of the API supports the following.
 
 Function | Description |
 |---------|---------|
-| [Account](../../reference/account.yaml) | View & manage your Sonetel account details |
-| [Authentication](../../reference/Authentication.yaml) | Generate tokens that your applications can use to access the resources in your account.
-| [Make calls](../../reference/Make%20calls.yaml) | Make callback calls using your Sonetel account.|
-| [Phone numbers](../../reference/Phone%20Numbers.yaml) | Manage your existing phone numbers or purchase new ones. |
-| [Recorded Calls](../../reference/Recorded%20Calls.yaml) | Manage your call recordings |
-| [Users](../../reference/Users.yaml) | Manage your user accounts, change their call settings and so on.| 
+| [Authentication](../../reference/1_authentication.yaml) | Generate tokens that your applications can use to access the resources in your account.
+| [Phone numbers](../../reference/2_phone_numbers.yaml) | Manage your existing phone numbers or purchase new ones. |
+| [Make calls](../../reference/3_make_calls.yaml) | Make callback calls using your Sonetel account.|
+| [Recorded Calls](../../reference/4_recorded_calls.yaml) | Manage your call recordings |
+| [Voice Response](../../reference/5_voice_apps.yaml) | Change the default voice apps such as IVR and voicemail or add new ones as needed. |
+| [Account](../../reference/6_account.yaml) | View & manage your Sonetel account details |
+| [Users](../../reference/7_users.yaml) | Manage your user accounts, change their call settings and so on.| 
 
 
 
@@ -25,7 +26,7 @@ To get started, you need to sign up for a [developer account](https://app.sonete
 
 Protected API resources such as `/account/{accountId}/users` require authentication.
 
-Read more about [how to authenticate your API requests](../../reference/Authentication.yaml).
+Read more about [how to authenticate your API requests](../../reference/1_authentication.yaml).
 
 ## Environments
 
@@ -38,7 +39,7 @@ These environments can be accessed at the following URI:
 
 You will need your account ID in order to access most resources linked to your account such as phone numbers and users.
 
-Issue a `GET` request to `https://public-api.sonetel.com/account/` with your [access token](../../reference/Authentication.yaml/paths/~1oauth~1token/post). The response object contains the basic details about your account including the account_id.
+Issue a `GET` request to `https://public-api.sonetel.com/account/` with your [access token](../../reference/1_authentication.yaml/paths/~1oauth~1token/post). The response object contains the basic details about your account including the account_id.
 
 ```json
 {
