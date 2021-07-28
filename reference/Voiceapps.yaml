@@ -10,37 +10,45 @@ info:
 
     You can not only create new voice apps but also customize default apps, add your voice messages and much more. In case of IVRs, you can also change the action taken when the caller selects an option from the main menu i.e. connect the call to a user, forward to a SIP address or connect to another voice app.
 
-    Every voiceapp has a `voice` field, which determines its properties such as language and accent played to callers when interacting with the voiceapp.
+    Every voice app has a `voice` field, which determines its properties such as language and accent played to callers when interacting with it.
 
-    Sonetel provides ready-made voices that can be used in your voiceapp. Additionally, messages in a voiceapp can be customized by replacing the default messages with your own messages. When an account is created, two default voice apps, an ivr and voicemail are automatically created.
+    Sonetel provides ready-made voices that can be used in your voiceapp. Additionally, messages in a voice app can be customized by replacing the default messages with your own messages. When an account is created, two default voice apps, an ivr and voicemail are automatically created.
 
     ### Type of voiceapps
 
-    At the moment the following type of voiceapps can be managed using the API:
+    At the moment the following type of voice apps can be managed using the API:
 
     Voiceapp types | Description
     --------------|------------
-    ivr | An Interactive Voice Response app allows you to play a set of pre-recorded messages to your callers. It provides the callers with multiple options such as "*Select 1 for sales, 2 for support...*".
-    mailbox | This is a voicemail box that is available on an account level i.e. it can be used for a team or department in your company. For example, if you have a separate phone number for the Sales team, then it can be connected to the sales voicemail box and the email sent to a common email address such as sales@example.com
+    ivr | An Interactive Voice Response app allows you to play a set of pre-recorded messages to your callers. It provides the callers with multiple options such as "*Select 1 for sales, 2 for support...*".<br>You can choose what action to take when the caller selects each option from 0 - 9.
+    mailbox | This is a voicemail box that is available on an account level i.e. it can be used for a team or department in your company.<br>For example, if you have a separate phone number for the Sales team, then it can be connected to the sales voicemail box and the email sent to a common email address such as sales@example.com.
     sysprompt | These are error prompts played when an invalid action takes place, for example the caller selects an invalid option in the IVR.
 
     > #### Announcements
     >
     > On our [web app](https://app.sonetel.com), you will find *Announcements* as another voice app type. It is a special type of IVR that only plays the welcome message before connecting the caller to the destination - the main menu is disabled.
+    >
+    > Announcements are useful when you want to play a short message before connecting the call to a destination. For example, before the incoming call is forwarded to your mobile phone, you want the caller to hear "Welcome to Company name, please wait while we connect your call".
 
     ### Connect phone numbers to voiceapp
 
-    To connect your phone number to a voiceapp, you can issue a PUT request to `/account/{accountid}/phonenumbersubscription/{phnum}` and change the destination to voiceapp. Please refer to the "Update number settings" endpoint under *Phone numbers* for more information.
+    To connect your phone number to a voice app, you can issue a PUT request to `/account/{accountid}/phonenumbersubscription/{phnum}` and change the destination to `app`. Please refer to the "Update number settings" endpoint under **Phone numbers** for more information.
+
+    <!-- theme: warning -->
+    > Only phone numbers that have the [business package](https://sonetel.com/business-package/) enabled or that are free with [Premium](https://sonetel.com/premium) can be connected to voice apps.
 
     ### Prompts
 
-    A Prompt represents a voice message in a voice app. Prompts can be created, retrieved, deleted and updated with the exception that voiceapps have a set of default prompts that cannot be created or deleted.
+    A Prompt represents a voice message in a voice app. They can be created, retrieved, deleted and updated with the exception that voice apps have a set of default prompts that cannot be created or deleted.
 
     Each prompt has a unique `prompt_id`, through which it is referenced in the voice app. The `prompt_id` can be specified in the action properties in the voice app to have the voice message played under defined condition. For example, play (*action*) a specific prompt (*prompt_id*) when digit 3 is pressed (*condition*) by the user.
 
-    Every prompt has a voice message associated with it. When the prompt is created, the voice message file can subsequently be uploaded to the prompt. The uploaded file is then set as its voice message. Alternately, a voice message file can be recorded by calling in to the prompt recording function (*22) from a SIP phone.
+    #### Messages
+    Every prompt has a voice message associated with it. After the prompt has been created, a voice message file can be uploaded to the prompt. The uploaded file is then set as its voice message.
 
-    When a voice app is created, default prompts in a voice app are automatically created along with it. For all default prompts, Sonetel provides standard pre-recorded voice messages. The voice setting in the voice app defines the language and the corresponding standard voice message that is played when the prompt is used.
+    Alternately, a voice message file can be recorded by calling in to the prompt recording function (*22) from your Sonetel account.
+
+    When a voice app is created, default prompts in a voice app are automatically created along with it. For all default prompts, Sonetel provides standard pre-recorded voice messages. The `voice` setting in the voice app defines the language and the corresponding standard voice message that is played when the prompt is used.
 
     For example, if you set the voice as `en`, the prompt that plays a welcome message to the caller, would play the audio message “Welcome” in an English, male voice. If you change the voice to “se”, the message changes to the equivalent message in a Swedish, male voice.
 
@@ -73,9 +81,9 @@ paths:
       description: |-
         # Get all voice apps
 
-        Issue a GET request to `/account/{accountid}/voiceapp` to fetch a list of all the voiceapps in your account.
+        Issue a GET request to `/account/{accountid}/voiceapp` to fetch a list of all the voice apps in your account.
 
-        The response contains the properties of all the voiceapps in your account including their unique `app_id`.
+        The response contains the properties of all the voice apps in your account including their unique `app_id`.
       parameters:
         - schema:
             type: string
@@ -111,13 +119,11 @@ paths:
       description: |
         # Create new voice app
 
-        In addition to the default voiceapps available in your Sonetel account, you can create new voiceapps as well.
-
-        Voiceapps can be created by issuing a POST request to the voice app list resource i.e. `POST https://public-api.sonetel.com/account/{accountid}/voiceapp`.
+        In addition to the default voice apps available in your Sonetel account, you can create new voice apps as well by issuing a POST request to the voice app list resource i.e. `POST https://public-api.sonetel.com/account/{accountid}/voiceapp`.
 
         The body of the request must contain a JSON representation of the app's properties such as its name and type. These are described in details below.
 
-        The response to a successful request carries the resource representation of the newly created voiceapp.
+        The response to a successful request carries the resource representation of the newly created voice app.
   '/account/{accountid}/voiceapp/{voiceappid}':
     parameters:
       - schema:
@@ -133,7 +139,7 @@ paths:
         required: true
         description: The unique ID of the voice app you wish to manage.
     get:
-      summary: Get voiceapp by ID
+      summary: Get voice app by ID
       operationId: get-account-voiceappid
       responses:
         '200':
@@ -146,25 +152,27 @@ paths:
           description: Bearer <access_token>
           required: true
       description: |-
-        # Get voiceapp by ID
+        # Get voice app by ID
 
-        Get the properties of a specific voiceapp using its unique `app_id` i.e. `GET https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}`.
+        Get the properties of a specific voice app using its unique `app_id` i.e. `GET https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}`.
 
-        The response contains a JSON representation of the app's properties. The properties in the response will vary based on the type of voiceapp.
+        The response contains a JSON representation of the app's properties. The properties in the response will vary based on the type of voice app.
     put:
-      summary: Update voiceapp by ID
+      summary: Update voice app by ID
       operationId: update-account-voiceappid
       responses:
         '200':
           $ref: '#/components/responses/Voiceapp-response'
       description: |
-        # Update voiceapp by ID
+        # Update voice app by ID
 
-        Voice apps can be updated by issuing a PUT to the account. For example, `PUT https://public-api.sonetel.com/account/YOUR_ACCOUNT_ID/voiceapp/VOICEAPP_ID`.
+        Voice apps can be updated by issuing a PUT to the `/voiceapp` resource. For example, `PUT https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}`.
 
-        The voiceapp's name, voice, actions, etc can be updated. A list of the properties that can be updated is given below. Please note that not all the properties are available in the all the voiceapps. Some of them will only be available in specific apps such as `sysprompt` or `mailbox`.
+        The voice app's name, voice, actions, etc can be updated. A list of the properties that can be updated is given below.
 
-        A successfull response will return the updated resource.
+        > Not all the properties are available in the all the voice apps. Some of them will only be available in specific apps such as `sysprompt` or `mailbox` - this is mentioned in the property's description.
+
+        A successful response will return the updated resource.
       requestBody:
         content:
           application/json:
@@ -184,7 +192,7 @@ paths:
           description: application/json
           required: true
     delete:
-      summary: Delete a voiceapp
+      summary: Delete a voice app
       operationId: delete-account-voiceappid
       parameters:
         - schema:
@@ -193,14 +201,12 @@ paths:
           name: Authorization
           description: Bearer <access_token>
       description: |-
-        # Delete a voiceapp
+        # Delete a voice app
 
         Voice apps can be deleted by issuing a DELETE to the voiceapp resource i.e. `DELETE https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}`
 
         <!-- theme: warning -->
-        > Deleting a voiceapp is permanent.
-        > 
-        > It is not possible to restore voiceapps once they are deleted.
+        > Deleting a voice app is permanent. It is not possible to restore voice apps once they are deleted.
       responses:
         '200':
           description: OK
@@ -314,9 +320,9 @@ paths:
 
         At the moment, it is only possible to update the name of a prompt.
 
-        > The voice message played by the prompt can be updated by issuing a POST request to the `/prompt/{promptid}/message` endpoint.
+        > The voice message played by the prompt can be updated by issuing a POST request to the `/prompt/{promptid}/message` endpoint. This is described in detail in the section **Add custom message to a prompt**.
     delete:
-      summary: Delete prompt
+      summary: Delete a custom prompt
       operationId: delete-voiceapp-promptid
       responses:
         '200':
@@ -358,9 +364,9 @@ paths:
           description: Bearer <access_token>
           required: true
       description: |-
-        # Delete prompt
+        # Delete a custom prompt
 
-        Prompts can be deleted by issuing a DELETE to the prompt resource, either using the full URL or the short URL.
+        Custom prompts can be deleted by issuing a DELETE to the prompt resource, either using the full URL or the short URL.
 
         To delete using the full path URL use:
         `DELETE https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}/prompt/{promptid}`
@@ -373,7 +379,7 @@ paths:
         > It is not possible to delete standard prompts.
   '/account/{accountid}/voiceapp/{voiceappid}/prompt':
     post:
-      summary: Create new prompt under a voiceapp
+      summary: Create a custom prompt
       operationId: post-user
       responses:
         '200':
@@ -386,18 +392,46 @@ paths:
             examples: {}
         description: ''
       description: |-
-        # Create new prompt under a voiceapp
+        # Create a custom prompt
 
-        You can create one or more custom prompts under a voiceapp.
+        You can create one or more custom prompts under a voice app.
 
-        The voice message associated with a prompt can be setup in different ways. You can upload an audio file with the voice message, record the voice message by calling in to the recording service or use our paid text-to-speech service.
+        When creating the prompt, you can only specify its name. The voice message linked to it must be added afterwards.
+
+        The voice message associated with a prompt can be setup in different ways. You can upload an audio file with the voice message, record the voice message by calling in to the recording service (*22) or use our paid text-to-speech service.
 
         Creating a prompt and associating a voice message to it is a as a two-step process:
 
-        1. The first step involves creation of the prompt resource and setting its properties. At this stage, the prompt does not have any voice message associated to it and is not usable in the voiceapp. This is done by issuing a POST to the prompt resource. The prompt's name must be specified as a parameter in the request.
-        2. To upload the voice file, you can issue a POST to the message URL i.e. `https://public-api.sonetel.com/prompt/{promptid}/message` along with the file in the body.
+        1. The first step involves creation of the prompt resource. This is done by issuing a POST to the prompt resource. The prompt's name must be specified as a parameter in the request.<br>At this stage, the prompt does not have any voice message associated to it and is not usable in the voice app.
+        2. To attach a voice message to the prompt, you can either upload a pre-recorded wav file or dial *22 from your Sonetel account, enter the `record_id` of the prompt and record it.
 
-        > The message file to be uploaded should be a .WAV file, PCM uncompressed, 16 bit with a maximum size of 10 mb, and passed as a `multipart/form-data` object.
+        #### Upload file format
+        The message file to be uploaded should be a .WAV file, PCM uncompressed, 16 bit with a maximum size of 10 mb, and passed as a `multipart/form-data` object.
+
+        Here is an example of how to create a custom prompt and upload a pre-recorded .wav file.
+
+        #### Step 1 - create prompt
+
+        ```c
+        curl \
+          --location \
+          --request POST 'https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}/prompt?name=My Brand New Prompt' \
+          --header 'Authorization: Bearer <ACCESS_TOKEN>'
+        ```
+
+        > A success response will return the JSON representation of the newly created prompt. Make a note of the `prompt_id` for use in step 2.
+
+        #### Step 2 - upload voice message
+
+        ```c
+        curl \
+          --location \
+          --request POST 'https://public-api.sonetel.com/prompt/{promptid}/message' \
+          --header 'Accept: application/json, text/plain, */*' \
+          --header 'Authorization: Bearer <ACCESS_TOKEN>' \
+          --header 'Content-Type: multipart/form-data; boundary={boundary_id}'
+          --form 'file=@"{/path/to/file}"'
+        ```
       parameters:
         - schema:
             type: string
@@ -429,7 +463,7 @@ paths:
 
         A prompt represents a voice message in a voice app such as the welcome message in an IVR.
 
-        Use this endpoint to get a list of all the prompts associated with a voiceapp as shown in the example below.
+        Use this endpoint to get a list of all the prompts associated with a voice app as shown in the example below.
 
         Request:
         ```c
@@ -502,9 +536,13 @@ paths:
         '200':
           $ref: '#/components/responses/List-prompt'
       description: |
-        Use this endpoint to add a voice message to a newly created prompt or update an existing prompt linked to a voiceapp.
+        Use this endpoint to add a voice message to a newly created prompt or update an existing prompt linked to a voice app.
 
         To upload the message, issue a POST request to `/prompt/{promptid}/message` with the Content-Type as `multipart/form-data`.
+
+        > #### File Format
+        >
+        > The message file to be uploaded should be a .WAV file, PCM uncompressed, 16 bit with a maximum size of 10 mb, and passed as a `multipart/form-data` object.
 
         You can get the `promptid` by issuing a GET request to the `/account/{accountid}/voiceapp/{voiceappid}/prompt` endpoint.
 
@@ -1152,7 +1190,11 @@ components:
                         description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s `user_id`.'
               tts_allowed:
                 type: string
-                minLength: 1
+                description: This is a read-only flag which indicates whether TTS  functionality is allowed on this voice-app or not.
+                enum:
+                  - 'yes'
+                  - 'no'
+                readOnly: true
           examples:
             IVR:
               value:
@@ -1537,7 +1579,11 @@ components:
                           type: string
                 tts_allowed:
                   type: string
-                  minLength: 1
+                  description: This is a read-only field which indicates whether TTS  functionality is allowed on this voice-app or not.
+                  enum:
+                    - 'yes'
+                    - 'no'
+                  readOnly: true
                 error_voice:
                   type: string
                   description: The voice that applies for playing system messages. This field applies in case the app_type is “sysprompt”.
