@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
   title: Phone Numbers
-  version: '1.0'
-  summary: Endpoints for getting details of phone number stock
-  description: |-
+  version: '2.0'
+  summary: Buy new numbers and manage your existing phone number subscription
+  description: |
     These API endpoints allow you to change the settings for your existing phone numbers, browse our available phone number stock, purchase new phone numbers and remove numbers from your account.
 
     ## Manage your numbers
@@ -16,29 +16,16 @@ info:
 
     ## Order new numbers
 
-    Need a new phone number? Use the [/country](Number%20Management.yaml/paths/~1country/get), [/numberstocksummary](Number%20Management.yaml/paths/~1numberstocksummary~1{country}/get) and [/availablephonenumber](Number%20Management.yaml/paths/~1numberstocksummary~1{country}~1availablephonenumber/get) resources to have a look at the available phone number stock.
+    Need a new phone number? Use the [/country](Phone%20Numbers.yaml/paths/~1country/get), [/numberstocksummary](Phone%20Numbers.yaml/paths/~1numberstocksummary~1{country}/get) and [/availablephonenumber](Phone%20Numbers.yaml/paths/~1numberstocksummary~1{country}~1availablephonenumber/get) resources to have a look at the available phone number stock.
 
-    Once you have identified a suitable phone number, use the [/phonenumbersubscription](Number%20Management.yaml/paths/account~1{accountid}~1phonenumbersubscription/post) endpoint to purchase it.
+    Once you have identified a suitable phone number, use the [/phonenumbersubscription](Phone%20Numbers.yaml/paths/account~1{accountid}~1phonenumbersubscription/post) endpoint to purchase it.
 
     > Browsing the available phone number stock does not require authentication. However, you will need to provide your [access_token](Authentication.yaml/paths/~1oauth~1token/post) to use the phone number subscription endpoints.
-
-
-    ## List of operations supported
-
-    The number management API endpoints support the following operations:
-
-    1. [Get my subscribed numbers](Number%20Management.yaml/paths/account~1{accountid}~1phonenumbersubscription/get)
-    2. [Buy a number](Number%20Management.yaml/paths/account~1{accountid}~1phonenumbersubscription/post)
-    3. [Return number](Number%20Management.yaml/paths/account~1{accountid}~1phonenumbersubscription~1{phnum}/delete)
-    4. [Get my number details](Number%20Management.yaml/paths/account~1{accountid}~1phonenumbersubscription~1{phnum}/get)
-    5. [Change call forwarding](reference/Number%20Management.yaml/paths/account~1{accountid}~1phonenumbersubscription~1{phnum}/put)
-    6. [Inventory - Number support in countries](Number%20Management.yaml/paths/~1country/get)
-    7. [Inventory - Summary of number stock](Number%20Management.yaml/paths/~1numberstocksummary~1{country}/get)
-    8. [Inventory - Available numbers in a country](Number%20Management.yaml/paths/~1numberstocksummary~1{country}~1availablephonenumber/get)
+  termsOfService: 'https://sonetel.com/en/help/help-topics/terms-conditions/terms-conditions/'
+  contact:
+    email: api.support@sonetel.com
 servers:
-  - url: 'https://chat-api.sonetel.com'
-    description: Staging
-  - url: 'https://beta-api.sonetel.com/'
+  - url: 'https://public-api.sonetel.com/'
     description: Production
 paths:
   /country:
@@ -57,15 +44,13 @@ paths:
 
         It allows you to filter the response by number type, country name, phone number support and other properties listed below.
 
-        To filter the response just add one or more of the query parameters to the API call. For example, to get a list of all the countries from where we offer mobile numbers use `/country?type=mobile`.
+        To filter the response just add one or more of the query parameters to the API call. For example, to get a list of all the countries from where we offer mobile numbers use `GET /country?type=mobile`.
 
-        This endpoint does not return information about the available stock. Use `/numberstocksummary` and `/availablephonenumber` to get the details such as how many numbers are available, what do they cost and the actual list of phone numbers.
+        This endpoint does not return information about the actual phone numbers available for purchase. Use `/numberstocksummary` and `/availablephonenumber` endpoints to get the details such as how many numbers are available, what do they cost and the actual list of phone numbers.
       parameters:
         - schema:
             type: string
             example: 'GBR, DEU, USA'
-            minLength: 3
-            maxLength: 3
           in: query
           name: country
           description: The three letter country ISO code.
@@ -132,7 +117,7 @@ paths:
 
         The `/numberstocksummary` endpoint, provides the count of phone numbers available in stock in different countries. It does not return the actual numbers themselves.
 
-        Specific phone numbers and their details can be fetched using the [/availablephonenumber](Number%20Management.yaml/paths/~1numberstocksummary~1{country}~1availablephonenumber/get) endpoint.
+        Specific phone numbers and their details can be fetched using the `/availablephonenumber` endpoint.
 
         The stock information includes a list of one of more area code information blocks in a country with each block carrying data about the count of phone number.
 
@@ -210,7 +195,7 @@ paths:
           in: query
           name: freeplan
           description: Limit the search to numbers that are available for free with Premium.
-  'account/{accountid}/phonenumbersubscription':
+  '/account/{accountid}/phonenumbersubscription':
     parameters:
       - schema:
           type: string
@@ -371,7 +356,7 @@ paths:
 
         A number subscription resource represents a phone number that you have purchased from or ported to Sonetel, or is available for free testing in your account.
 
-        To buy a phone number from Sonetel via the API, you can create a phone number subscription by issuing a POST request to the `/phonenumbersubscription` endpoint. [Read more](post).
+        To buy a phone number from Sonetel via the API, you can create a phone number subscription by issuing a POST request to the `account/{accountid}/phonenumbersubscription` endpoint. [Read more](post).
 
         At the time of purchase, or later via an update, you can choose how the incoming calls to it should be handled. For example, you can specify whether calls should be sent to a mobile number, SIP address or your voicemail box.
       parameters:
@@ -399,16 +384,16 @@ paths:
 
         A phone number subscription is created when a phone number is assigned to your Sonetel account.
 
-        To purchase a new number, issue a POST to the `/phonenumbersubscription` resource and mention the phone number in the body in the `phnum` field.
+        To purchase a new number, issue a POST to the `/account/{accountid}/phonenumbersubscription` resource and mention the phone number in the body in the `phnum` field.
 
         <!-- theme: warning -->
         > If you do not specify the `connect_to` and `connect_to_type` properties while purchasing the number, it will not be connected to any destination by default and incoming calls to it will not work.
 
         The charges for the phone number are debited from your Sonetel prepaid account when the number is successfully assigned to you. You can add credit to your prepaid account from [app.sonetel.com](https://app.sonetel.com/account-settings/prepaid-account).
 
-        > Use the [/account]() endpoint to check whether you have enough prepaid credit to purchase the phone number.
+        > Use the `/account` endpoint to check whether you have enough prepaid credit to purchase the phone number.
 
-        To find a phone number that you want to buy, you can use [/numberstocksummary](Number%20Management.yaml/paths/~1numberstocksummary~1{country}/get) and [/availablephonenumber](Number%20Management.yaml/paths/~1numberstocksummary~1{country}~1availablephonenumber/get) resources.
+        To find a phone number that you want to buy, you can use `/numberstocksummary` and `/availablephonenumber` resources.
 
         The response carries the phone number subscription resource.
       requestBody:
@@ -457,7 +442,7 @@ paths:
           name: Authorization
           description: Bearer <ACCESS_TOKEN>
           required: true
-  'account/{accountid}/phonenumbersubscription/{phnum}':
+  '/account/{accountid}/phonenumbersubscription/{phnum}':
     parameters:
       - schema:
           type: string
@@ -524,17 +509,15 @@ paths:
 
         You can read more about this [at our website](https://sonetel.com/business-package/).
 
-        In order to upgrade your phone numbe from the standard package to the business package, issue a PUT request as indicated below:
+        In order to upgrade your phone number from the standard package to the business package, issue a PUT request as indicated below:
 
         ```c
         curl \
-          --location 
-          --request PUT 'https://chat-api.sonetel.com/account/200000000/phonenumbersubscription/14015550000' \
+          --location \
+          --request PUT 'https://public-api.sonetel.com/account/200000000/phonenumbersubscription/14015550000' \
           --header 'Content-Type: application/json' \
           --header 'Authorization: Bearer ACCESS_TOKEN' \
-          --data-raw '{
-            "package" : "business"
-          }'
+          --data-raw '{ "package" : "business" }'
         ```
 
         > A fee of $4.99 per month applies for each instance of business package enabled on your phone numbers. This is charged in addition to the `recurring_fee` of the phone number.
@@ -547,14 +530,14 @@ paths:
 
         | Destination | connect_to_type | connect_to |
         |--------------|-----------------|------------|
-        |a user|user| [UserId](Users.yaml/paths/~1user/get) of the user|
+        |a user|user| `UserId` of the user|
         |any mobile or landline number|phnum|the destination number in E164 format with '+'. For example, +14015550000|
         |SIP URI|sip|\[sip:\]sip_uri@domain_or_ip\[:port\]|
         |a voice app|app|`{ “app_type” : “ivr”, “app_id” : "UNIQUE_APP_ID" }`|
 
         **Note**:
-        1. To get the `userid` for all the users in your account, issue a GET request to the `/account/{accountid}/user` endpoint.
-        2. A list of all the voice apps in your account and their `app_id` can be fetched from `/account/{accountid}/voiceapp`
+        1. To get the `userid` for all the users in your account, use `GET /account/{accountid}/user`.
+        2. A list of all the voice apps in your account and their `app_id` can be fetched using `GET /account/{accountid}/voiceapp`
 
         > ### Connecting numbers to a voiceapp
         > 
@@ -587,9 +570,9 @@ paths:
       description: |-
         # Get my number details
 
-        Send a GET request  to the `/phonenumbersubscription/{phnum}` endpoint to see the details of a specific phone number assigned to your account.
+        Send a GET request  to the `/account/{accountid}/phonenumbersubscription/{phnum}` endpoint to see the details of a specific phone number assigned to your account.
 
-        Here `{phnum}` represents a phone number assigned to your account in the E164 format without the leading plus sign. For example, if the phone number is +1 (401) 555-0000, the API call will be `/account/{accountid}/phonenumbersubscription/14015550000`
+        Here `{phnum}` represents a phone number assigned to your account in the E164 format without the leading plus sign. For example, if the phone number is *+1 (401) 555-0000*, the API call will be `/account/{accountid}/phonenumbersubscription/14015550000`
 
         The response carries the phone number resource with its properties such as the destination it is connected to, the next date on which the subscription fee is due and so on.
       parameters:
@@ -619,7 +602,7 @@ paths:
         <!-- theme: warning -->
         > Please be careful when deleting subscriptions, it may not be possible to re-assign the phone number once it is removed from your account.
 
-        Issuing a DELETE request to the phone number resource immediately removes it from your Sonetel account. If you wish to return the number after the current subscription period is over, you can turn off the renewal instead.
+        Issuing a DELETE request to the phone number subscription immediately removes it from your Sonetel account. If you wish to return the number after the current subscription period ends, you can turn off the renewal instead.
 
         1. Sign in to your account from [app.sonetel.com](https://app.sonetel.com)
         2. Go to the [Phone numbers](https://app.sonetel.com/account-settings/phone-numbers) section.
@@ -632,25 +615,28 @@ paths:
               schema:
                 description: ''
                 type: object
-                properties:
-                  resource:
-                    type: string
-                    minLength: 1
-                  status:
-                    type: string
-                    minLength: 1
-                  response:
-                    type: string
-                    minLength: 1
-                required:
-                  - resource
-                  - status
-                  - response
                 x-examples:
                   example-1:
                     resource: phonenumbersubscription
                     status: success
                     response: Successfully removed subscription of phone number 14012233433 from account 206497932
+                properties:
+                  resource:
+                    type: string
+                    minLength: 1
+                    description: Name of the resource that was accessed
+                  status:
+                    type: string
+                    minLength: 1
+                    description: The status of the request i.e. success or failed.
+                    enum:
+                      - success
+                      - failed
+                    readOnly: true
+                  response:
+                    type: string
+                    minLength: 1
+                    description: The response from the API.
               examples:
                 Example:
                   value:
@@ -918,16 +904,6 @@ components:
         page_metadata:
           type: object
           description: Pagination information in case the results span across more than 1 page.
-          required:
-            - pagination_type
-            - count
-            - page_count
-            - previous
-            - next
-            - page
-            - first
-            - last
-            - sort
           properties:
             pagination_type:
               type: string
@@ -964,12 +940,6 @@ components:
             sort:
               type: object
               description: Sort order of the results
-              required:
-                - property
-                - ignoreCase
-                - nullHandling
-                - descending
-                - ascending
               properties:
                 property:
                   type: string
@@ -1151,8 +1121,6 @@ components:
                           minLength: 1
                       required:
                         - dest_type
-                required:
-                  - delivery_methods
               plan_details:
                 type: object
                 description: The plan details of the number. Only the `next_renew_mode` can be updated
@@ -1195,13 +1163,6 @@ components:
                     minLength: 1
                     description: The cost of the next renewal. (upto 2 decimals)
                     readOnly: true
-                required:
-                  - current_renew_mode
-                  - next_renew_mode
-                  - activation_date
-                  - next_fee_date
-                  - deactivate_date
-                  - next_recurring_fee
               show:
                 type: string
                 minLength: 1
@@ -1288,57 +1249,6 @@ components:
                 enum:
                   - 'yes'
                   - 'no'
-            required:
-              - account_id
-              - country_code
-              - area_code
-              - country
-              - is_part_of_series
-              - range
-              - city
-              - type
-              - one_time_fee
-              - recurring_fee
-              - recurrence_interval
-              - per_call_fee
-              - per_min_fee
-              - charge_interval
-              - per_sms_fee
-              - per_fax_fee
-              - currency
-              - price_category
-              - connect_to_type
-              - connect_to
-              - activation_date
-              - next_fee_date
-              - reclaim_date
-              - status
-              - status_desc
-              - freetest
-              - branded
-              - freeplan
-              - sms_enabled
-              - sms_supported
-              - phnum
-              - free_test_expiry_date
-              - show
-              - rule_set_id
-              - state
-              - addr_req
-              - addr_proof
-              - access_restrictions
-              - restrictions_desc
-              - cli_support
-              - business_pkg_support
-              - package
-              - call_recording_allowed
-              - voiceapp_connect
-              - csg_connect
-      required:
-        - page_metadata
-        - resource
-        - status
-        - response
     Single-phone-number-subscription:
       description: Represents a single phone number subscribed by an account
       type: object
@@ -1812,8 +1722,6 @@ components:
                           minLength: 1
                       required:
                         - dest_type
-                required:
-                  - delivery_methods
               plan_details:
                 type: object
                 description: The plan details of the number. Only the `next_renew_mode` can be updated
@@ -1856,13 +1764,6 @@ components:
                     minLength: 1
                     description: The cost of the next renewal. (upto 2 decimals)
                     readOnly: true
-                required:
-                  - current_renew_mode
-                  - next_renew_mode
-                  - activation_date
-                  - next_fee_date
-                  - deactivate_date
-                  - next_recurring_fee
               show:
                 type: string
                 minLength: 1
@@ -1954,56 +1855,6 @@ components:
                 enum:
                   - 'yes'
                   - 'no'
-            required:
-              - account_id
-              - country_code
-              - area_code
-              - country
-              - is_part_of_series
-              - range
-              - city
-              - type
-              - one_time_fee
-              - recurring_fee
-              - recurrence_interval
-              - per_call_fee
-              - per_min_fee
-              - charge_interval
-              - per_sms_fee
-              - per_fax_fee
-              - currency
-              - price_category
-              - connect_to_type
-              - connect_to
-              - activation_date
-              - next_fee_date
-              - reclaim_date
-              - status
-              - status_desc
-              - freetest
-              - branded
-              - freeplan
-              - sms_enabled
-              - sms_supported
-              - phnum
-              - free_test_expiry_date
-              - show
-              - rule_set_id
-              - state
-              - addr_req
-              - addr_proof
-              - access_restrictions
-              - restrictions_desc
-              - cli_support
-              - business_pkg_support
-              - package
-              - call_recording_allowed
-              - voiceapp_connect
-              - csg_connect
-      required:
-        - resource
-        - status
-        - response
     Country-response:
       description: ''
       type: object
@@ -2036,6 +1887,7 @@ components:
               description: string
               currency: string
               time_zone: string
+      x-internal: true
       properties:
         resource:
           type: string
@@ -2080,20 +1932,6 @@ components:
               time_zone:
                 type: string
                 minLength: 1
-            required:
-              - country
-              - country_code
-              - vat_applicable
-              - vat_percent
-              - name
-              - description
-              - currency
-              - time_zone
-      required:
-        - resource
-        - status
-        - response
-      x-internal: true
   responses:
     Phnum-GET:
       description: Represents a single phone number resource
@@ -2563,19 +2401,6 @@ components:
                       type: string
                       minLength: 1
                       description: The default timezone for accounts & users that set their location to this country.
-                  required:
-                    - country
-                    - country_code
-                    - vat_applicable
-                    - vat_percent
-                    - name
-                    - description
-                    - currency
-                    - time_zone
-            required:
-              - resource
-              - status
-              - response
           examples:
             /country?country=GBR:
               value:

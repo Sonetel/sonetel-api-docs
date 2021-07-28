@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Authentication
-  version: '1.0'
+  version: '2.0'
   summary: Auth API allows the user to generate the JWT token
   description: |-
     All API requests that deal with private data such as user details, phone number subscriptions and so on require authentication in the form of a [bearer token](https://www.oauth.com/oauth2-servers/differences-between-oauth-1-2/bearer-tokens/).
@@ -36,6 +36,8 @@ info:
       --form 'refresh=yes' \
       --form 'username=YOUR_SONETEL_USERNAME'
     ```
+
+    > **Tip**: In Linux, pipe the output of the above command to `python -m json.tool` to pretty print the JSON response.
 
     <!--
     type: tab
@@ -91,7 +93,6 @@ info:
 
     <!-- type: tab-end -->
 
-    > **Tip**: In Linux, pipe the output of the above command to `python -m json.tool` to pretty print the JSON response.
 
     ### Successful response
     A successful request will return the access token, as well as a refresh token.
@@ -136,8 +137,8 @@ info:
     ```c
     curl \
       --request GET \
-      --url 'https://beta-api.sonetel.com/account/YOUR_ACCOUNT_ID' \
-      --header 'Authorization: Bearer YOUR_ACCESS_TOKEN'
+      --url 'https://public-api.sonetel.com/account/YOUR_ACCOUNT_ID' \
+      --header 'Authorization: Bearer <ACCESS_TOKEN>'
     ```
 
     <!--
@@ -148,10 +149,10 @@ info:
     ```python
     import requests
 
-    url = "https://beta-api.sonetel.com/account/YOUR_ACCOUNT_ID"
+    url = "https://public-api.sonetel.com/account/YOUR_ACCOUNT_ID"
 
     headers = {
-      'Authorization': 'Bearer YOUR_ACCESS_TOKEN'
+      'Authorization': 'Bearer <ACCESS_TOKEN>'
     }
 
     response = requests.request("GET", url, headers=headers)
@@ -162,11 +163,13 @@ info:
         print(response.text)
     ```
     <!-- type: tab-end -->
+  termsOfService: 'https://sonetel.com/en/help/help-topics/terms-conditions/terms-conditions/'
+  contact:
+    name: Sonetel API Support
+    email: api.support@sonetel.com
 servers:
   - url: 'https://api.sonetel.com/SonetelAuth/beta/'
     description: Production
-  - url: 'https://chat-api.sonetel.com/SonetelAuth/1.3'
-    description: Staging
 paths:
   /oauth/token:
     parameters: []
@@ -340,10 +343,13 @@ components:
     grant_type:
       name: grant_type
       in: header
-      required: false
+      required: true
       schema:
         type: string
-      description: Takes the value password for the field
+        enum:
+          - password
+          - refresh_token
+      description: Type of grant such as password or refresh_token.
   examples: {}
 security:
   - 'sonetel-conversations:sonetel-conversations': []

@@ -3,7 +3,7 @@
 To keep the API consistent, there are certain general format definitions and principles followed. These are listed here.
 
 ## ISO Standards
-- Countries are specified using the standard ISO codes as per [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1 "ISO 3166-1").
+- Countries are specified using the standard ISO codes as per [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3 "ISO 3166-1").
 - Currencies are specified as per the standard [ISO 4217](https://www.iso.org/iso-4217-currency-codes.html "ISO 4217").
 - All time values used in filters and properties are specified in GMT only. The time format is used as per [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601 "ISO 8601"). The basic time format is the default format i.e. ```YYYYMMDDThh:mm:ssZ```.
 
@@ -24,11 +24,11 @@ To keep the API consistent, there are certain general format definitions and pri
 
 - **Multi-value filters**: Filters are used while performing searches. The filters are normally passed as query string parameters in the url.
   - In certain cases, it is required that multiple values can be passed for a single filter field.
-  - For example let's assume that a search requires getting all resources that have the  property ```area_code``` with values either 747 or 515. In such cases, the values can be passed in the URL as a comma separated list i.e. ```https://api.sonetel.com/numberstocksummary/USA?area_code=747,515```
+  - For example let's assume that a search requires getting all resources that have the  property ```area_code``` with values either 747 or 515. In such cases, the values can be passed in the URL as a comma separated list i.e. ```https://public-api.sonetel.com/numberstocksummary/USA?area_code=747,515```
 - **String wild-card search**: Some filters support wild-card search.
   - This is normally common for string based searches such as account names, user names, country name etc.
   - The wild card character used is asterisk `*` and a minimum of 3 characters are required to be provided for the search, unless explicitly specified in the filter definition.
-  - For e.g. to search for all countries whose names start with “united”, use `name=united*` i.e. `https://api.sonetel.com/country?name=united*`
+  - For e.g. to search for all countries whose names start with “united”, use `name=united*` i.e. `https://public-api.sonetel.com/country?name=united*`
   - Wild card searches are case-insensitive.
 - Boolean or flags in query strings in the urls always use “yes” or “no”, unless explicitly specified. For e.g. `parameter=yes`.
 - Unknown parameters in urls are ignored while processing requests.

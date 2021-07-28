@@ -1,42 +1,29 @@
 openapi: 3.1.0
 info:
   title: Users
-  version: '1.0'
+  version: '2.0'
   summary: User API
-  description: |-
+  description: |
     Every user in your account is available as a resource via the API. All users have a unique identity, a userId, which can be used to access this resource as well as other resources that are linked to the user.
 
     Users can be fetched, created, updated and deleted via the API. Users can also be searched using filters such as email address and their names.
 
-    Use this collection of `/user` API endpoints to manage your user accounts.
-
-    ## Types of users
+    ### Types of users
 
     You can add two types of users to your Sonetel account:
 
     1. **Admin** - has access to all functions in an account such as making payments, adding/removing other users, managing phone numbers and so on.
     2. **Regular** - has limited access to your account. They can only manage their call settings and other personal details. They cannot manage other users, voice apps or your phone numbers.
 
-    When an account is created, a default admin user is automatically created as part of the account creation. There is always, at-least, one admin user in an account.
+    When an account is created, a default admin user is automatically created. There must always be at-least one admin user in an account.
 
     Both admin and regular users have access to our web and mobile [apps](https://sonetel.com/en/help/help-topics/getting-started/how-can-i-get-started/). They can use these apps to make calls, handle incoming customer chat or communicate internally with other team members.
-
-
-    ## Operations supported
-
-    This endpoint currently supports the following operations:
-
-    1. [List all users](Users.yaml/paths/~1account~1{accountid}~1user/get)
-    2. [Add new user](Users.yaml/paths/~1account~1{accountid}~1user/post)
-    3. [Get user profile](Users.yaml/paths/~1account~1{accountid}~1user~1{userid}/get)
-    4. [Update user profile](Users.yaml/paths/~1account~1{accountid}~1user~1{userid}/put)
-    5. [Delete a user](Users.yaml/paths/~1account~1{accountid}~1user~1{userid}/delete)
-    6. [Update call settings](Users.yaml/paths/~1account~1{accountid}~1user~1{userid}~1call/post)
-  contact: {}
+  contact:
+    name: Sonetel API Support
+    email: api.support@sonetel.com
+  termsOfService: 'https://sonetel.com/en/help/help-topics/terms-conditions/terms-conditions/'
 servers:
-  - url: 'https://chat-api.sonetel.com'
-    description: Staging
-  - url: 'https://beta-api.sonetel.com'
+  - url: 'https://public-api.sonetel.com'
     description: Production
 paths:
   '/account/{accountid}/user':
@@ -78,7 +65,7 @@ paths:
                   password: pa$$word
                   type: admin
         description: ''
-      description: |
+      description: |-
         # Add new user
 
         Add a new user to your account by issuing a POST request to the `/user` endpoint.
@@ -89,9 +76,9 @@ paths:
 
         You can optionally include the `"type" : "admin"` property as well if you wish to add a new admin user.
 
-        ## User settings
+        ### User settings
 
-        Some of the user's preferences can be modified 
+        Some of the user's preferences can be set while creating the account. For example, you can set the user's call settings or their location. 
       parameters:
         - schema:
             type: string
@@ -170,6 +157,7 @@ paths:
                   status:
                     type: string
                     minLength: 1
+                    description: Status of the request
                   response:
                     type: array
                     uniqueItems: true
@@ -188,8 +176,6 @@ paths:
                           type: string
                           minLength: 1
                           description: Three letter ISO code of the user's account language.
-                        auto_translate:
-                          type: boolean
                         language_id:
                           type: number
                           description: An internal numeric code of the user's account language.
@@ -249,28 +235,6 @@ paths:
                         notifications:
                           type: number
                           description: Number of unread notifications for the user.
-                      required:
-                        - user_fname
-                        - max_conversations
-                        - language
-                        - auto_translate
-                        - language_id
-                        - title
-                        - type
-                        - user_lname
-                        - tags
-                        - password_status
-                        - account_id
-                        - user_jid
-                        - sonetel-id
-                        - user_id
-                        - company_name
-                        - created_date
-                        - email
-                        - notifications
-                required:
-                  - status
-                  - response
               examples:
                 Example:
                   value:
@@ -327,7 +291,6 @@ paths:
         To search for a specific user, add one of the query parameters listed below. For example, to search for a user whose email address contains the word 'manager' use `/account/{accountid}/user?email=manager`
       security:
         - Production: []
-        - Staging: []
       parameters:
         - schema:
             type: string
@@ -405,7 +368,7 @@ paths:
 
         ```c
         curl \
-          --location --request PUT 'https://beta-api.sonetel.com/account/{accountid}/user/{userid}' \
+          --location --request PUT 'https://public-api.sonetel.com/account/{accountid}/user/{userid}' \
           --header 'Content-Type: application/json' \
           --header 'Authorization: Bearer ACCESS_TOKEN' \
           --data-raw '{"title":"USER_TITLE"}'
@@ -413,6 +376,8 @@ paths:
 
 
         A success response will contain the updated user resource.
+
+        > To update the user's call settings, use the `/account/{accountid}/user/{userid}/call` endpoint instead.
       requestBody:
         content:
           application/json:
@@ -472,7 +437,7 @@ paths:
 
         You will need the user's unique ID in order to delete their account.
 
-        If a phone number is connected to the user, please ensure that it is conncted to a different user or location otherwise incoming calls will not work once the user is deleted.
+        If a phone number is connected to the user, please ensure that it is conncted to a different destination otherwise incoming calls will not work once the user is deleted.
 
         <!-- theme: danger -->
         > Once a user has been deleted, it is impossible to restore their account or the user settings.
@@ -614,7 +579,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User-Call-Settings'
-      description: Issue a GET request to the /call endpoint in order to fetch the user's current call settings.
+      description: |-
+        Issue a GET request to the this endpoint in order to fetch the user's current call settings i.e. what happens when a user receives an incoming phone call or makes an outgoing call.
+
+        This includes settings that define what phones should ring, for how many seconds, and what caller-Id should be sent to the phones.
+
+        This is described in detail in the 'Update call settings' section.
       parameters:
         - schema:
             type: string
@@ -973,16 +943,16 @@ components:
       description: ''
       type: object
       x-examples:
-        example-1:
-          user_fname: Henrik
+        Example:
+          user_fname: John
           max_conversations: 2
           numbers:
             - number_type: e.164
-              number: '13477081610'
+              number: '13475550000'
             - number_type: e.164
-              number: '46852506011'
+              number: '46852500000'
           phones:
-            - phnum: '+46708956010'
+            - phnum: '+46708000000'
               phone_type: regular
               phone_name: Mobile
               receive_calls: 'yes'
@@ -993,14 +963,14 @@ components:
           language_id: 41
           title: CEO and Founder
           type: admin
-          user_lname: Thome
+          user_lname: Doe
           tags: phonenumber
           location:
             country: SWE
             area_code: '8'
             timezone: null
             timezone_id: 4
-          email: henrik@sonetel.com
+          email: user@example.com
           notifications: 0
       properties:
         user_fname:
@@ -1120,6 +1090,7 @@ components:
           response: {}
           resource: Resource name
           status: success
+      x-internal: true
     User-Response:
       description: ''
       type: object
@@ -1148,6 +1119,7 @@ components:
         status:
           type: string
           minLength: 1
+      x-internal: true
     User-Call-Settings:
       description: The object that defines the user's call settings
       type: object
@@ -1292,13 +1264,5 @@ components:
           tokenUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
           refreshUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
       description: ''
-    Staging:
-      type: oauth2
-      flows:
-        password:
-          tokenUrl: 'https://chat-api.sonetel.com/SonetelAuth/1.3/oauth/token'
-          refreshUrl: 'https://chat-api.sonetel.com/SonetelAuth/1.3/oauth/token'
-          scopes: {}
 security:
   - Production: []
-  - Staging: []

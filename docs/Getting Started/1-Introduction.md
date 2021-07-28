@@ -10,10 +10,10 @@ The current version of the API supports the following.
 
 Function | Description |
 |---------|---------|
-| [Account](../../account.yaml) | View & manage your Sonetel account details |
+| [Account](../../reference/account.yaml) | View & manage your Sonetel account details |
 | [Authentication](../../reference/Authentication.yaml) | Generate tokens that your applications can use to access the resources in your account.
 | [Make calls](../../reference/Make%20calls.yaml) | Make callback calls using your Sonetel account.|
-| [Phone numbers](../../reference/Number%20Management.yaml) | Manage your existing phone numbers or purchase new ones. |
+| [Phone numbers](../../reference/Phone%20Numbers.yaml) | Manage your existing phone numbers or purchase new ones. |
 | [Recorded Calls](../../reference/Recorded%20Calls.yaml) | Manage your call recordings |
 | [Users](../../reference/Users.yaml) | Manage your user accounts, change their call settings and so on.| 
 
@@ -31,15 +31,14 @@ Read more about [how to authenticate your API requests](../../reference/Authenti
 
 Sonetel offers separate sandbox and production environments to help you develop your application without affecting your production data.
 
-These environments can be accessed at the following URIs:
-- Sandbox - https://chat-api.sonetel.com/
-- Production - https://beta-api.sonetel.com/
+These environments can be accessed at the following URI:
+- Production - https://public-api.sonetel.com/
 
 ## How to find your account ID?
 
 You will need your account ID in order to access most resources linked to your account such as phone numbers and users.
 
-Issue a `GET` request to `https://beta-api.sonetel.com/account/` with your [access token](../reference/Authentication.yaml/post). The response object contains the basic details about your account including the account_id.
+Issue a `GET` request to `https://public-api.sonetel.com/account/` with your [access token](../../reference/Authentication.yaml/paths/~1oauth~1token/post). The response object contains the basic details about your account including the account_id.
 
 ```json
 {
@@ -55,7 +54,7 @@ Issue a `GET` request to `https://beta-api.sonetel.com/account/` with your [acce
         "address": "Address line 1",
         "address2": "address line 2",
         "city": "Stockholm",
-        "zipcode": "114 12",
+        "zipcode": "114 11",
         "country": "SWE",
         "credit_balance": "5.04",
         "timezone": "GMT +01:00",
