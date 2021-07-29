@@ -1,58 +1,89 @@
 openapi: 3.1.0
 info:
   title: Manage voice apps
-  version: '1.0'
-  summary: Manage voiceapps under a Sonetel account
+  version: '2.0'
+  summary: Manage voice apps under a Sonetel account
   description: |-
     # Manage voice apps
 
     Voice applications in your account can be managed using the `/account/{accountid}/voiceapp` resource.
 
-    You can not only create new voice apps but also customize default apps, add your voice messages and much more. In case of IVRs, you can also change the action taken when the caller selects an option from the main menu i.e. connect the call to a user, forward to a SIP address or connect to another voice app.
+    You can not only create new voice apps but also customize default apps, add your voice messages and much more. In case of IVRs, you can also change the action taken when the caller selects an option from the main menu i.e. connect the call to a phone number, forward to a user, SIP address or another voice app.
 
-    Every voice app has a `voice` field, which determines its properties such as language and accent played to callers when interacting with it.
+    Every voice app has a `voice` field, which controls the language, accent and gender of the voice that the callers hear when interacting with it. For example, if you wish to play the messages in English but with a UK accent, you can set the `voice` property to `en-uk-fe`.
 
-    Sonetel provides ready-made voices that can be used in your voiceapp. Additionally, messages in a voice app can be customized by replacing the default messages with your own messages. When an account is created, two default voice apps, an ivr and voicemail are automatically created.
+    Sonetel provides ready-to-use default messages that can be used in your voice app. Additionally, messages in a voice app can be customized by replacing the default messages with your own. When an account is created, two default voice apps, an ivr and voicemail are automatically created.
 
-    ### Type of voiceapps
+    ### Type of voice apps
 
     At the moment the following type of voice apps can be managed using the API:
 
-    Voiceapp types | Description
+    Voice app types | Description
     --------------|------------
     ivr | An Interactive Voice Response app allows you to play a set of pre-recorded messages to your callers. It provides the callers with multiple options such as "*Select 1 for sales, 2 for support...*".<br>You can choose what action to take when the caller selects each option from 0 - 9.
     mailbox | This is a voicemail box that is available on an account level i.e. it can be used for a team or department in your company.<br>For example, if you have a separate phone number for the Sales team, then it can be connected to the sales voicemail box and the email sent to a common email address such as sales@example.com.
     sysprompt | These are error prompts played when an invalid action takes place, for example the caller selects an invalid option in the IVR.
 
-    > #### Announcements
-    >
-    > On our [web app](https://app.sonetel.com), you will find *Announcements* as another voice app type. It is a special type of IVR that only plays the welcome message before connecting the caller to the destination - the main menu is disabled.
-    >
-    > Announcements are useful when you want to play a short message before connecting the call to a destination. For example, before the incoming call is forwarded to your mobile phone, you want the caller to hear "Welcome to Company name, please wait while we connect your call".
+    #### Announcements
 
-    ### Connect phone numbers to voiceapp
+    On our [web app](https://app.sonetel.com), you will find *Announcements* as another voice app type. It is a special type of IVR that only plays the welcome message before connecting the caller to the destination - the main menu is disabled by default.
+     
+    Create an announcement by adding a new IVR where `play_menu` & `get_extension` are disabled and the `final_action` is set to handle the call as required (i.e. connect to your mobile, a user, etc).
 
+    Announcements are useful when you want to play a short message before connecting the call to a destination. For example, before the incoming call is forwarded to your mobile phone, you want the caller to hear "Welcome to Company name, please wait while we connect your call".
+
+    ### Connect calls to a voice app
+     
     To connect your phone number to a voice app, you can issue a PUT request to `/account/{accountid}/phonenumbersubscription/{phnum}` and change the destination to `app`. Please refer to the "Update number settings" endpoint under **Phone numbers** for more information.
 
-    <!-- theme: warning -->
+    > **Important**
+    > 
     > Only phone numbers that have the [business package](https://sonetel.com/business-package/) enabled or that are free with [Premium](https://sonetel.com/premium) can be connected to voice apps.
+
+    #### Connect phone numbers outside Sonetel to voice app
+
+    To use a voice app with a phone number not part of your Sonetel account, you can use the voice app's SIP URI.
+
+    Issue a GET request to `/voiceapp` endpoint, the response contains the `sip_address` property that can be used to connect calls to this app over SIP.
+
+    <!-- theme: warning -->
+    > The ability to connect to voice apps using their SIP address is currently unavailable. We hope to make it available in the near future.
 
     ### Prompts
 
-    A Prompt represents a voice message in a voice app. They can be created, retrieved, deleted and updated with the exception that voice apps have a set of default prompts that cannot be created or deleted.
+    A prompt represents a message played to a caller in a voice app. For example, when someone connects to a voicemail box, they hear the message "The person you are trying to call is currently unavailable...". This message that you hear is a prompt.
 
-    Each prompt has a unique `prompt_id`, through which it is referenced in the voice app. The `prompt_id` can be specified in the action properties in the voice app to have the voice message played under defined condition. For example, play (*action*) a specific prompt (*prompt_id*) when digit 3 is pressed (*condition*) by the user.
+    When a voice app, such as an IVR, is created it already has default prompts associated with it. This makes the voice app ready to use. However, if you wish to change the message in a default prompt, you can do so by replacing the default message with your own message.
+    On the other hand, if you wish to add a new prompt (let's say for a promotional offer) you can create a new prompt i.e. a "custom prompt" and add the required voice message to it.
 
-    #### Messages
-    Every prompt has a voice message associated with it. After the prompt has been created, a voice message file can be uploaded to the prompt. The uploaded file is then set as its voice message.
+    Each prompt has a unique `prompt_id`, through which it is referenced in the voice app.
 
-    Alternately, a voice message file can be recorded by calling in to the prompt recording function (*22) from your Sonetel account.
+    The `prompt_id` can be specified in the action properties in the voice app to have the voice message played under defined condition. For example, play (*action*) a specific prompt (*prompt_id*) when digit 3 is pressed (*condition*) by the user.
+
+    #### Voice message
+
+    A voice message is the main part of a prompt - it represents the actual audio that is played to the caller.
+
+    After the prompt has been created, a voice message file can be uploaded to the prompt. The uploaded file is then set as its voice message.
 
     When a voice app is created, default prompts in a voice app are automatically created along with it. For all default prompts, Sonetel provides standard pre-recorded voice messages. The `voice` setting in the voice app defines the language and the corresponding standard voice message that is played when the prompt is used.
 
-    For example, if you set the voice as `en`, the prompt that plays a welcome message to the caller, would play the audio message “Welcome” in an English, male voice. If you change the voice to “se”, the message changes to the equivalent message in a Swedish, male voice.
+    For example, in the voiceapp's properties if you set the `voice` to `en`, the prompt that plays a welcome message to the caller, would play the audio message in an English, male voice. If you change the voice to “se”, the message changes to the equivalent message in a Swedish, male voice.
+    <br>
+    ##### Record a voice message
 
-    > Default prompts can also be customized in the same way as regular prompts, by uploading a voice file or via the prompt recording function.
+    A voice message file can be changed by either calling in to the prompt recording function from your Sonetel account or simply uploading a pre-recorded audio file to the `/prompt` resource.
+
+    The instructions for uploading your pre-recorded messages are provided in the *Add custom message to a prompt* section.
+
+    To use the prompt recording function, you first need to connect to a SIP phone such as Zoiper. Once connected, follow these instructions:
+      1. Place a SIP call to the prompt's `record_path` which looks like `record#PROMPT_ID@prompts.sonetel.com`.
+      2. Start speaking after you hear a beep.
+      3. Once you have finished speaking, press # and follow the instructions to save the recorded message.
+
+    > To listen to a voice message, call the prompt's `play_path` from a SIP phone or download the audio file (.wav) from the `message_url`.
+
+    > Default prompts can also be customized in the same way as custom prompts, by uploading a voice file or via the prompt recording function.
   contact:
     name: Sonetel API Support
     email: api.support@sonetel.com
@@ -157,6 +188,12 @@ paths:
         Get the properties of a specific voice app using its unique `app_id` i.e. `GET https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}`.
 
         The response contains a JSON representation of the app's properties. The properties in the response will vary based on the type of voice app.
+
+        #### Get the app_id
+
+        To get the `app_id` of a specific voice app, issue a GET request to `/account/{accountid}/voiceapp`.
+
+        This will return a list of all the voice apps in your Sonetel account. 
     put:
       summary: Update voice app by ID
       operationId: update-account-voiceappid
@@ -203,7 +240,7 @@ paths:
       description: |-
         # Delete a voice app
 
-        Voice apps can be deleted by issuing a DELETE to the voiceapp resource i.e. `DELETE https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}`
+        Voice apps can be deleted by issuing a DELETE to the `/voiceapp` resource i.e. `DELETE https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}`
 
         <!-- theme: warning -->
         > Deleting a voice app is permanent. It is not possible to restore voice apps once they are deleted.
@@ -223,7 +260,7 @@ paths:
                 properties:
                   resource:
                     type: string
-                    description: Name of the resource accessed. For example voiceapp.
+                    description: Name of the resource accessed. For example `voiceapp`.
                     readOnly: true
                   status:
                     type: string
@@ -242,141 +279,6 @@ paths:
                     resource: voiceapp
                     status: success
                     response: Voice App deleted successfully
-  '/account/{accountid}/voiceapp/{voiceappid}/prompt/{promptid}':
-    parameters:
-      - schema:
-          type: string
-        name: accountid
-        in: path
-        required: true
-        description: Your Sonetel account ID
-      - schema:
-          type: string
-        name: voiceappid
-        in: path
-        required: true
-        description: Unique ID of the voiceapp you wish to manage
-      - schema:
-          type: string
-        name: promptid
-        in: path
-        required: true
-        description: Unique ID of the voice prompt you wish to manage
-    get:
-      summary: Get prompts by ID
-      tags: []
-      operationId: get-voiceapp-prompt-id
-      description: |
-        # Get prompts by ID
-
-        Use this endpoint to get the details of a specific prompt.
-
-        ### Prompt message details
-
-        In order to fetch the details of the voice message linked to the prompt, add the query parameters `?fields=message` to the GET request.
-
-        Example
-
-        ```c
-        curl \
-        --location --request GET \
-        'https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}/prompt/{promptid}?fields=message' \
-        --header 'Content-Type: application/json' \
-        --header 'Authorization: Bearer <ACCESS_TOKEN>'
-        ```
-      parameters:
-        - schema:
-            type: string
-          in: header
-          name: Authorization
-          description: Bearer <access_token>
-          required: true
-        - schema:
-            type: string
-            default: message
-          in: query
-          name: fields
-          description: Include the message details in the response by adding this query parameter to the API call.
-      responses:
-        '200':
-          $ref: '#/components/responses/List-prompt'
-        '404':
-          description: Not Found
-    put:
-      summary: Update prompt by ID
-      operationId: Replace-voiceapp-promptid
-      responses:
-        '200':
-          description: OK
-      parameters:
-        - schema:
-            type: string
-          in: header
-          name: Authorization
-          description: Bearer <access_token>
-          required: true
-      description: |-
-        Update the prompt by issuing a PUT request to the `/prompt/{promptid}` endpoint.
-
-        At the moment, it is only possible to update the name of a prompt.
-
-        > The voice message played by the prompt can be updated by issuing a POST request to the `/prompt/{promptid}/message` endpoint. This is described in detail in the section **Add custom message to a prompt**.
-    delete:
-      summary: Delete a custom prompt
-      operationId: delete-voiceapp-promptid
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                description: ''
-                type: object
-                x-examples:
-                  example-1:
-                    resource: prompt
-                    status: success
-                    response: Prompt deleted successfully
-                properties:
-                  resource:
-                    type: string
-                    minLength: 1
-                    description: Name of the resource accessed i.e. prompt
-                  status:
-                    type: string
-                    minLength: 1
-                    description: Status of the request i.e. success or failed
-                  response:
-                    type: string
-                    minLength: 1
-                    description: Details of the response.
-              examples:
-                Example:
-                  value:
-                    resource: prompt
-                    status: success
-                    response: Prompt deleted successfully
-      parameters:
-        - schema:
-            type: string
-          in: header
-          name: Authorization
-          description: Bearer <access_token>
-          required: true
-      description: |-
-        # Delete a custom prompt
-
-        Custom prompts can be deleted by issuing a DELETE to the prompt resource, either using the full URL or the short URL.
-
-        To delete using the full path URL use:
-        `DELETE https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}/prompt/{promptid}`
-
-        Response to a successful method call carries a string with confirmation.
-
-        To delete using the short URL, you can issue the following request. 
-        `DELETE https://public-api.sonetel.com/prompt/{promptid}`
-
-        > It is not possible to delete standard prompts.
   '/account/{accountid}/voiceapp/{voiceappid}/prompt':
     post:
       summary: Create a custom prompt
@@ -394,28 +296,29 @@ paths:
       description: |-
         # Create a custom prompt
 
-        You can create one or more custom prompts under a voice app.
+        You can create one or more custom prompts under a voice app. A custom prompt is a short message that you want your callers to hear under certain conditions.
 
-        When creating the prompt, you can only specify its name. The voice message linked to it must be added afterwards.
+        For example, if you frequently run sales and promotional offers, you can add a custom prompt for this. The voice message linked to this custom prompt can then be updated whenever you have a new promo or when an ongoing promo ends.
 
-        The voice message associated with a prompt can be setup in different ways. You can upload an audio file with the voice message, record the voice message by calling in to the recording service (*22) or use our paid text-to-speech service.
+        When creating the prompt, you can only specify its name. The voice message linked to it can only be added after the prompt has beens successfully created.
 
-        Creating a prompt and associating a voice message to it is a as a two-step process:
+        The voice message associated with a prompt can be setup in different ways. You can upload an audio file with the voice message, record the voice message by calling in to our recording service or use our paid text-to-speech service.
+
+        Creating a prompt and associating a voice message with it is a as a two-step process:
 
         1. The first step involves creation of the prompt resource. This is done by issuing a POST to the prompt resource. The prompt's name must be specified as a parameter in the request.<br>At this stage, the prompt does not have any voice message associated to it and is not usable in the voice app.
         2. To attach a voice message to the prompt, you can either upload a pre-recorded wav file or dial *22 from your Sonetel account, enter the `record_id` of the prompt and record it.
 
-        #### Upload file format
-        The message file to be uploaded should be a .WAV file, PCM uncompressed, 16 bit with a maximum size of 10 mb, and passed as a `multipart/form-data` object.
+        ### Flow for creating a new prompt
 
-        Here is an example of how to create a custom prompt and upload a pre-recorded .wav file.
+        Here is a sample flow where we create a new custom prompt and upload a pre-recorded audio file to it.
 
         #### Step 1 - create prompt
 
         ```c
         curl \
           --location \
-          --request POST 'https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}/prompt?name=My Brand New Prompt' \
+          --request POST 'https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}/prompt?name=Christmas Promo' \
           --header 'Authorization: Bearer <ACCESS_TOKEN>'
         ```
 
@@ -432,6 +335,9 @@ paths:
           --header 'Content-Type: multipart/form-data; boundary={boundary_id}'
           --form 'file=@"{/path/to/file}"'
         ```
+        An alternative to uploading a pre-recorded message is recording your own message by calling in via SIP. Place a SIP call to the prompt's `record_path` (which is just a SIP address), record your message and press # once done.
+
+        Similarly, to listen to the recording, call the prompt's `play_path`.
       parameters:
         - schema:
             type: string
@@ -527,7 +433,142 @@ paths:
         name: voiceappid
         in: path
         required: true
-        description: The unique ID of the voiceapp you wish to manage
+        description: The unique ID of the voice app you wish to manage
+  '/account/{accountid}/voiceapp/{voiceappid}/prompt/{promptid}':
+    parameters:
+      - schema:
+          type: string
+        name: accountid
+        in: path
+        required: true
+        description: Your Sonetel account ID
+      - schema:
+          type: string
+        name: voiceappid
+        in: path
+        required: true
+        description: Unique ID of the voice app you wish to manage
+      - schema:
+          type: string
+        name: promptid
+        in: path
+        required: true
+        description: Unique ID of the voice prompt you wish to manage
+    get:
+      summary: Get prompts by ID
+      tags: []
+      operationId: get-voiceapp-prompt-id
+      description: |
+        # Get prompts by ID
+
+        Use this endpoint to get the details of a specific prompt using its `prompt_id`.
+
+        To get a list of all the prompts associated with a voice app, issue a GET request to `/account/{accountid}/voiceapp/{voiceappid}/prompt`. The response returns a JSON representation of all the prompts with their properties.
+
+        ### Prompt message details
+
+        In order to fetch the details of the voice message linked to the prompt, add the query parameters `?fields=message` to the GET request.
+
+        Example:
+
+        ```c
+        curl \
+        --location --request GET \
+        'https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}/prompt/{promptid}?fields=message' \
+        --header 'Content-Type: application/json' \
+        --header 'Authorization: Bearer <ACCESS_TOKEN>'
+        ```
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          description: Bearer <access_token>
+          required: true
+        - schema:
+            type: string
+            default: message
+          in: query
+          name: fields
+          description: Include the message details in the response by adding this query parameter to the API call.
+      responses:
+        '200':
+          $ref: '#/components/responses/List-prompt'
+        '404':
+          description: Not Found
+    put:
+      summary: Update prompt by ID
+      operationId: Replace-voiceapp-promptid
+      responses:
+        '200':
+          description: OK
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          description: Bearer <access_token>
+          required: true
+      description: |-
+        Update the prompt by issuing a PUT request to the `/prompt/{promptid}` endpoint.
+
+        At the moment, it is only possible to update the name of a prompt.
+
+        > The voice message played by the prompt can be updated by issuing a POST request to the `/prompt/{promptid}/message` endpoint. This is described in detail in the section **Add custom message to a prompt**.
+    delete:
+      summary: Delete a custom prompt
+      operationId: delete-voiceapp-promptid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                x-examples:
+                  example-1:
+                    resource: prompt
+                    status: success
+                    response: Prompt deleted successfully
+                properties:
+                  resource:
+                    type: string
+                    minLength: 1
+                    description: Name of the resource accessed i.e. prompt
+                  status:
+                    type: string
+                    minLength: 1
+                    description: Status of the request i.e. success or failed
+                  response:
+                    type: string
+                    minLength: 1
+                    description: Details of the response.
+              examples:
+                Example:
+                  value:
+                    resource: prompt
+                    status: success
+                    response: Prompt deleted successfully
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          description: Bearer <access_token>
+          required: true
+      description: |-
+        # Delete a custom prompt
+
+        Prompts that you have created, i.e. custom prompts can be deleted by issuing a DELETE to the prompt resource, either using the full URL or the short URL.
+
+        To delete using the full path URL use:
+        `DELETE https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}/prompt/{promptid}`
+
+        Response to a successful method call carries a string with confirmation.
+
+        <!-- theme: warning -->
+        > It is not possible to delete the default prompts added to the voice app automatically when it is created.
   '/prompt/{promptid}/message':
     post:
       summary: Add custom message to a prompt
@@ -535,14 +576,12 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/List-prompt'
-      description: |
-        Use this endpoint to add a voice message to a newly created prompt or update an existing prompt linked to a voice app.
+      description: |-
+        # Add custom message to a prompt
+
+        Use this endpoint to add a voice message to a newly created prompt or update an existing prompt.
 
         To upload the message, issue a POST request to `/prompt/{promptid}/message` with the Content-Type as `multipart/form-data`.
-
-        > #### File Format
-        >
-        > The message file to be uploaded should be a .WAV file, PCM uncompressed, 16 bit with a maximum size of 10 mb, and passed as a `multipart/form-data` object.
 
         You can get the `promptid` by issuing a GET request to the `/account/{accountid}/voiceapp/{voiceappid}/prompt` endpoint.
 
@@ -557,6 +596,21 @@ paths:
           --header 'Content-Type: multipart/form-data; boundary={boundary_id}'
           --form 'file=@"{/path/to/file}"'
         ```
+
+        ### Other ways to change a voice message
+
+        In addition to uploading a pre-recorded audio file, you can also use our recording function to change the voice message for a prompt.
+
+        Follow these instructions to record the prompt in your own voice.
+
+          1. Issue a GET request to `/account/{accountid}/voiceapp/{voiceappid}/prompt` and note down the prompt's `record_path`. It will look like `record#PROMPT_ID@prompts.sonetel.com`.<br>The record path is a SIP address that you can call in order to record a specific prompt.
+          2. Register your Sonetel account using a SIP phone (such as Zoiper) and call the `record_path`
+          3. Start speaking after you hear a beep.<br>For best results, make sure you are in a quiet room and using a good quality microphone.
+          3. Once you have finished speaking, press # and follow the instructions in the call to save, discard or listen to the recorded message.
+
+        > To listen to the existing voice message linked to a prompt, call the prompt's `play_path` from a SIP phone or download the audio file (.wav) from the `message_url`.
+
+        > Default prompts can also be customized in the same way as custom prompts, by uploading a voice file or via the prompt recording function.
       parameters:
         - schema:
             type: string
@@ -656,7 +710,7 @@ components:
       properties:
         app_type:
           type: string
-          description: The type of voiceapp being created.
+          description: The type of voice app being created.
           enum:
             - ivr
             - mailbox
@@ -666,7 +720,7 @@ components:
           description: A flag that indicates if the interactive voice menu function(receive digits from callers to take actions) is active or not.
         name:
           type: string
-          description: The name of the voiceapp
+          description: The name of the voice app
         voice:
           type: string
           description: The set of pre-recorded voice prompts for the voice app
@@ -685,12 +739,40 @@ components:
         play_welcome:
           type: string
           description: A flag that indicates if the welcome message is played or not.
+          enum:
+            - 'yes'
+            - 'no'
         get_extension:
           type: string
           description: A flag that indicates if the auto-attendant function is active.
+          enum:
+            - 'yes'
+            - 'no'
         final_action:
-          type: string
-          description: The final action that is taken in case the menu (represented by field play_menu) is not active.
+          type: object
+          description: |-
+            The final action that is taken in case the menu (represented by `play_menu`) is not active.
+
+            This property can only be set if `play_menu` is set to `no`.
+          properties:
+            action:
+              type: string
+              description: The final action to take once the caller has heard the welcome message.
+              enum:
+                - play
+                - connect
+                - call
+            to:
+              type: string
+              enum:
+                - user
+                - other
+                - prompt
+                - app
+              description: 'The destination type where the call should be connected. For example, user.'
+            id:
+              type: string
+              description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
         menu:
           type: object
           description: The voice response menu that defines the digits and the actions taken on each digit press
@@ -702,9 +784,18 @@ components:
                 action:
                   type: string
                   description: Action to take when the menu item is selected by the caller.
+                  enum:
+                    - play
+                    - connect
+                    - call
                 to:
                   type: string
                   description: 'The destination type where the call should be connected. For example, user.'
+                  enum:
+                    - user
+                    - other
+                    - prompt
+                    - app
                 id:
                   type: string
                   description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
@@ -717,9 +808,18 @@ components:
                 action:
                   type: string
                   description: Action to take when the menu item is selected by the caller.
+                  enum:
+                    - play
+                    - connect
+                    - call
                 to:
                   type: string
                   description: 'The destination type where the call should be connected. For example, user.'
+                  enum:
+                    - user
+                    - other
+                    - prompt
+                    - app
                 id:
                   type: string
                   description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
@@ -732,9 +832,18 @@ components:
                 action:
                   type: string
                   description: Action to take when the menu item is selected by the caller.
+                  enum:
+                    - play
+                    - connect
+                    - call
                 to:
                   type: string
                   description: 'The destination type where the call should be connected. For example, user.'
+                  enum:
+                    - user
+                    - other
+                    - prompt
+                    - app
                 id:
                   type: string
                   description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
@@ -747,9 +856,18 @@ components:
                 action:
                   type: string
                   description: Action to take when the menu item is selected by the caller.
+                  enum:
+                    - play
+                    - connect
+                    - call
                 to:
                   type: string
                   description: 'The destination type where the call should be connected. For example, user.'
+                  enum:
+                    - user
+                    - other
+                    - prompt
+                    - app
                 id:
                   type: string
                   description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
@@ -762,9 +880,18 @@ components:
                 action:
                   type: string
                   description: Action to take when the menu item is selected by the caller.
+                  enum:
+                    - play
+                    - connect
+                    - call
                 to:
                   type: string
                   description: 'The destination type where the call should be connected. For example, user.'
+                  enum:
+                    - user
+                    - other
+                    - prompt
+                    - app
                 id:
                   type: string
                   description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
@@ -777,9 +904,18 @@ components:
                 action:
                   type: string
                   description: Action to take when the menu item is selected by the caller.
+                  enum:
+                    - play
+                    - connect
+                    - call
                 to:
                   type: string
                   description: 'The destination type where the call should be connected. For example, user.'
+                  enum:
+                    - user
+                    - other
+                    - prompt
+                    - app
                 id:
                   type: string
                   description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
@@ -792,9 +928,18 @@ components:
                 action:
                   type: string
                   description: Action to take when the menu item is selected by the caller.
+                  enum:
+                    - play
+                    - connect
+                    - call
                 to:
                   type: string
                   description: 'The destination type where the call should be connected. For example, user.'
+                  enum:
+                    - user
+                    - other
+                    - prompt
+                    - app
                 id:
                   type: string
                   description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
@@ -807,9 +952,18 @@ components:
                 action:
                   type: string
                   description: Action to take when the menu item is selected by the caller.
+                  enum:
+                    - play
+                    - connect
+                    - call
                 to:
                   type: string
                   description: 'The destination type where the call should be connected. For example, user.'
+                  enum:
+                    - user
+                    - other
+                    - prompt
+                    - app
                 id:
                   type: string
                   description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
@@ -822,9 +976,18 @@ components:
                 action:
                   type: string
                   description: Action to take when the menu item is selected by the caller.
+                  enum:
+                    - play
+                    - connect
+                    - call
                 to:
                   type: string
                   description: 'The destination type where the call should be connected. For example, user.'
+                  enum:
+                    - user
+                    - other
+                    - prompt
+                    - app
                 id:
                   type: string
                   description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
@@ -837,9 +1000,18 @@ components:
                 action:
                   type: string
                   description: Action to take when the menu item is selected by the caller.
+                  enum:
+                    - play
+                    - connect
+                    - call
                 to:
                   type: string
                   description: 'The destination type where the call should be connected. For example, user.'
+                  enum:
+                    - user
+                    - other
+                    - prompt
+                    - app
                 id:
                   type: string
                   description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
@@ -852,9 +1024,18 @@ components:
                 action:
                   type: string
                   description: Action to take when the menu item is selected by the caller.
+                  enum:
+                    - play
+                    - connect
+                    - call
                 to:
                   type: string
                   description: 'The destination type where the call should be connected. For example, user.'
+                  enum:
+                    - user
+                    - other
+                    - prompt
+                    - app
                 id:
                   type: string
                   description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
@@ -987,11 +1168,11 @@ components:
               app_id:
                 type: string
                 minLength: 1
-                description: The Unique ID of the voiceapp
+                description: The Unique ID of the voice app
               name:
                 type: string
                 minLength: 1
-                description: A descriptive name for the voiceapp
+                description: A descriptive name for the voice app
               app_type:
                 type: string
                 description: 'The type of app i.e. IVR, voicemail.'
@@ -1002,7 +1183,10 @@ components:
               shortcode:
                 type: string
                 minLength: 1
-                description: The dial code that can be dialed or setup as a forwarding destination to connect calls to the voice app.
+                description: |-
+                  Internal extention number of the voice app. You can dial it from your Sonetel account (SIP call, callback, etc).
+
+                  You can also use it co forward calls from phone numbers to a voice app. i.e. in the incoming call settings of the phone number, set the call to forward to trhe app's shortcode.
               sip_address:
                 type: string
                 minLength: 1
@@ -1415,15 +1599,12 @@ components:
               properties:
                 app_id:
                   type: string
-                  minLength: 1
-                  description: The Unique ID of the voiceapp
+                  description: The Unique ID of the voice app
                 name:
                   type: string
-                  minLength: 1
-                  description: A descriptive name for the voiceapp
+                  description: A descriptive name for the voice app
                 app_type:
                   type: string
-                  minLength: 1
                   description: 'The type of app i.e. IVR, etc.'
                   enum:
                     - ivr
@@ -1431,34 +1612,39 @@ components:
                     - sysprompt
                 shortcode:
                   type: string
-                  minLength: 1
-                  description: The dial code that can be dialed or setup as a forwarding destination to connect calls to the voice app.
+                  description: |-
+                    Internal extention number of the voice app. You can dial it from your Sonetel account (SIP call, callback, etc).
+
+                    You can also use it co forward calls from phone numbers to a voice app. i.e. in the incoming call settings of the phone number, set the call to forward to trhe app's shortcode.
                 sip_address:
                   type: string
-                  minLength: 1
                   description: The SIP address of the voice app
                 voice:
                   type: string
-                  minLength: 1
-                  description: The set of pre-recorded voice prompts for the voice app
+                  description: |-
+                    The set of pre-recorded voice prompts for the voice app. It controls the language, accent and gender of the voice that the callers hear.
+
+                    For example, if the `voice` is set to `en-uk-fe`, the user hears an English female voice in a UK accent.
                 play_welcome:
                   type: string
-                  minLength: 1
                   description: A flag that indicates if the Welcome message is played or not.
                   enum:
                     - 'yes'
                     - 'no'
                 get_extension:
                   type: string
-                  minLength: 1
-                  description: A flag that indicates if the auto-attendant function is active.
+                  description: |-
+                    A flag that indicates if the auto-attendant function is active.
+
+                    When enabled, the caller can enter the internal 3-digit extention number of any user in your Sonetela ccount and be connected to them.
+
+                    You can find the user's extension number in their call settings.
                   enum:
                     - 'yes'
                     - 'no'
                 play_menu:
                   type: string
-                  minLength: 1
-                  description: A flag that indicates if the interactive voice menu function(receive digits from callers to take actions) is active or not.
+                  description: A flag that indicates if the interactive voice menu function (receive digits from callers to take actions) is active or not.
                   enum:
                     - 'yes'
                     - 'no'
@@ -1468,115 +1654,269 @@ components:
                   properties:
                     digit_0:
                       type: object
+                      description: Action to be taken when the caller selects option 0 in the IVR.
                       properties:
                         action:
                           type: string
+                          description: |-
+                            Action to take when the menu item is selected by the caller.
+
+                            An empty value indicates that no action is taken.
+                          enum:
+                            - play
+                            - connect
+                            - call
                         to:
                           type: string
+                          description: 'The destination type where the call should be connected. For example, user.'
+                          enum:
+                            - user
+                            - other
+                            - prompt
+                            - app
                         id:
                           type: string
+                          description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
                     digit_1:
                       type: object
+                      description: Action to be taken when the caller selects option 1 in the IVR.
                       properties:
                         action:
                           type: string
-                          minLength: 1
+                          description: |-
+                            Action to take when the menu item is selected by the caller.
+
+                            An empty value indicates that no action is taken.
+                          enum:
+                            - play
+                            - connect
+                            - call
                         to:
                           type: string
-                          minLength: 1
+                          enum:
+                            - user
+                            - other
+                            - prompt
+                            - app
                         id:
                           type: string
-                          minLength: 1
+                          description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
                     digit_2:
                       type: object
+                      description: Action to be taken when the caller selects option 2 in the IVR.
                       properties:
                         action:
                           type: string
-                          minLength: 1
+                          description: |-
+                            Action to take when the menu item is selected by the caller.
+
+                            An empty value indicates that no action is taken.
+                          enum:
+                            - play
+                            - connect
+                            - call
                         to:
                           type: string
-                          minLength: 1
+                          enum:
+                            - user
+                            - other
+                            - prompt
+                            - app
                         id:
                           type: string
-                          minLength: 1
+                          description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
                     digit_3:
                       type: object
+                      description: Action to be taken when the caller selects option 3 in the IVR.
                       properties:
                         action:
                           type: string
-                          minLength: 1
+                          description: |-
+                            Action to take when the menu item is selected by the caller.
+
+                            An empty value indicates that no action is taken.
+                          enum:
+                            - play
+                            - connect
+                            - call
                         to:
                           type: string
-                          minLength: 1
+                          enum:
+                            - user
+                            - other
+                            - prompt
+                            - app
                         id:
                           type: string
-                          minLength: 1
+                          description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
                     digit_4:
                       type: object
+                      description: Action to be taken when the caller selects option 4 in the IVR.
                       properties:
                         action:
                           type: string
+                          description: |-
+                            Action to take when the menu item is selected by the caller.
+
+                            An empty value indicates that no action is taken.
+                          enum:
+                            - play
+                            - connect
+                            - call
                         to:
                           type: string
+                          enum:
+                            - user
+                            - other
+                            - prompt
+                            - app
                         id:
                           type: string
+                          description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
                     digit_5:
                       type: object
+                      description: Action to be taken when the caller selects option 5 in the IVR.
                       properties:
                         action:
                           type: string
+                          description: |-
+                            Action to take when the menu item is selected by the caller.
+
+                            An empty value indicates that no action is taken.
+                          enum:
+                            - play
+                            - connect
+                            - call
                         to:
                           type: string
+                          enum:
+                            - user
+                            - other
+                            - prompt
+                            - app
                         id:
                           type: string
+                          description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
                     digit_6:
                       type: object
+                      description: Action to be taken when the caller selects option 6 in the IVR.
                       properties:
                         action:
                           type: string
+                          description: |-
+                            Action to take when the menu item is selected by the caller.
+
+                            An empty value indicates that no action is taken.
+                          enum:
+                            - play
+                            - connect
+                            - call
                         to:
                           type: string
+                          enum:
+                            - user
+                            - other
+                            - prompt
+                            - app
                         id:
                           type: string
+                          description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
                     digit_7:
                       type: object
+                      description: Action to be taken when the caller selects option 7 in the IVR.
                       properties:
                         action:
                           type: string
+                          description: |-
+                            Action to take when the menu item is selected by the caller.
+
+                            An empty value indicates that no action is taken.
+                          enum:
+                            - play
+                            - connect
+                            - call
                         to:
                           type: string
+                          enum:
+                            - user
+                            - other
+                            - prompt
+                            - app
                         id:
                           type: string
+                          description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
                     digit_8:
                       type: object
+                      description: Action to be taken when the caller selects option 8 in the IVR.
                       properties:
                         action:
                           type: string
+                          description: |-
+                            Action to take when the menu item is selected by the caller.
+
+                            An empty value indicates that no action is taken.
+                          enum:
+                            - play
+                            - connect
+                            - call
                         to:
                           type: string
+                          enum:
+                            - user
+                            - other
+                            - prompt
+                            - app
                         id:
                           type: string
-                    timeout:
-                      type: object
-                      properties:
-                        action:
-                          type: string
-                          minLength: 1
-                        to:
-                          type: string
-                          minLength: 1
-                        id:
-                          type: string
-                          minLength: 1
+                          description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
                     digit_9:
                       type: object
+                      description: Action to be taken when the caller selects option 9 in the IVR.
                       properties:
                         action:
                           type: string
+                          description: |-
+                            Action to take when the menu item is selected by the caller.
+
+                            An empty value indicates that no action is taken.
+                          enum:
+                            - play
+                            - connect
+                            - call
                         to:
                           type: string
+                          enum:
+                            - user
+                            - other
+                            - prompt
+                            - app
                         id:
                           type: string
+                          description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
+                    timeout:
+                      type: object
+                      description: Action to be taken when the caller does not select any option.
+                      properties:
+                        action:
+                          type: string
+                          description: |-
+                            Action to take when this menu item is activated.
+
+                            An empty value indicates that no action is taken.
+                          enum:
+                            - play
+                            - connect
+                            - call
+                        to:
+                          type: string
+                          enum:
+                            - user
+                            - other
+                            - prompt
+                            - app
+                        id:
+                          type: string
+                          description: 'A unique ID to identify the destination. For example, if the `to` field is user then `id` will be the user''s unique ID.'
                 tts_allowed:
                   type: string
                   description: This is a read-only field which indicates whether TTS  functionality is allowed on this voice-app or not.
@@ -1586,13 +1926,18 @@ components:
                   readOnly: true
                 error_voice:
                   type: string
-                  description: The voice that applies for playing system messages. This field applies in case the app_type is “sysprompt”.
+                  description: |-
+                    The language, gender and accent of the voice that is heard by the caller for playing error messages on call.
+
+                    The error message can be repeated in 2 different languages. The `error_voice` property controls the voice heard by the the first time while `error_repeat_voice` is the voice in which the error message is repeated.
+
+                    This field applies in case the app_type is “sysprompt”.
                 error_repeat_voice:
                   type: string
                   description: |-
-                    In case the same system message is required to be played in two different voices, the `error_repeat_voice` field specifies the voice for playing the system messages in a second voice.
+                    You can repeat the error messages played to callers in a two different languages. The `error_repeat_voice` property controls the language in which the error message is repeated.
 
-                    This may be used in case there are two different languages in which the error message needs to be played to the callers.
+                    For example, if you'd like to play the error messages in English first and then Swedish, then set `error_voice` to `en` and `error_repeat_voice` to `swe`.
 
                     This field applies in case the app_type is “sysprompt”.
                 greeting_prompt:
@@ -1845,7 +2190,7 @@ components:
                 app_id:
                   type: string
                   minLength: 1
-                  description: The unique ID of the voiceapp that the prompt belongs to.
+                  description: The unique ID of the voice app that the prompt belongs to.
                 account_id:
                   type: string
                   minLength: 1
@@ -1853,14 +2198,17 @@ components:
                 record_id:
                   type: string
                   minLength: 1
-                  description: Unique numeric ID of the prompt that can be used to record it over the phone. Dial *22 from a SIP phone and enter the record ID to record a new message.
+                  description: |-
+                    The ID of the prompt that can be dialed via DTMF digits when updating the voice message from the recording function (*22).
+
+                    Dial *22 from a SIP phone registered with Sonetel and enter the record ID to record over the existing message.
                 exists:
                   type: string
                   minLength: 1
                   description: |-
                     A flag that specifies if the associated voice message for this prompt exists. This flag is only relevant in case of custom prompts.
 
-                    For standard prompts, the flag is always “yes” since there is always a voice message associated to a standard prompt
+                    For default prompts, the flag is always “yes” since there is always a voice message associated with them.
                 file_name:
                   type: string
                   description: The name of the audio file uploaded by the customer. The field is empty if no file has been uploaded.
