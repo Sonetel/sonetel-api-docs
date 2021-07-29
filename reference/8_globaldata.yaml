@@ -1,0 +1,247 @@
+openapi: 3.1.0
+info:
+  title: Supporting Data
+  version: '2.0'
+  description: |-
+    These are a collection of open APIs that provide supporting data when using our APIs.
+
+    For example, when modifying a user's timezone settings you are required to pass the `zone_id` property. Use the `/globaldata/timezone` for this.
+servers:
+  - url: 'https://public-api.sonetel.com/'
+    description: Production
+paths:
+  /globaldata/timezone:
+    get:
+      summary: List all timezones
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/Timezone'
+      operationId: get-globaldata-timezone
+      description: |-
+        # List all timezones
+
+        Get a list of all available timezones and their details such as the `zone_name` which includes the names of the most popular cities in that zone and the numeric `zone_id`.
+
+        You can use this `zone_id` to update our account or user's location settings.
+
+        For example, to update a user's timezone to *Hawaii* (`zone_id : 47`), use the following request:
+
+        ```c
+        curl \
+          --location \
+          --request PUT 'https://beta-api.sonetel.com/account/{accountid}/user/{userid}' \
+          --header 'Content-Type: application/json' \
+          --header 'Authorization: Bearer <ACCESS_TOKEN>' \
+          --data-raw '{
+            "location" : {
+                "timezone_id" : 47
+            }
+          }'
+        ```
+
+        A successful response will return the updated user resource.
+  /globaldata/voiceprompts:
+    get:
+      summary: List of pre-recorded voices
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/Voiceprompts'
+      operationId: get-globaldata-voiceprompts
+      description: |-
+        # List of pre-recorded voices
+
+        As part of our voice apps, we offer pre-recorded & ready-to-use set of voice messages for all our voice apps.
+
+        Use this endpoint to get a list of all the pre-recorded voices that you can use.
+
+        ### Change the language of a voice app
+
+        To change the default language, accent & gender of the messages in a voice app, you can update it's `voice` property by issuing a PUT request to `/account/{accountid}/voiceapp/{voiceappid}`
+
+        Here is an example where we are updating the default language of a voicemail box to English (UK) Female.
+
+        **Request**:
+
+        ```c
+        curl \
+          --location \
+          --request PUT 'https://public-api.sonetel.com/account/{accountid}/voiceapp/{voiceappid}' \
+          --header 'Authorization: Bearer <ACCESS_TOKEN>' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+                "app_id": "{voiceappid}",
+                "name": "Sales voicemail",
+                "app_type": "mailbox",
+                "voice": "en-uk-fe"
+            }'
+        ```
+
+        **Response**:
+
+        A successful request will return the update voice app resource.
+
+        ```json
+        {
+            "resource": "voiceapp",
+            "status": "success",
+            "response": {
+                "app_id": "{voiceappid}",
+                "name": "Sales voicemail",
+                "app_type": "mailbox",
+                "shortcode": "*12",
+                "sip_address": "{voiceappid}@sonetel.net",
+                "voice": "en-uk-fe",
+                "greeting_prompt": "yes",
+                "goodbye_prompt": "no",
+                "deliver_to": "email",
+                "deliver_to_details": "email@example.com",
+                "tts_allowed": "yes"
+            }
+        }
+        ```
+components:
+  schemas: {}
+  responses:
+    Timezone:
+      description: Support timezones
+      content:
+        application/json:
+          schema:
+            description: ''
+            type: object
+            x-examples:
+              example-1:
+                gmt_offset: string
+                zone_id: string
+                zone_name: string
+                daylight_saving_time:
+                  gmt_offset: string
+            properties:
+              gmt_offset:
+                type: string
+                minLength: 1
+                description: 'The offset from UTC when daylight savings is not in effect. For example `"+09:30"`, `"-07:00"`'
+              zone_id:
+                type: string
+                minLength: 1
+                description: A unique ID to identify the zone. It is used when the timezone settings for an account or user need to be updated.
+              zone_name:
+                type: string
+                minLength: 1
+                description: 'A descriptive name of the timezone including the names of the popular cities from that zone. For example, `"(GMT +9:00) Tokyo, Seoul, Osaka"`'
+              daylight_saving_time:
+                type: object
+                description: Daylight saving offset for zone. If the timezone does not follow daylight saving then the `gmt_offset` under this object is same as the regular `gmt_offset`.
+                properties:
+                  gmt_offset:
+                    type: string
+                    minLength: 1
+                    description: The offset from UTC when daylight savings is in effect.
+          examples:
+            Example:
+              value:
+                gmt_offset: '-08:00'
+                zone_id: '44'
+                zone_name: '(GMT -8:00) Pacific time (US and Canada)'
+                daylight_saving_time:
+                  gmt_offset: '-07:00'
+      headers:
+        Content-Type:
+          schema:
+            type: string
+          description: application/json;charset=UTF-8
+    Voiceprompts:
+      description: List of pre-recorded voices
+      content:
+        application/json:
+          schema:
+            description: ''
+            type: object
+            x-examples:
+              example-1:
+                id: '1'
+                lang_path: en
+                name: English
+                gender: male
+                language: eng
+                supported_voiceapps:
+                  ivr: true
+                  prompt_record: false
+                  company_mailbox: true
+                  user_mailbox: true
+                  user_prompt_record: false
+                  call_thru: false
+                  call_back: true
+                  conference: false
+                  system_prompts: true
+            properties:
+              id:
+                type: string
+                minLength: 1
+                description: Internal ID of the voice prompt.
+              lang_path:
+                type: string
+                minLength: 1
+                description: |-
+                  The code to be used for changing the language and accent in voice apps.
+
+                  Issue a PUT request to the voice app endpoint with the `voice` property set to the correct value.
+              name:
+                type: string
+                minLength: 1
+                description: A descriptive name of the voice such as "English UK" or "French".
+              gender:
+                type: string
+                minLength: 1
+                description: The gender of the voice.
+              language:
+                type: string
+                minLength: 1
+                description: The 3 letter ISO language code.
+              supported_voiceapps:
+                type: object
+                description: A list of voice apps where this voice can be used.
+                properties:
+                  ivr:
+                    type: boolean
+                  prompt_record:
+                    type: boolean
+                  company_mailbox:
+                    type: boolean
+                  user_mailbox:
+                    type: boolean
+                  user_prompt_record:
+                    type: boolean
+                  call_thru:
+                    type: boolean
+                  call_back:
+                    type: boolean
+                  conference:
+                    type: boolean
+                  system_prompts:
+                    type: boolean
+          examples:
+            Example:
+              value:
+                id: '1'
+                lang_path: en
+                name: English
+                gender: male
+                language: eng
+                supported_voiceapps:
+                  ivr: true
+                  prompt_record: false
+                  company_mailbox: true
+                  user_mailbox: true
+                  user_prompt_record: false
+                  call_thru: false
+                  call_back: true
+                  conference: false
+                  system_prompts: true
+      headers:
+        Content-Type:
+          schema:
+            type: string
+          description: application/json;charset=UTF-8

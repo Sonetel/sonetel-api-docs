@@ -22,7 +22,7 @@ info:
     --------------|------------
     ivr | An Interactive Voice Response app allows you to play a set of pre-recorded messages to your callers. It provides the callers with multiple options such as "*Select 1 for sales, 2 for support...*".<br>You can choose what action to take when the caller selects each option from 0 - 9.
     mailbox | This is a voicemail box that is available on an account level i.e. it can be used for a team or department in your company.<br>For example, if you have a separate phone number for the Sales team, then it can be connected to the sales voicemail box and the email sent to a common email address such as sales@example.com.
-    sysprompt | These are error prompts played when an invalid action takes place, for example the caller selects an invalid option in the IVR.
+    sysprompt | These are system error messages played when an invalid action takes place, for example the caller enters an invalid extension number.<br>At the moment it is only possible to change the language, accent and gender of the error message. You can do this by setting the `error_voice` and `error_repeat_voice` properties.
 
     #### Announcements
 
