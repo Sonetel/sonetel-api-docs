@@ -3,7 +3,7 @@ info:
   title: Supporting Data
   version: '2.0'
   description: |-
-    These are a collection of open APIs that provide supporting data when using our APIs.
+    Use these collection of APIs to get supporting data such as the timezones available and the default languages in which the default pre-recorded voice messages are available.
 
     For example, when modifying a user's timezone settings you are required to pass the `zone_id` property. Use the `/globaldata/timezone` for this.
 servers:
@@ -33,11 +33,7 @@ paths:
           --request PUT 'https://beta-api.sonetel.com/account/{accountid}/user/{userid}' \
           --header 'Content-Type: application/json' \
           --header 'Authorization: Bearer <ACCESS_TOKEN>' \
-          --data-raw '{
-            "location" : {
-                "timezone_id" : 47
-            }
-          }'
+          --data-raw '{ "location" : { "timezone_id" : 47 } }'
         ```
 
         A successful response will return the updated user resource.
@@ -101,6 +97,53 @@ paths:
             }
         }
         ```
+  /globaldata/language:
+    get:
+      summary: List all language codes
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/Language'
+      operationId: get-globaldata-language
+      description: |-
+        # List all language codes
+
+        To ensure a truly global service, Sonetel's apps can be used in different languages.
+
+        You can use the /language API endpoint to get a list of all the languages around the world. Although our app has not yet been translated into all the languages, we are constantly trying to update our service to include more languages.
+         
+        To change the language of your account, or just a user in your account, you can issue a PUT request to the user or account resource and include the new `language` code in the request body.
+
+        ### Update user language 
+         
+         Request:
+         
+         ```c
+         curl \
+           --location \
+           --request PUT 'https://public-api.sonetel.com/account/{accountid}/user/{userid}' \
+          --header 'Content-Type: application/json' \
+          --header 'Authorization: Bearer <ACCESS_TOKEN>' \
+          --data-raw '{ "language" : "swe" }'
+         ```
+         
+        A successful response will return the updated resource.
+         
+         
+        ### Update account language
+
+        Request:
+         
+         ```c
+         curl \
+           --location \
+           --request PUT 'https://public-api.sonetel.com/account/{accountid}' \
+          --header 'Content-Type: application/json' \
+          --header 'Authorization: Bearer <ACCESS_TOKEN>' \
+          --data-raw '{ "language" : "swe" }'
+         ```
+         
+        A successful response will return the updated resource.
 components:
   schemas: {}
   responses:
@@ -206,22 +249,34 @@ components:
                 properties:
                   ivr:
                     type: boolean
+                    description: A flag that specifies whether the default messages for IVR are available in this voice.
                   prompt_record:
                     type: boolean
+                    description: A flag that specifies whether the default messages for voice prompt recording function are available in this voice.
                   company_mailbox:
                     type: boolean
+                    description: |-
+                      A flag that specifies whether the default messages for the company voicemail are available in this voice.
+
+                      Company voicemail is different than user voicemail. A user's voicemail can only be delivered to them via email. However, a company voicemail can be delivered to a user or an email address.
                   user_mailbox:
                     type: boolean
+                    description: A flag that specifies whether the default messages for user voicemails are available in this voice.
                   user_prompt_record:
                     type: boolean
+                    description: A flag that specifies whether the voice messages heard by the caller when recording their personal voicemail messages are available in this voice.
                   call_thru:
                     type: boolean
+                    description: A flag that specifies whether the voice messages heard by the caller when using our Call thru service are available in this voice.
                   call_back:
                     type: boolean
+                    description: A flag that specifies whether the voice messages heard by the caller when using our Callback service are available in this voice.
                   conference:
                     type: boolean
+                    description: A flag that specifies whether the voice messages heard by the caller when connecting to our conference service are available in this voice.
                   system_prompts:
                     type: boolean
+                    description: 'A flag that specifies whether the voice messages used in other system messages such as invalid extention, etc are available in this voice.'
           examples:
             Example:
               value:
@@ -245,3 +300,41 @@ components:
           schema:
             type: string
           description: application/json;charset=UTF-8
+    Language:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            description: ''
+            type: object
+            x-examples:
+              example-1:
+                isolangCode2Digit: ab
+                isolangCode3Digit: abk
+                langId: 1
+                langName: Abkhaz
+                langFamily: Northwest Caucasian
+            properties:
+              isolangCode2Digit:
+                type: string
+                description: Two letter ISO code of the language
+              isolangCode3Digit:
+                type: string
+                description: Three letter ISO code of the language
+              langId:
+                type: number
+                description: A numeric ID that uniquely identifies this language.
+              langName:
+                type: string
+                description: Name of the language
+              langFamily:
+                type: string
+                description: The family that the language belongs to.
+          examples:
+            Example:
+              value:
+                isolangCode2Digit: sv
+                isolangCode3Digit: swe
+                langId: 154
+                langName: Swedish
+                langFamily: Indo-European
