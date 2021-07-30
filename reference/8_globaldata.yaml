@@ -3,7 +3,7 @@ info:
   title: Supporting Data
   version: '2.0'
   description: |-
-    Use these collection of APIs to get supporting data such as the timezones available and the default languages in which the default pre-recorded voice messages are available.
+    Use these collection of APIs to get supporting data such as the available timezones, default language for voice messages and so on.
 
     For example, when modifying a user's timezone settings you are required to pass the `zone_id` property. Use the `/globaldata/timezone` for this.
 servers:
@@ -50,7 +50,7 @@ paths:
 
         As part of our voice apps, we offer pre-recorded & ready-to-use set of voice messages for all our voice apps.
 
-        Use this endpoint to get a list of all the pre-recorded voices that you can use.
+        Use this endpoint to get a list of all the pre-recorded voices that are available for use.
 
         ### Change the language of a voice app
 

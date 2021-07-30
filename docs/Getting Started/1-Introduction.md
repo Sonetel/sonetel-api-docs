@@ -16,7 +16,8 @@ Function | Description |
 | [Recorded Calls](../../reference/4_recorded_calls.yaml) | Manage your call recordings |
 | [Voice Response](../../reference/5_voice_apps.yaml) | Change the default voice apps such as IVR and voicemail or add new ones as needed. |
 | [Account](../../reference/6_account.yaml) | View & manage your Sonetel account details |
-| [Users](../../reference/7_users.yaml) | Manage your user accounts, change their call settings and so on.| 
+| [Users](../../reference/7_users.yaml) | Manage your user accounts, change their call settings and so on.|
+| [Supporting Data](../../reference/8_globaldata.yaml) | Access supporting data such as timezone & language IDs.
 
 
 
