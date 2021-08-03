@@ -2,10 +2,18 @@ openapi: 3.1.0
 info:
   title: Supporting Data
   version: '2.0'
-  description: |-
+  description: |
     Use these collection of APIs to get supporting data such as the available timezones, default language for voice messages and so on.
 
     For example, when modifying a user's timezone settings you are required to pass the `zone_id` property. Use the `/globaldata/timezone` for this.
+
+    #### Available API endpoints
+
+    Endpoint | Description
+    ---------|------------
+    `/globaldata/timezone` | Get a list of all supported timezones. Use the timezone ID to update your account's timezone settings.
+    `/globaldata/voiceprompts` | See all the voices available for our voice apps. You can change the language, accent and gender of your voice apps by changing its `voice` property.
+    `/globaldata/language` | Get a list of all available languages and their corresponding IDs to change your account's default language.
 servers:
   - url: 'https://public-api.sonetel.com/'
     description: Production
@@ -23,20 +31,22 @@ paths:
 
         Get a list of all available timezones and their details such as the `zone_name` which includes the names of the most popular cities in that zone and the numeric `zone_id`.
 
-        You can use this `zone_id` to update our account or user's location settings.
+        You can use this `zone_id` to update your account or user's location settings.
 
         For example, to update a user's timezone to *Hawaii* (`zone_id : 47`), use the following request:
 
         ```c
         curl \
           --location \
-          --request PUT 'https://beta-api.sonetel.com/account/{accountid}/user/{userid}' \
+          --request PUT 'https://public-api.sonetel.com/account/{accountid}/user/{userid}' \
           --header 'Content-Type: application/json' \
           --header 'Authorization: Bearer <ACCESS_TOKEN>' \
           --data-raw '{ "location" : { "timezone_id" : 47 } }'
         ```
 
         A successful response will return the updated user resource.
+
+        > Updating the timezone of your accounts affects [the office hours](https://app.sonetel.com/account-settings/time-and-location) set in your account.
   /globaldata/voiceprompts:
     get:
       summary: List of pre-recorded voices
@@ -48,17 +58,21 @@ paths:
       description: |-
         # List of pre-recorded voices
 
-        As part of our voice apps, we offer pre-recorded & ready-to-use set of voice messages for all our voice apps.
+        As part of our voice apps, we offer pre-recorded & ready-to-use set of voice that you can use depending on your needs. Use this endpoint to get a list of all the pre-recorded voices that are available for use.
 
-        Use this endpoint to get a list of all the pre-recorded voices that are available for use.
+        > A voice is a set of pre-recorded messages available in a specific language and gender. It corresponds to the `voice` parameter in a [voice app](5_voice_apps.yaml) and controls the language & gender of the voice in which messages are played to the caller.
 
-        ### Change the language of a voice app
+        ### Change the default voice of a voice app
 
-        To change the default language, accent & gender of the messages in a voice app, you can update it's `voice` property by issuing a PUT request to `/account/{accountid}/voiceapp/{voiceappid}`
+        To change the default the language, accent & gender of the messages in a voice app, you can update it's `voice` property by issuing a PUT request to `/account/{accountid}/voiceapp/{voiceappid}`.
 
-        Here is an example where we are updating the default language of a voicemail box to English (UK) Female.
+        Here is an example where we are updating the default voice of a voicemail box to Spanish.
 
-        **Request**:
+        **Step 1**: Issue a GET request to `/globaldata/voiceprompts`. From the results, select which "voice" you wish to use. For example, to use the Spanish voice, make a note of its 3 letter code defined in the response's `lang_path` property. For Spanish this is `spa`.
+
+        **Step 2**: Get the unique ID of the voice app for which you wish to change the default voice. Issue a GET request to `/account/{accountid}/voiceapp` and the resposne will return a list of all the voice apps in your account.
+
+        **Step 3**: Now, issue a PUT request as shown below to update the voice app's default voice to Spanish.
 
         ```c
         curl \
@@ -70,32 +84,8 @@ paths:
                 "app_id": "{voiceappid}",
                 "name": "Sales voicemail",
                 "app_type": "mailbox",
-                "voice": "en-uk-fe"
+                "voice": "spa"
             }'
-        ```
-
-        **Response**:
-
-        A successful request will return the update voice app resource.
-
-        ```json
-        {
-            "resource": "voiceapp",
-            "status": "success",
-            "response": {
-                "app_id": "{voiceappid}",
-                "name": "Sales voicemail",
-                "app_type": "mailbox",
-                "shortcode": "*12",
-                "sip_address": "{voiceappid}@sonetel.net",
-                "voice": "en-uk-fe",
-                "greeting_prompt": "yes",
-                "goodbye_prompt": "no",
-                "deliver_to": "email",
-                "deliver_to_details": "email@example.com",
-                "tts_allowed": "yes"
-            }
-        }
         ```
   /globaldata/language:
     get:
@@ -110,40 +100,49 @@ paths:
 
         To ensure a truly global service, Sonetel's apps can be used in different languages.
 
-        You can use the /language API endpoint to get a list of all the languages around the world. Although our app has not yet been translated into all the languages, we are constantly trying to update our service to include more languages.
-         
+        You can use the `/language` API endpoint to get a list of all the languages around the world. Although our app has not yet been translated into all the languages, we are constantly updating our service with more languages.
+
         To change the language of your account, or just a user in your account, you can issue a PUT request to the user or account resource and include the new `language` code in the request body.
 
-        ### Update user language 
-         
-         Request:
-         
-         ```c
-         curl \
-           --location \
-           --request PUT 'https://public-api.sonetel.com/account/{accountid}/user/{userid}' \
-          --header 'Content-Type: application/json' \
-          --header 'Authorization: Bearer <ACCESS_TOKEN>' \
-          --data-raw '{ "language" : "swe" }'
-         ```
-         
-        A successful response will return the updated resource.
-         
-         
-        ### Update account language
+        > Updating the language of your account affects some default settings such as what voice is used for your default voice apps and so on. All new users will inherit the language of the main account.
 
-        Request:
-         
-         ```c
-         curl \
-           --location \
-           --request PUT 'https://public-api.sonetel.com/account/{accountid}' \
-          --header 'Content-Type: application/json' \
-          --header 'Authorization: Bearer <ACCESS_TOKEN>' \
-          --data-raw '{ "language" : "swe" }'
-         ```
-         
-        A successful response will return the updated resource.
+        <!--
+        type: tab 
+        title: Update account language 
+        -->
+
+          Request:
+          
+          ```c
+          curl \
+            --location \
+            --request PUT 'https://public-api.sonetel.com/account/{accountid}' \
+            --header 'Content-Type: application/json' \
+            --header 'Authorization: Bearer <ACCESS_TOKEN>' \
+            --data-raw '{ "language" : "swe" }'
+          ```
+          
+          A successful response will return the updated resource.
+        
+        <!--
+        type: tab 
+        title: Update user language 
+        -->
+          
+          Request:
+          
+          ```c
+          curl \
+            --location \
+            --request PUT 'https://public-api.sonetel.com/account/{accountid}/user/{userid}' \
+            --header 'Content-Type: application/json' \
+            --header 'Authorization: Bearer <ACCESS_TOKEN>' \
+            --data-raw '{ "language" : "swe" }'
+          ```
+          
+          A successful response will return the updated resource.
+
+        <!-- type: tab-end -->
 components:
   schemas: {}
   responses:

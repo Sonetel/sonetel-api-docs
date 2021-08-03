@@ -86,6 +86,8 @@ paths:
 
         - `language` - https://public-api.sonetel.com/globaldata/language
         - `zone_id` - https://public-api.sonetel.com/globaldata/timezone
+
+        Read more [about the /globaldata APIs](8_globaldata.yaml).
       parameters:
         - schema:
             type: string

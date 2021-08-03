@@ -1,10 +1,10 @@
 openapi: 3.1.0
 info:
-  title: Manage voice apps
+  title: Voiceapps
   version: '2.0'
   summary: Manage voice apps under a Sonetel account
   description: |-
-    # Manage voice apps
+    # Voiceapps
 
     Voice applications in your account can be managed using the `/account/{accountid}/voiceapp` resource.
 
@@ -66,7 +66,9 @@ info:
 
     After the prompt has been created, a voice message file can be uploaded to the prompt. The uploaded file is then set as its voice message.
 
-    When a voice app is created, default prompts in a voice app are automatically created along with it. For all default prompts, Sonetel provides standard pre-recorded voice messages. The `voice` setting in the voice app defines the language and the corresponding standard voice message that is played when the prompt is used.
+    When a voice app is created, default prompts in a voice app are automatically created along with it. For all default prompts, Sonetel provides standard pre-recorded voice messages.
+
+    The `voice` parameter in the voice app defines the language and the corresponding standard voice message that is played when the prompt is used. To get a list of available voices in which the pre-recorded messages are available, use the `/globaldata/voiceprompts` API endpoint. [Read more](8_globaldata.yaml) about it here.
 
     For example, in the voiceapp's properties if you set the `voice` to `en`, the prompt that plays a welcome message to the caller, would play the audio message in an English, male voice. If you change the voice to “se”, the message changes to the equivalent message in a Swedish, male voice.
     <br>
