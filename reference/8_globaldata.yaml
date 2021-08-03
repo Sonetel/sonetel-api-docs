@@ -3,16 +3,16 @@ info:
   title: Supporting Data
   version: '2.0'
   description: |
-    Use these collection of APIs to get supporting data such as the available timezones, default language for voice messages and so on.
+    Use these APIs to get supporting data such as the available timezones, default language for voice messages, etc for use in other APIs.
 
-    For example, when modifying a user's timezone settings you are required to pass the `zone_id` property. Use the `/globaldata/timezone` for this.
+    For example, when modifying a user's timezone settings you are required to pass the `zone_id` property. Use the `/globaldata/timezone` to get a list of all the available timezones and their corresponding zone IDs.
 
     #### Available API endpoints
 
     Endpoint | Description
     ---------|------------
-    `/globaldata/timezone` | Get a list of all supported timezones. Use the timezone ID to update your account's timezone settings.
-    `/globaldata/voiceprompts` | See all the voices available for our voice apps. You can change the language, accent and gender of your voice apps by changing its `voice` property.
+    `/globaldata/timezone` | Get a list of all supported timezones. Use the `zone_id` to update your account's timezone settings.
+    `/globaldata/voiceprompts` | See all the voices available for our voice apps. You can change the language, accent and gender of [your voice apps](5_voice_apps.yaml) by changing its `voice` property.
     `/globaldata/language` | Get a list of all available languages and their corresponding IDs to change your account's default language.
 servers:
   - url: 'https://public-api.sonetel.com/'
@@ -104,7 +104,7 @@ paths:
 
         To change the language of your account, or just a user in your account, you can issue a PUT request to the user or account resource and include the new `language` code in the request body.
 
-        > Updating the language of your account affects some default settings such as what voice is used for your default voice apps and so on. All new users will inherit the language of the main account.
+        > Updating the language of your account affects some default settings such as what voice is used for your default voice apps and so on. All new users will inherit the default language of the account.
 
         <!--
         type: tab 
@@ -123,7 +123,7 @@ paths:
           ```
           
           A successful response will return the updated resource.
-        
+
         <!--
         type: tab 
         title: Update user language 
