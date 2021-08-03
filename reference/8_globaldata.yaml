@@ -58,17 +58,17 @@ paths:
       description: |-
         # List of pre-recorded voices
 
-        As part of our voice apps, we offer pre-recorded & ready-to-use set of voice that you can use depending on your needs. Use this endpoint to get a list of all the pre-recorded voices that are available for use.
+        As part of our voice app service, we offer pre-recorded & ready-to-use set of voices that can be used in your voice apps. Use this endpoint to get a list of all the pre-recorded voices that are available for use.
 
-        > A voice is a set of pre-recorded messages available in a specific language and gender. It corresponds to the `voice` parameter in a [voice app](5_voice_apps.yaml) and controls the language & gender of the voice in which messages are played to the caller.
+        > A voice is a set of pre-recorded messages that are available in a specific language and gender. It corresponds to the `voice` parameter in a [voice app](5_voice_apps.yaml) and controls the language & gender of the voice in which messages are played to the caller.
 
         ### Change the default voice of a voice app
 
-        To change the default the language, accent & gender of the messages in a voice app, you can update it's `voice` property by issuing a PUT request to `/account/{accountid}/voiceapp/{voiceappid}`.
+        To change the default voice of a voice app, you can update it's `voice` property by issuing a PUT request to `/account/{accountid}/voiceapp/{voiceappid}`.
 
         Here is an example where we are updating the default voice of a voicemail box to Spanish.
 
-        **Step 1**: Issue a GET request to `/globaldata/voiceprompts`. From the results, select which "voice" you wish to use. For example, to use the Spanish voice, make a note of its 3 letter code defined in the response's `lang_path` property. For Spanish this is `spa`.
+        **Step 1**: Issue a GET request to `/globaldata/voiceprompts`. From the results, select which "voice" you wish to use. For example, to use the Spanish voice, make a note of the code defined in the response's `lang_path` property. For Spanish this is `spa`.
 
         **Step 2**: Get the unique ID of the voice app for which you wish to change the default voice. Issue a GET request to `/account/{accountid}/voiceapp` and the resposne will return a list of all the voice apps in your account.
 
