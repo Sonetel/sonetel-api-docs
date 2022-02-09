@@ -1,7 +1,8 @@
 import requests
 import json
 from base64 import b64encode
-
+base_url = "https://chat-api.sonetel.com/"
+url_access_token = "https://api.sonetel.com/"
 #inputs
 username = input("Enter your username:")
 password = input("Enter the password:")
@@ -14,7 +15,7 @@ payload_of_accesstoken={'grant_type': 'password',
 'refresh': 'yes'}
 userAndPass = b64encode(b"sonetel-web:sonetel-web").decode("ascii")
 basic_auth_header = { 'Authorization' : 'Basic %s' %  userAndPass }
-gen_acc_token = requests.request("POST", f"https://chat-api.sonetel.com/SonetelAuth/1.3/oauth/token",headers = basic_auth_header, data=payload_of_accesstoken).json()
+gen_acc_token = requests.request("POST", "{}SonetelAuth/1.3/oauth/token".format(url_access_token),headers = basic_auth_header, data=payload_of_accesstoken).json()
 access_token = gen_acc_token['access_token']
 
 #account information  
@@ -22,7 +23,7 @@ headers = {"Authorization": "Bearer {}".format(access_token),
             'Content-Type': 'application/json'
             }
 #account info API
-api_acc_info =  requests.get(f'https://chat-api.sonetel.com/account/',headers=headers).json()
+api_acc_info =  requests.get('{}account/'.format(base_url),headers=headers).json()
 acc_id = api_acc_info['response']["account_id"]
 
 # print(api_acc_info)
@@ -33,7 +34,7 @@ cred_bal = api_acc_info['response']['credit_balance']
 def check_enough_bal():
 
     #available phone number API
-    avail_numb_country =  requests.get(f'https://chat-api.sonetel.com/numberstocksummary/{country}/availablephonenumber',headers=headers).json()
+    avail_numb_country =  requests.get('{}numberstocksummary/{}/availablephonenumber'.format(base_url,country),headers=headers).json()
     num_fee = avail_numb_country['response'][0]['recurring_fee']
     global phone_number
     phone_number = json.dumps({
@@ -49,5 +50,5 @@ def check_enough_bal():
 if(check_enough_bal()):
 
     #purchase phone number API
-    buy_number = requests.request("POST", f'https://chat-api.sonetel.com/account/{acc_id}/phonenumbersubscription', headers=headers, data=phone_number).json()
+    buy_number = requests.request("POST", '{}account/{}/phonenumbersubscription'.format(base_url,acc_id), headers=headers, data=phone_number).json()
     print("SUCCESS,you have purchased {}".format(phone_number))
