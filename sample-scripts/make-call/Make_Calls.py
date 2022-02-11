@@ -33,7 +33,7 @@ basic_auth_header = { 'Authorization' : 'Basic %s' %  userAndPass }
 
 
 
-gen_acc_token = requests.request("POST", "{}SonetelAuth/1.3/oauth/token".format(url_access_token),headers = basic_auth_header, data=payload_of_accesstoken).json()
+gen_acc_token = requests.request("POST", "{}SonetelAuth/beta/oauth/token".format(url_access_token),headers = basic_auth_header, data=payload_of_accesstoken).json()
 access_token = gen_acc_token['access_token']
 
 #account information  
