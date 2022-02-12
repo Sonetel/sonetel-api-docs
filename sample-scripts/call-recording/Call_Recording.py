@@ -65,7 +65,7 @@ def download_call_recordings():
     return response_download_recording
 if(choice==2):    
     #user have to enter call_recording_id
-    call_recording_id = input("copy and paste call_id from above list")
+    call_recording_id = input("copy and paste call_recording_id from above list")
     if(download_call_recordings()):
         print(response_download_recording["response"]["file"]["file_access_details"]["url"])
 
@@ -81,7 +81,7 @@ def delete_recording():
 if(choice==3):  
     # calling so user can see their call rec
     retrive_call_recordings()
-    del_rec_id = input("copy and paste call_id from above list which you want delete")       
+    del_rec_id = input("copy and paste call_recording_id from above list which you want to delete")       
     if(delete_recording()):
             print("Recording is successfully DELETED")
 
