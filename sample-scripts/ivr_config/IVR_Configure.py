@@ -2,8 +2,8 @@ import requests
 import json
 from base64 import b64encode
 
-base_url = "https://chat-api.sonetel.com/"
-url_access_token = "https://chat-api.sonetel.com/"
+base_url = "https://public-api.sonetel.com/"
+url_access_token = "https://api.sonetel.com/"
 
 username = input("Enter your username:")
 password = input("Enter the password:")
