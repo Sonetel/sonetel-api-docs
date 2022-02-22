@@ -34,8 +34,6 @@ acc_id = api_acc_info['response']["account_id"]
 
 ivr_name = input("Type some name for your new IVR")
 
-######################################################################
-
 #######################Digit action###############################
 def action(input_action):
     global ph_var
@@ -43,14 +41,14 @@ def action(input_action):
         ph_var= {
         "action": "call",
         "to": "user",
-        "id": input("enter phone number which you wanto connect with IVR digit")
+        "id": input("enter phone number which you want to connect with IVR digit")
         }
         return ph_var
     if input_action == 2:
         ph_var= {
         "action": "call",
         "to": "phnum",
-        "id": input("enter phone number which you wanto connect with IVR digit")
+        "id": input("enter phone number which you want to connect with IVR digit")
         }
         return ph_var
     if input_action == 3:
@@ -63,42 +61,70 @@ def action(input_action):
         return ph_var
         
 
-###################################create ivr#######
-def create_ivr():
-    input_digit = input("on which digit you want to configure action") 
-
-    print("type 1 to connect IVR digit to  user""\n"
-    "type 2 to connect IVR digit to phone number""\n"
-    "type 3 to connect IVR digit to another IVR""\n")
-
-    input_action = input("Select Any Action")
+#####################Append Dictionary#####################
+def append_dict(menu_dict,input_digit,input_action):
     
+    if 0<int(input_action)<=9: #here it will ignore "n" -1 -1
+        x = "digit_{}".format(input_digit)
+        menu_dict[x] = action(int(input_action))#calling func action
+        dict = menu_dict
+        print(dict)
+        global main_dict
+        main_dict = {
+        "app_type": "ivr",
+        "play_menu": "yes",
+        "name": ivr_name,
+        "voice": "en",
+        "play_welcome": "yes",
+        "get_extension": "yes",
+        "menu": dict
+        } 
+    #condtion if user don't want to add any options
+    elif input_digit==-1 and input_action==-1:
+        main_dict = main_dict = {
+        "app_type": "ivr",
+        "play_menu": "yes",
+        "name": ivr_name,
+        "voice": "en",
+        "play_welcome": "yes",
+        "get_extension": "yes",
+        "menu": {}
+        } 
+    return main_dict  
 
-# def digit(input_digit,input_action):
-
-    global menu_dict
-    x = "digit_{}".format(input_digit)
-    menu_dict[x] = action(int(input_action))#calling func action
-    print(menu_dict)
-    local_dict = {
-    "app_type": "ivr",
-    "play_menu": "yes",
-    "name": ivr_name,
-    "voice": "en",
-    "play_welcome": "yes",
-    "get_extension": "yes",
-    "menu": {}
-    }    
 #######################################################################
+menu_dict = {}
 
-count = 0
 for count in range(9):
     yorn_input = input("press 'y' if you want to add options else 'n' ")
     if yorn_input == "y":
-        create_ivr()
-        count+=1
-    elif yorn_input == "n":
-        break    
+        input_digit = input("on which digit you want to configure action") 
 
-           
-           
+        print("type 1 to connect IVR digit to  user""\n"
+        "type 2 to connect IVR digit to phone number""\n"
+        "type 3 to connect IVR digit to another IVR""\n")
+
+        input_action = input("Select Any Action")
+        append_dict(menu_dict,input_digit,input_action)
+    elif yorn_input == "n":
+        append_dict(menu_dict,-1,-1) 
+        break
+
+###########################Para########################################
+
+create_ivr_payload = json.dumps(main_dict)
+create_ivr_headers = {"Authorization": "Bearer {}".format(access_token),
+            'Content-Type': 'application/json;charset=UTF-8'
+            }
+
+################Create New IVR#####################
+def create_new_ivr():
+    response_create_ivr = requests.request("POST", "{}account/{}/voiceapp".format(base_url, acc_id), headers=create_ivr_headers, data=create_ivr_payload).json()
+    print(response_create_ivr)      
+    if response_create_ivr["status"]=="success":
+        return True
+    else:
+        return False    
+if(create_new_ivr()):
+    print("IVR Created successfully")
+
