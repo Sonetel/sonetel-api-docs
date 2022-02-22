@@ -41,7 +41,7 @@ def action(input_action):
         ph_var= {
         "action": "call",
         "to": "user",
-        "id": input("enter phone number which you want to connect with IVR digit")
+        "id": input("enter user id which you want to connect with IVR digit")
         }
         return ph_var
     if input_action == 2:
