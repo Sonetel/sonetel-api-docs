@@ -64,9 +64,10 @@ def action(input_action):
 #####################Append Dictionary#####################
 def append_dict(menu_dict,input_digit,input_action):
     
-    if 0<int(input_action)<=9: #here it will ignore "n" -1 -1
+    if -1<int(input_digit)<=9: #here it will ignore "n" -1 -1
         x = "digit_{}".format(input_digit)
         menu_dict[x] = action(int(input_action))#calling func action
+        global dict
         dict = menu_dict
         print(dict)
         global main_dict
@@ -88,7 +89,7 @@ def append_dict(menu_dict,input_digit,input_action):
         "voice": "en",
         "play_welcome": "yes",
         "get_extension": "yes",
-        "menu": {}
+        "menu": dict
         } 
     return main_dict  
 
@@ -113,6 +114,7 @@ for count in range(9):
 ###########################Para########################################
 
 create_ivr_payload = json.dumps(main_dict)
+# print(create_ivr_payload)
 create_ivr_headers = {"Authorization": "Bearer {}".format(access_token),
             'Content-Type': 'application/json;charset=UTF-8'
             }
