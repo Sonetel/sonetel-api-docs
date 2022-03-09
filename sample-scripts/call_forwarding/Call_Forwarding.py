@@ -37,14 +37,23 @@ fwd_phn_num =input("Enter phone number") #Your phone number in the E164 format w
 
 
 #Choices for user
-print("type 1 to change call forwarding to mobile number""\n"
-    "type 2 to change call forwarding to SIP URL""\n"
-    "type 3 to change call forwarding to voice app""\n")
+print("type 1 to change call forwarding to user""\n"
+    "type 2 to change call forwarding to mobile number""\n"
+    "type 3 to change call forwarding to SIP URL""\n"
+    "type 4 to change call forwarding to voice app""\n")
 choice = int(input("Enter your choice"))
 
 
 ########################payload for forwarding##################
 if(choice==1):
+    connect_to_type = "user"
+    connect_to = input("Enter the user_id")
+    payload_fwd =json.dumps({
+  "connect_to_type": connect_to_type,
+  "connect_to": connect_to
+})
+
+elif(choice==2):
     connect_to_type = "phnum"
     connect_to = input("Enter the phone number")
     payload_fwd =json.dumps({
@@ -52,7 +61,7 @@ if(choice==1):
   "connect_to": connect_to
 })
 
-elif(choice==2):
+elif(choice==3):
     connect_to_type = "sip"
     connect_to = input("Enter the sip url")
     payload_fwd =json.dumps({
@@ -60,16 +69,25 @@ elif(choice==2):
   "connect_to": connect_to
 })
 
-elif(choice==3):
-    response_appid = requests.request("GET", "{}account/{}/voiceapp".format(base_url, acc_id), headers=headers).json()
-    print(response_appid)
+elif(choice==4):
+    response_appid = requests.request("GET", "{}account/{}/voiceapp".format(base_url ,acc_id), headers=headers).json()
+
+    #Load JSON string into a dictionary
+    # json_dict = json.loads(response_appid["response"])
+
+    #Loop along dictionary keys
+    for value in response_appid["response"]:
+        print(value["name"], ":", value["app_id"])
+        # print(value)
+    # print(response_appid)
     # app_id = response_appid["response"][0]["app_id"]
+    app_id = input("Enter the ONLY app_id from above list:")
     connect_to_type = "app"
     payload_fwd =json.dumps({
   "connect_to_type": connect_to_type,
   "connect_to": {
     "app_type": "ivr",
-    "app_id": input("Enter app_id from above list")
+    "app_id": app_id
   }
 })
 
