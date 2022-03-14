@@ -9,19 +9,8 @@ url_access_token = "https://api.sonetel.com/"
 username = input("Enter your username:")
 password = input("Enter the password:")
 
-#Authentication of user / get an access token
-payload_of_accesstoken={'grant_type': 'password',
-'username': username,
-'password': password,
-'refresh': 'yes'}
-
-#encoding username and pswd into base64 format
-userAndPass = b64encode(b"sonetel-web:sonetel-web").decode("ascii")
-basic_auth_header = { 'Authorization' : 'Basic %s' %  userAndPass }
-
-gen_acc_token = requests.request("POST", "{}SonetelAuth/oauth/token".format(url_access_token),headers = basic_auth_header, data=payload_of_accesstoken).json()
-access_token = gen_acc_token['access_token']
-
+#access token
+access_token = input("Enter the Access Token")
 
 #account information  
 headers = {"Authorization": "Bearer {}".format(access_token),
@@ -37,11 +26,11 @@ fwd_phn_num =input("Enter phone number") #Your phone number in the E164 format w
 
 
 #Choices for user
-print(#"type 1 to change call forwarding to user""\n"
-    "type 1 to change call forwarding to mobile number""\n"
-    "type 2 to change call forwarding to SIP URL""\n"
-    "type 3 to change call forwarding to voice app""\n")
-choice = int(input("Enter your choice"))
+# print(#"type 1 to change call forwarding to user""\n"
+#     "type 1 to change call forwarding to mobile number""\n"
+#     "type 2 to change call forwarding to SIP URL""\n"
+#     "type 3 to change call forwarding to voice app""\n")
+choice = int(1) #to mobile number
 
 
 ########################payload for forwarding##################
