@@ -1,49 +1,36 @@
 import requests
-import json
-from base64 import b64encode
 
 base_url = "https://public-api.sonetel.com/"
-url_access_token = "https://api.sonetel.com/"
 
-username = input("Enter your username:")
-password = input("Enter the password:")
-
-#function will change the format of date
+# Function will change the format of date
 def date_format_change(date):
     date.replace(":", "%3A")
 
-created_date_max = input("Enter the max date")
+# Enter Date
+created_date_max = "ENTER THE MAX DATE"
 date_format_change(created_date_max)
-created_date_min = input("Enter the min date")
+
+created_date_min = "ENTER THE MIN DATE"
 date_format_change(created_date_min)
 
-#Authentication of user / get an access token
-payload_of_accesstoken={'grant_type': 'password',
-'username': username,
-'password': password,
-'refresh': 'yes'}
+#  API Access token
+access_token = "ENTER_ACCESS_TOKEN"
 
-#encoding username and pswd into base64 format
-userAndPass = b64encode(b"sonetel-web:sonetel-web").decode("ascii")
-basic_auth_header = { 'Authorization' : 'Basic %s' %  userAndPass }
-
-gen_acc_token = requests.request("POST", "{}SonetelAuth/oauth/token".format(url_access_token),headers = basic_auth_header, data=payload_of_accesstoken).json()
-access_token = gen_acc_token['access_token']
+#  Sonetel account ID
+acc_id =  "ENTER_ACCOUNT_ID"
 
 #account information  
 headers = {"Authorization": "Bearer {}".format(access_token),
             'Content-Type': 'application/json'
             }
+            
+#########################Choices for user######################
 
-#account info API
-api_acc_info =  requests.get('{}account/'.format(base_url),headers=headers).json()
-acc_id = api_acc_info['response']["account_id"]
+#     type 1 to View recording
+#     type 2 to Download recording
+#     type 3 to Delete recording  
 
-#Choices for user
-print("type 1 to View recording""\n"
-    "type 2 to Download recording""\n"
-    "type 3 to Delete recording""\n")
-choice = int(input("Enter your choice"))
+choice = 1; # Download Recording           
 
 ########################retrive all call recordings##################
 
@@ -51,9 +38,7 @@ def retrive_call_recordings():
     global response_all_recording
     response_all_recording= requests.request("GET", "{}call-recording?account_id={}&created_date_min={}&created_date_max={}&type=voice_call&fields=voice_call_details".format(base_url,acc_id,created_date_min,created_date_max), headers=headers).json()
     return response_all_recording
-
-if(choice==1,2,3):
-    
+if(choice==1):
     if(retrive_call_recordings()):
         print(response_all_recording["response"])
 
@@ -65,7 +50,7 @@ def download_call_recordings():
     return response_download_recording
 if(choice==2):    
     #user have to enter call_recording_id
-    call_recording_id = input("copy and paste call_recording_id from above list")
+    call_recording_id = "ENTER CALL_RECORDING_ID"
     if(download_call_recordings()):
         print(response_download_recording["response"]["file"]["file_access_details"]["url"])
 
@@ -81,7 +66,7 @@ def delete_recording():
 if(choice==3):  
     # calling so user can see their call rec
     retrive_call_recordings()
-    del_rec_id = input("copy and paste call_recording_id from above list which you want to delete")       
+    del_rec_id = "ENTER CALL_RECORDING_ID" 
     if(delete_recording()):
             print("Recording is successfully DELETED")
 
