@@ -3,10 +3,6 @@ import json
 
 base_url = "https://public-api.sonetel.com/"
 
-#your acc info
-username = "ENTER_YOUR_USERNAME:"
-password = "ENTER_THE_PASSWORD:"
-
 #make a call
 phone_1 = "SENDER'S_PHONE_NUMBER"
 phone_2 = "RECEIVER'S_PHONE_NUMBER"
