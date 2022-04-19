@@ -34,3 +34,6 @@ curl_close($curl);
 if ($response->{'status'} == "success") {
     echo ("$phnum added to your account.");
 }
+else{
+    echo($response->{'response'});
+}
