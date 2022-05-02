@@ -4,10 +4,10 @@ $base_url = "https://public-api.sonetel.com/";
 
 //Enter Date
 $created_date_max = "yyyy-mm-ddThh:mm:ssZ";
-urlencode($created_date_max);
+$created_date_max = urlencode($created_date_max);
 
 $created_date_min = "yyyy-mm-ddThh:mm:ssZ";
-urlencode($created_date_min);
+$created_date_max = urlencode($created_date_min);
 
 // API Access token
 $access_token = "ENTER_ACCESS_TOKEN";
