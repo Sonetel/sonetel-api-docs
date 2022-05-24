@@ -49,7 +49,15 @@ try:
     # Raise an error if the API request failed.
     response.raise_for_status()
     # Print the result if the API request was successful.
-    print(response.json())
+    token = response.json()
+    
+    # Use the token, to get basic information about the Sonetel account.
+    accountInfo = requests.get(
+        url = 'https://public-api.sonetel.com/account/',
+        headers = { "Authorization" : f'Bearer {token["access_token"]}' }
+        )
+    accountInfo.raise_for_status()
+    print(accountInfo.json())
 
 except requests.exceptions.RequestException as e:
     raise SystemExit(e)
