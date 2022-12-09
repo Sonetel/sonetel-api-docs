@@ -1,24 +1,41 @@
-import requests
+"""
+Sample script to purchase a phone number.
+Use the /availablephonenumber endpoint to get a list of numbers available for purchase
+
+Read more at https://docs.sonetel.com
+"""
 import json
+import requests
+import jwt
+
+# Numumber to purchase
+phnum = "ENTER_PHONE_NUMBER"
 
 base_url = "https://public-api.sonetel.com/"
 
 #  API Access token
 access_token = "ENTER_ACCESS_TOKEN"
+decoded_token = jwt.decode(
+    access_token,
+    audience='api.sonetel.com',
+    options={"verify_signature": False}
+    )
+acc_id = decoded_token['acc_id']
 
-#  Phone numumber to purchase
-phnum = "ENTER_PHONE_NUMBER"
-phnum = json.dumps({"phnum": phnum})
+# Request headers
+headers = {
+    "Authorization": "Bearer {}".format(access_token),
+    'Content-Type': 'application/json'
+    }
 
-# Sonetel account ID
-acc_id =  "ENTER_ACCOUNT_ID"
+# Purchase phone number
+response = requests.request(
+    "POST",
+    '{}account/{}/phonenumbersubscription'.format(base_url,acc_id),
+    headers=headers,
+    data=json.dumps({"phnum": phnum}), timeout=60)
 
-#account information  
-headers = {"Authorization": "Bearer {}".format(access_token),
-            'Content-Type': 'application/json'
-            }
+response.raise_for_status()
 
-#purchase phone number API
-response = requests.request("POST", '{}account/{}/phonenumbersubscription'.format(base_url,acc_id), headers=headers, data=phnum).json()
-if response['status']=="success":
-    print("SUCCESS,you have purchased {}".format(phnum))
+if response.ok:
+    print(response.json())
