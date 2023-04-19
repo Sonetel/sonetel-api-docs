@@ -7,7 +7,7 @@ import os
 user = os.environ.get('sonetelUserName')
 pwd = os.environ.get('sonetelPassword')
 acc_id = os.environ.get('sonetelAccountId')
-base_url = "https://api.sonetel.com"
+base_url = "https://public-api.sonetel.com"
 
 
 class VoiceApp:
@@ -177,11 +177,11 @@ class VoiceApp:
 
 
 if __name__ == "__main__":
-     i = raw_input("Choose the digit of the Voiceapp you want to update (0-9 or timeout): ")
      try:
+          i = input("Choose the digit of the Voiceapp you want to update (0-9 or timeout): ")
           if i == 'timeout' or 0 <= int(i) <= 9:
                b = input("Choose for updating the voiceapp to,\n1 - Play a Message\n2 - Connect to a User\n3 - Connect to a Team\n4 - Connect to a Phone Number\n5 - Connect to a Voiceapp(like Main Menu, System Prompt or Voice Mail)\n6 - Connect to a SIP Address\n7 - Disconnect the Voiceapp\nEnter your Choice: ")
-               if 1 <= b <= 7:
+               if 1 <= int(b) <= 7:
                     h = VoiceApp(i, b)
                     print(h.updateConfig())
                else:
