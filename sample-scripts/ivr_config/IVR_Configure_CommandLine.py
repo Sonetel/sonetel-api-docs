@@ -1,4 +1,4 @@
-import urllib
+import urllib.parse
 import json
 import requests
 import os
@@ -24,7 +24,7 @@ class VoiceApp:
         print(user, pwd)
         print(url)
 
-        payload = urllib.urlencode({
+        payload = urllib.parse.urlencode({
             'grant_type' : 'password',
             'password' : pwd,
             'refresh' : 'yes',
@@ -53,7 +53,7 @@ class VoiceApp:
 
     def getVoiceAppConfig(self, token):
         '''This method accepts the access token as its argument and through this and the url, it fetches the voiceapp config by making a get request. It returns the url and the response of the api call'''
-        uri = base_url + "/account/" + acc_id + "/voiceapp/"
+        uri = base_url + "/account/" + str(acc_id) + "/voiceapp/"
         print(uri)
 
         headers = {
@@ -82,21 +82,24 @@ class VoiceApp:
             6: ["call", "other"],
             7: ["disconnect"]
         }
-        if self.option == 7:
-            print("Disconnecting Voiceapp...")
-            return self.updateVoiceApp(voiceapps[self.option][0])
-        elif self.option == 6:
-            print("Connecting to SIP address...")
-            return self.updateVoiceApp(voiceapps[self.option][0], voiceapps[self.option][1], self.option)
-        elif self.option == 5:
-            ids = input("Choose,\n1 - To select Main Menu\n2 - To select System Prompt\n3 - To select Voice Mail\nEnter your Choice: ")
-            if 1 <= ids <=  3:
-                return self.updateVoiceApp(voiceapps[self.option][0], voiceapps[self.option][1], ids)
+        try:
+            if self.option == 7:
+                print("Disconnecting Voiceapp...")
+                return self.updateVoiceApp(voiceapps[self.option][0])
+            elif self.option == 6:
+                print("Connecting to SIP address...")
+                return self.updateVoiceApp(voiceapps[self.option][0], voiceapps[self.option][1], self.option)
+            elif self.option == 5:
+                ids = int(input("Choose,\n1 - To select Main Menu\n2 - To select System Prompt\n3 - To select Voice Mail\nEnter your Choice: "))
+                if 1 <= ids <=  3:
+                    return self.updateVoiceApp(voiceapps[self.option][0], voiceapps[self.option][1], ids)
+                else:
+                    return "Invalid Choice"
             else:
-                return "Invalid Choice"
-        else:
-            ids = raw_input("Provide the respective id %s:"%voiceapps[self.option][2])
-            return self.updateVoiceApp(voiceapps[self.option][0], voiceapps[self.option][1], ids)
+                ids = input("Provide the respective id %s:"%voiceapps[self.option][2])
+                return self.updateVoiceApp(voiceapps[self.option][0], voiceapps[self.option][1], ids)
+        except Exception as e:
+            return e
         
         
     def updateVoiceApp(self, action, to=None, i=None):
@@ -148,7 +151,6 @@ class VoiceApp:
                 }
             }
         }
-        #print(payload)
 
         headers = {
             'Authorization': t,
@@ -180,8 +182,8 @@ if __name__ == "__main__":
      try:
           i = input("Choose the digit of the Voiceapp you want to update (0-9 or timeout): ")
           if i == 'timeout' or 0 <= int(i) <= 9:
-               b = input("Choose for updating the voiceapp to,\n1 - Play a Message\n2 - Connect to a User\n3 - Connect to a Team\n4 - Connect to a Phone Number\n5 - Connect to a Voiceapp(like Main Menu, System Prompt or Voice Mail)\n6 - Connect to a SIP Address\n7 - Disconnect the Voiceapp\nEnter your Choice: ")
-               if 1 <= int(b) <= 7:
+               b = int(input("Choose for updating the voiceapp to,\n1 - Play a Message\n2 - Connect to a User\n3 - Connect to a Team\n4 - Connect to a Phone Number\n5 - Connect to a Voiceapp(like Main Menu, System Prompt or Voice Mail)\n6 - Connect to a SIP Address\n7 - Disconnect the Voiceapp\nEnter your Choice: "))
+               if 1 <= b <= 7:
                     h = VoiceApp(i, b)
                     print(h.updateConfig())
                else:
