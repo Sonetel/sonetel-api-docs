@@ -1,0 +1,122 @@
+extends:
+- spectral:oas
+formats:
+- oas3
+rules:
+  info-contact-present:
+    description: Contact information (name & email) must be provided in the API info
+      object
+    message: info.contact.name and info.contact.email are required
+    given: $.info
+    severity: error
+    then:
+    - field: contact.name
+      function: truthy
+    - field: contact.email
+      function: truthy
+  path-lowercase:
+    description: All path segments must be lowercase; use hyphens to separate words.
+      Path parameters are exempt.
+    message: Path '{{value}}' should be lowercase and use hyphens (e.g. /resource-name)
+    given: $.paths.*~
+    severity: error
+    then:
+      function: pattern
+      functionOptions:
+        match: ^(/[a-z0-9\-{}]+)+$
+  path-parameter-naming:
+    description: Path parameter names should be lowercase and end with 'id'
+    message: Path parameter '{{value}}' should be lowercase and end with 'id'
+    given: $.paths.*.*.parameters[?(@.in=='path')].name
+    severity: warning
+    then:
+      function: pattern
+      functionOptions:
+        match: ^[a-z0-9]+id$
+  operation-summary:
+    description: "Each operation must have a non\u2011empty summary."
+    message: Operation is missing a summary.
+    given: $.paths.*.*
+    severity: error
+    then:
+      field: summary
+      function: truthy
+  operation-description:
+    description: Each operation must have a description.
+    message: Operation is missing a description.
+    given: $.paths.*.*
+    severity: error
+    then:
+      field: description
+      function: truthy
+  operation-id-kebab-case:
+    description: "operationId should be kebab\u2011case verb\u2011noun (e.g., get-user)."
+    message: "operationId '{{value}}' should be kebab\u2011case verb\u2011noun (e.g.,\
+      \ get-user)."
+    given: $.paths.*.*.operationId
+    severity: warning
+    then:
+      function: pattern
+      functionOptions:
+        match: ^[a-z]+(-[a-z]+)+$
+  2xx-response-description:
+    description: 2xx responses must have a description.
+    message: Response {{property}} is missing description.
+    given: $.paths.*.*.responses[?(/^2[0-9]{2}$/.test(@property))]
+    severity: error
+    then:
+      field: description
+      function: truthy
+  bearer-auth-header:
+    description: Operations that require Authorization header must document it.
+    message: Operation is missing 'Authorization' header parameter.
+    given: $.paths.*.*
+    severity: warning
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          required:
+          - parameters
+          properties:
+            parameters:
+              type: array
+              contains:
+                type: object
+                required:
+                - name
+                - in
+                properties:
+                  name:
+                    enum:
+                    - Authorization
+                  in:
+                    enum:
+                    - header
+  schema-property-snake-case:
+    description: Schema property names must be snake_case.
+    message: Property '{{property}}' is not snake_case.
+    given: $..properties.*~
+    severity: error
+    then:
+      function: pattern
+      functionOptions:
+        match: ^[a-z]+(_[a-z0-9]+)*$
+  schema-property-description:
+    description: All schema properties must have a description.
+    message: Property {{property}} is missing a description.
+    given: $..properties.*
+    severity: warning
+    then:
+      field: description
+      function: truthy
+  enum-values-lowercase:
+    description: Enum values must be lowercase.
+    message: Enum value '{{value}}' should be lowercase.
+    given: $..enum[*]
+    severity: warning
+    then:
+      function: pattern
+      functionOptions:
+        match: ^[a-z0-9_\-]+$
