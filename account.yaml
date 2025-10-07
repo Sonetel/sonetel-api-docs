@@ -1,0 +1,538 @@
+openapi: 3.1.0
+info:
+  version: '2.0'
+  title: Account
+  summary: Manage account
+  description: |-
+    The account resource represents the Sonetel account for your company. Use it to fetch your company wide settings, account status, prepaid credit etc.
+
+    It is accessed using the unique account-id under the base URL with a format `https://public-api.sonetel.com/account/{accountid}`
+
+    Please see [these instructions](https://docs.sonetel.com/docs/sonetel-documentation/ZG9jOjE0OTY4MTY5-frequently-asked-questions#how-can-i-find-my-account-id "How can I find my account ID?") to find your account ID.
+  termsOfService: 'https://sonetel.com/en/help/help-topics/terms-conditions/terms-conditions/'
+  contact:
+    name: Sonetel API Support
+    email: api.support@sonetel.com
+servers:
+  - url: 'https://public-api.sonetel.com'
+    description: Production
+paths:
+  '/account/{accountId}':
+    get:
+      summary: Get your account information
+      description: 'Issue a GET request to the `/account/{accountId}` endpoint to fetch your account properties such as the currency and current prepaid balance.'
+      operationId: get-users-userId
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - name: fields
+          in: query
+          description: 'Specify which fields must be returned. The list of fields must be specified comma separated. Possible values of fields are: `call_recording_settings`, `autorefill_settings`, `notifications`, `usage`, `service_settings`'
+          schema:
+            type: string
+        - name: accountId
+          in: path
+          description: Your Sonetel account ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account-GET'
+          headers:
+            Content-Type:
+              schema:
+                type: string
+              description: application/json;charset=UTF-8
+        '404':
+          description: User Not Found
+      security:
+        - Production: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+    put:
+      summary: Update your account information
+      description: |
+        # Update your account information
+
+        Update you account properties by issuing a PUT request to the `/account/{accountId}` endpoint.
+
+        At the moment, you can update the following properties in your account:
+
+        1. Company name
+        2. Language
+        3. Timezone
+
+        In order to update the language and timezone, you will need to use the unique language and timezone identifiers. You can easily get them from our `/globaldata` endpoint.
+
+        - `language` - https://public-api.sonetel.com/globaldata/language
+        - `zone_id` - https://public-api.sonetel.com/globaldata/timezone
+
+        Read more [about the /globaldata APIs](8_globaldata.yaml).
+      operationId: put-account-accountId
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer <ACCESS_TOKEN>
+          required: true
+          schema:
+            type: string
+        - name: Content-Type
+          in: header
+          description: application/json
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: accountId
+          in: path
+          description: Your Sonetel account ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account-PUT'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account-GET'
+          headers:
+            Content-Type:
+              schema:
+                type: string
+              description: application/json;charset=UTF-8
+        '401':
+          description: Unauthorized
+      security:
+        - Production: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  '/account/{accountId}/settings/data-mgr/call-recording':
+    get:
+      summary: Fetch call recording data settings
+      description: Fetch a user's data management settings for call recordings.
+      operationId: get-account-accountId-settings-data-mgr-call-recording
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/DataMgrCallRecSettings'
+      security:
+        - {}
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: true
+    put:
+      summary: Update call recording data settings
+      operationId: put-account-accountId-settings-data-mgr-call-recording
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountDataMgrCallRecSettings'
+      responses:
+        '200':
+          $ref: '#/components/responses/DataMgrCallRecSettings'
+      security:
+        - {}
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: true
+components:
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: The authorization header contains your access token and is used to authenticate requests. Generate an `access_token` using the `/oauth/token` endpoint.
+      required: true
+      schema:
+        type: string
+        examples:
+          - Bearer <ACCESS_TOKEN>
+  securitySchemes:
+    Production:
+      type: oauth2
+      flows:
+        password:
+          refreshUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          tokenUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          scopes: {}
+  responses:
+    Error-response:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              response:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: A detailed description of the error.
+                    minLength: 1
+                  code:
+                    type: string
+                    description: The error code.
+                    minLength: 1
+              resource:
+                type: string
+                description: The resource that was accessed
+                minLength: 1
+              status:
+                type: string
+                description: The response from the server i.e. success or failed.
+                minLength: 1
+            x-examples:
+              example-1:
+                response:
+                  detail: string
+                  code: string
+                  '': string
+                resource: string
+                status: string
+                '': string
+    DataMgrCallRecSettings:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AccountDataMgrCallRecSettings'
+  schemas:
+    Account-GET:
+      type: object
+      title: Account-GET
+      description: Your Sonetel account settings
+      properties:
+        resource:
+          type: string
+          description: Name of the resource accessed
+        status:
+          type: string
+          enum:
+            - success
+            - failed
+          description: The status of the request
+        response:
+          type: object
+          properties:
+            account_id:
+              type: string
+              description: The unique account Id of the company account in Sonetel
+              readOnly: true
+            area_code:
+              type: string
+              description: The telephone area code where the company is located.
+            name:
+              type: string
+              description: The name of the company
+            status:
+              type: string
+              enum:
+                - active
+                - inactive
+                - evaluation
+                - disabled
+              description: 'The status of the account – “active”, “inactive”, “evaluation” or “disabled”'
+              readOnly: true
+            status_desc:
+              type: string
+              description: An additional description of the status of the account. For e.g. this could carry a text describing why the account was disabled
+              readOnly: true
+            currency:
+              type: string
+              enum:
+                - usd
+                - eur
+                - sek
+              description: 'Currency for the account. The currency, once set, cannot be changed. All billing related transactions for the account are done in this currency.'
+              readOnly: true
+            address:
+              type: string
+              description: 'Company address, line 1.'
+            address2:
+              type: string
+              description: 'Company address, line 2.'
+            city:
+              type: string
+              description: 'Company address, city name.'
+            zipcode:
+              type: string
+              description: 'Company address, postal code.'
+            country:
+              type: string
+              description: The country where the company is located.
+            credit_balance:
+              type: string
+              description: The prepaid balance in the account's currency. Specified upto 2 decimal places.
+              readOnly: true
+            timezone:
+              type: string
+              description: Timezone name abbreviation in IANA format
+            language:
+              type: string
+              description: The account's defaut language in ISO language format.
+            priceplan:
+              type: string
+              enum:
+                - premium
+                - business
+                - regular
+              description: 'Returns the paid plan that applies to this account. Accounts with Premium or Busines plan enabled, have this value set as "premium" or "business". For other accounts, this value is “regular".'
+            plan_details:
+              type: string
+              description: JSON block that is added to provide additional information about the current plan subscribed
+            website:
+              type: object
+              description: The URL of the website(s) where the chat widget associated with the customer's account has been detected.
+              properties:
+                website_status:
+                  type: string
+                  description: Status of the chat widget verification.
+            daily_usage_limit:
+              type: string
+              description: |-
+                The maximum amount of usage allowed in the account in a 24 hour period.
+
+                This value is in USD and is converted to the account's currency for calculation.
+
+                Does not include subscription renewals. To increase this contact suppor
+              readOnly: true
+            vat_relevant:
+              type: boolean
+              description: Boolean indicating if the concept of VAT is applicable for this account. If the account country is from the European countries then this field is "TRUE".
+            user_count:
+              type: number
+              description: The number of users in the account.
+            language_id:
+              type: number
+              description: 3 character ISO code for language
+            timezone_details:
+              type: object
+              description: Details about the account timezone.
+              properties:
+                zone_name:
+                  type: string
+                  description: List of major cities to identify the timezone
+                zone_id:
+                  type: number
+                  description: Internal ID of the timezone
+            account_verified:
+              type: boolean
+              description: Boolean flag to indicate whether the account has been verified by Sonetel or not.
+            current_country:
+              type: string
+              description: The current country set for the account. Affects how phone numbers are dialed in the local format.
+            phnum_count:
+              type: number
+              description: The amount of phone number subscriptions linked to the account.
+              readOnly: true
+            companyNameUpdated:
+              type: boolean
+              description: Boolean flag to indicate whether the company's name has been updated after signup.
+            account_type:
+              type: string
+              enum:
+                - main_account
+                - sub_account
+              description: The type of account. This is set to `main_account` for most users.
+              readOnly: true
+            account_category:
+              type: string
+              enum:
+                - regular
+                - reseller
+                - affiliate
+              description: This is read only field that returns the category of the account.
+              readOnly: true
+            service_settings:
+              $ref: '#/components/schemas/ServiceSettings'
+      examples:
+        - resource: account
+          status: success
+          response:
+            account_id: '20000000'
+            area_code: ''
+            name: Acme Inc
+            status: active
+            status_desc: ''
+            currency: USD
+            address: ''
+            address2: ''
+            city: ''
+            zipcode: ''
+            country: ARE
+            credit_balance: '492.74'
+            timezone: 'GMT -05:00'
+            language: eng
+            priceplan: regular
+            plan_details: ''
+            website:
+              website_status: unverified
+            daily_usage_limit: '25'
+            vat_relevant: false
+            user_count: 4
+            language_id: 129
+            timezone_details:
+              zone_name: '(GMT -4:00) Eastern Time (US and Canada), New York, Detroit'
+              zone_id: 38
+            account_verified: false
+            current_country: AFG
+            phnum_count: 4
+            companyNameUpdated: false
+            account_type: main_account
+            account_category: regular
+      x-examples:
+        example-1:
+          resource: account
+          response:
+            account_id: '2000000007'
+            area_code: '8'
+            name: Sonetel
+            status: active
+            status_desc: ''
+            currency: SEK
+            address: Mailbox 647
+            address2: test111
+            city: Stockholm
+            zipcode: '6464'
+            country: SWE
+            credit_balance: '6897.57'
+            timezone: 'GMT +05:30'
+            language: eng
+            priceplan: regular
+            plan_details: ''
+            website:
+              website_status: verified
+            daily_usage_limit: '3321.31'
+            vat_relevant: true
+            user_count: 56
+            language_id: 41
+            timezone_details:
+              zone_name: '(GMT +5:30) New Delhi, Kolkata, Mumbai, Chennai'
+              zone_id: 12
+            account_verified: false
+            current_country: SWE
+            phnum_count: 126
+            companyNameUpdated: false
+            account_type: main_account
+            account_category: regular
+          status: success
+    ServiceSettings:
+      type: object
+      title: ServiceSettings
+      description: An account's service settings
+      properties:
+        team_chat:
+          type: boolean
+          description: Specifies if the account has team chat service available and turned on
+          default: false
+        customer_chat:
+          type: boolean
+          description: Specifies if the account has customer chat service available and and turned on
+          default: false
+        ai_helper:
+          type: boolean
+          description: Specifies if the account has AI Helper services available and and turned on
+          default: false
+        free_trial:
+          type: string
+          enum:
+            - inactive
+            - active
+            - used
+          description: "Specifies the status of free trial of services. Free trial applies to services such as Team chat and Customer chat which are available for free trial for a limited duration\r\n\r\n`active`: Free trial is currently active\r\n\r\n`inactive`: Free trial has never been used and is inactive currently\r\n\r\n`used`: Free trial has been consumed and has expired"
+          readOnly: true
+    Account-PUT:
+      type: object
+      title: Account-PUT
+      description: Update your account settings
+      properties:
+        name:
+          type: string
+          description: The new name of your company.
+        language:
+          type: string
+          description: |-
+            The 3 letter ISO language code such as `deu` for German or `swa` for Swahili.
+
+            Get a list of all the language codes from https://beta-api.sonetel.com/globaldata/language
+        timezone_details:
+          type: object
+          description: The object containing the updated timezone.
+          properties:
+            zone_id:
+              type: string
+              description: Two digit timezone identifier.
+          required:
+            - zone_id
+        service_settings:
+          $ref: '#/components/schemas/ServiceSettings-PUT'
+          description: Specify values that are changed. Values that are not provided remain un-altered
+      examples:
+        - name: Acme Inc.
+          language: hye
+          timezone_details:
+            zone_id: '45'
+    ServiceSettings-PUT:
+      type: object
+      title: ServiceSettings-PUT
+      description: Service settings of an account that can be updated
+      properties:
+        team_chat:
+          type: boolean
+          description: Specify if team chat service must be turned on (true) for the account
+          default: false
+        customer_chat:
+          type: boolean
+          description: Specify if customer chat service must be turned on (true) for the account
+          default: false
+        ai_helper:
+          type: boolean
+          description: Specify if AI helper service must be turned on (true) for the account
+          default: false
+    AccountDataMgrCallRecSettings:
+      type: object
+      title: AccountDataMgrCallRecSettings
+      properties:
+        auto_delete:
+          type: string
+          enum:
+            - none
+            - all
+            - voice-files
+          description: Specifies if `all` data or just `voice-files` must be automatically deleted
+        auto_delete_time:
+          type: string
+          enum:
+            - immediate
+            - 1m
+            - 3m
+            - 1y
+          description: "`immediate`: Delete immediately after the service data is generated\r\n\r\n`1m`: Delete 1 months after the service data is generated\r\n\r\n`3m`: Delete 3 months after the service data is generated\r\n\r\n`1y`: Delete 1 year after the service data is generated"
+security:
+  - {}

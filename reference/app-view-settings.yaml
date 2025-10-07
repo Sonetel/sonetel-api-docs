@@ -1,0 +1,169 @@
+swagger: '2.0'
+info:
+  title: App Settings
+  contact:
+    name: ''
+  version: '1.0'
+host: api.sonetel.com
+basePath: /
+schemes:
+  - https
+paths:
+  /app-view-settings:
+    get:
+      summary: GET app-view-settings
+      description: Get the app-view settings
+      operationId: get-app-view-settings
+      produces:
+        - application/json
+      parameters:
+        - name: Authrorization
+          in: query
+          type: string
+        - name: app
+          in: query
+          description: App Type
+          type: string
+        - name: language
+          in: query
+          description: Two-char-language code
+          type: string
+      schemes:
+        - https
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/view_settings'
+          examples:
+            Valid example:
+              version_date: LCRV20250305122515
+              hide:
+                - account-website-chat-auto-assignment
+                - account-website-chat-rules
+                - account-incoming-calls
+                - account-inbound-sms
+                - account-twitter-pages
+                - account-incoming-email
+                - number-call-forward-exceptions
+                - account-call-recording-transcribe
+                - account-voiceapps-prompt-record
+                - account-numbers-sms
+                - conversations-sms
+                - conversations-zoom
+                - conversations-voice-messages
+                - calls-video
+                - calls-transfer
+                - calls-csg
+                - people-customers
+                - insights
+                - conversations-translations
+                - calls-record-in-call
+                - calls-conference
+                - mm-upload-google-drive
+                - mm-upload-one-drive
+                - mm-settings
+              layout:
+                version: '1.1'
+                cards:
+                  - templateId: tm-derw323422-11
+                    templateType: card-plain
+                    cardData:
+                      title: Calls
+                      cta: 'https://app.sonetel.com/view/calls'
+                      backgroundimage: ''
+                  - templateId: banner-1
+                    templateType: banner-with-benefits-info
+                    cardData:
+                      headline: Welcome
+                      subline: Start using the app
+                      cta: Begin
+                      backgroundImage: 'https://example.com/bg.jpg'
+                      benefitsList:
+                        - Benefit 1
+                        - Benefit 2
+            Example 1:
+              version_date: string
+              hide:
+                - string
+              layout:
+                version: string
+                cards:
+                  - templateId: string
+                    templateType: banner-with-benefits-info
+                    cardData: {}
+                metadata:
+                  lastUpdated: string
+definitions:
+  view_settings:
+    type: object
+    properties:
+      version_date:
+        type: string
+      hide:
+        type: array
+        items:
+          type: string
+      layout:
+        $ref: '#/definitions/layout_response'
+    x-examples:
+      Example 1:
+        version_date: LCRV20250305122515
+        hide:
+          - account-website-chat-auto-assignment
+          - account-website-chat-rules
+          - account-incoming-calls
+          - account-inbound-sms
+          - account-twitter-pages
+          - account-incoming-email
+          - number-call-forward-exceptions
+          - account-call-recording-transcribe
+          - account-voiceapps-prompt-record
+          - account-numbers-sms
+          - conversations-sms
+          - conversations-zoom
+          - conversations-voice-messages
+          - calls-video
+          - calls-transfer
+          - calls-csg
+          - people-customers
+          - insights
+          - conversations-translations
+          - calls-record-in-call
+          - calls-conference
+          - mm-upload-google-drive
+          - mm-upload-one-drive
+          - mm-settings
+  layout_response:
+    type: object
+    title: Layout_response
+    properties:
+      version:
+        type: string
+      cards:
+        type: array
+        items:
+          type: object
+          properties:
+            templateId:
+              type: string
+            templateType:
+              type: string
+              enum:
+                - banner-with-benefits-info
+                - card-plain
+              description: |
+                Template identifier for rendering.
+                - `banner-with-benefits-info`: see BannerWithBenefitsInfoData
+                - `card-plain`: see CardPlainData
+            cardData:
+              type: object
+              description: |
+                Object shape varies by `templateType`.
+                Use reference definitions for documentation only.
+      metadata:
+        type: object
+        properties:
+          lastUpdated:
+            type: string
+x-internal: true

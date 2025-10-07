@@ -1,0 +1,187 @@
+openapi: 3.0.0
+info:
+  version: 1.1.0
+  title: Sonetel Transcription API
+  description: "The Sonetel Transcription API allows developers to transcribe audio or video files asynchronously. Users can submit a request to transcribe a file by specifying either a file ID, file URL, or file data. A transcription profile can be used to set pre-defined instructions for transcription services, including the provider and provider settings. Users can then request the status of a transcription request using a unique request ID.\n\n## Definitions\n\n### file\nThe file to be transcribed can be specified either via a `file_id`, a URL or by providing the file data.\n\n### write_to\nA set of parmeters that provides the destination(s) where the transcript must be deposited. One or more destinations may be specified, such as a text ID or a callback URL.\n\n### requested_by\nDetails of the service requesting transcription.\n\n### transcription_profile\nThe type of transcription profile that must be used for this transcription. A profile is a set of pre-defined instructions, including the transcription provider and provider settings that the transcription service would use while transcribing the file. The following profiles are available:\n- meeting-minutes\n- sonetel-voicemail\n- call-recording\n\n## Using the API\n\n### General Guideline\n\n1. Submit a request to transcribe a file by sending a POST request to the `/transcription/transcribe_async` endpoint with the following parameters:\n\t- file: The file to be transcribed.\n\t- write_to: The destination where the transcript must be deposited.\n\t- requested_by: Details of the service requesting transcription.\n\t- transcription_profile (optional): The type of transcription profile to be used.\n2. The API will return a `req_id` that can be used to retrieve the status of the transcription request.\n3. To check the status of the transcription request, send a GET request to the `/transcription/transcribe_async/{req_id}` endpoint, where `{req_id}` is the `req_id` returned from step 2.\n\n### Use Cases\n\n#### Transcribing a File\n\nTo transcribe a file, follow these steps:\n\n1. Send a POST request to the `/transcription/transcribe_async` endpoint with the following parameters:\n\t- file: The file to be transcribed. You can specify the file using a `file_id`, a `file_url`, or `data`.\n\t- write_to: The destination where the transcript must be deposited. You can specify the destination using a `text_id` or `callback_url`.\n\t- requested_by: Details of the service requesting transcription.\n\t- transcription_profile (optional): The type of transcription profile to be used.\n2. The API will return a `req_id` that can be used to retrieve the status of the transcription request.\n\n#### Getting Status of Transcription\n\nTo retrieve the status of a transcription request, follow these steps:\n\n1. Send a GET request to the `/transcription/transcribe_async/{req_id}` endpoint, where `{req_id}` is the unique request ID of the transcription request.\n2. The API will return the status of the transcription request, along with any relevant information, such as the transcript or error messages."
+  termsOfService: 'https://sonetel.com/en/help/help-topics/terms-conditions/terms-conditions/'
+  contact:
+    email: api-support@sonetel.com
+    url: 'https://www.sonetel.com'
+    name: Sonetel API Support
+servers:
+  - url: 'https://public-api.sonetel.com'
+    description: Production
+paths:
+  /transcription/transcribe_async:
+    post:
+      summary: Request transcription of a file
+      description: |-
+        Transcribe a file asynchronously and send the output to a URL or a text_id.
+        A `req_id` is returned to view status of this request.
+      operationId: transcribeFile
+      requestBody:
+        description: Transcription async request
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file:
+                  $ref: '#/components/schemas/file'
+                write_to:
+                  $ref: '#/components/schemas/write_to'
+                requested_by:
+                  $ref: '#/components/schemas/requested_by'
+                transcription_profile:
+                  type: string
+                  enum:
+                    - meeting-minutes
+                    - sonetel-voicemail
+                    - call-recording
+                  description: 'The type of transcription profile that must be used for this transcription. A profile is a set of pre-defined instructions including the transcription provider, provider settings that the transcription service would use for while transcribing the file'
+                  example: meeting-minutes
+      responses:
+        '200':
+          $ref: '#/components/responses/transcribe_async_response'
+      security:
+        - Sonetel Admin: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  '/transcription/transcribe_async/{req_id}':
+    get:
+      summary: Fetch transcription status
+      description: Get status of transcription request
+      operationId: get-transcription-transcribe_async-req_id
+      parameters:
+        - name: req_id
+          in: path
+          description: The unique request Id of the transcription request
+          required: true
+          schema:
+            type: string
+            example: rYh4653
+      responses:
+        '200':
+          $ref: '#/components/responses/transcribe_async_response'
+      security:
+        - Sonetel Admin: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+components:
+  securitySchemes:
+    Sonetel Admin:
+      type: oauth2
+      flows:
+        password:
+          refreshUrl: 'https://api.sonetel.com/SonetelAuth/beta'
+          tokenUrl: 'https://api.sonetel.com/SonetelAuth/beta'
+          scopes: {}
+  responses:
+    transcribe_async_response:
+      description: Transcription request details
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              request_id:
+                type: string
+                description: Unique request Id of the transcription request
+              status:
+                type: string
+                enum:
+                  - not_started
+                  - in_progress
+                  - ready
+                description: Status of the transcription request
+              file:
+                $ref: '#/components/schemas/file'
+              write_to:
+                $ref: '#/components/schemas/write_to'
+              requested_by:
+                $ref: '#/components/schemas/requested_by'
+              transcription_profile:
+                type: string
+                enum:
+                  - meeting-minutes
+                  - sonetel-voicemail
+                  - call-recording
+                description: 'The type of transcription profile that must be used for this transcription. A profile is a set of pre-defined instructions including the transcription provider, provider settings that the transcription service would use for while transcribing the file'
+                example: meeting-minutes
+  schemas:
+    file:
+      type: object
+      title: file
+      description: 'File to be transcribed must be specified either via a `file_id`, a URL or by providing the file data'
+      oneOf:
+        - type: object
+          properties:
+            file_id:
+              type: string
+              description: ID of the file to be transcribed.
+              example: a1b2c3d
+        - type: object
+          properties:
+            file_url:
+              type: string
+              description: URL of the file to be transcribed
+              format: uri
+        - type: object
+          properties:
+            data:
+              type: string
+              description: File data of the file to be transcribed
+              format: binary
+    write_to:
+      type: object
+      title: write_to
+      description: The destination where the transcript must be deposited. One of more destinations may be specified
+      anyOf:
+        - type: object
+          properties:
+            text_id:
+              type: string
+              description: Text_Id where the transcription should be written
+              example: t3x4y5z
+        - type: object
+          properties:
+            callback_url:
+              type: string
+              description: URL to which the transcript will be posted via HTTP POST request.
+              format: uri
+              example: 'https://example.com/callback'
+    requested_by:
+      type: object
+      title: requested_by
+      description: Details of the service requesting transcription
+      properties:
+        service:
+          type: string
+          enum:
+            - ai-service
+            - call-recording
+            - voicemail
+          description: Details of the service requesting transcription
+          example: ai-service
+        ref_id:
+          type: string
+          description: A reference Id that a service may optionally provide for tracking the transcription request. The ref_id is provided along with the transcription.
+          example: Th5643
+        account_id:
+          type: string
+          description: The Sonetel account Id for which the transcription is requested
+          example: a1b2c3d4e5
+        user_id:
+          type: string
+          description: The Sonetel user Id for which transcription id reqyested
+          example: u1v2w3x4y5
+        business_id:
+          type: string
+          description: The business Id to which this request is associated
+          example: b1c2d3e4f5
+security:
+  - Sonetel Admin: []
+x-internal: true

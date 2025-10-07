@@ -41,19 +41,17 @@ Signing up for a developer account is completely free. There are no charges for 
 
 You only pay for the services i.e. calls, phone numbers, etc that you use. The charges are deducted from your prepaid account that you can [refill](https://app.sonetel.com/account-settings/prepaid-account) using a credit card, PayPal, Google Pay or other supported methods.
 
-Optional upgrades to Premium and Enterprise plans provide discounted pricing, faster access to support and much more. Read about out available plans [here](https://developer.sonetel.com/plans).
+Optional upgrades to paid plans provide discounted pricing, faster access to support and much more. Information about paid plans is available at [sonetel.com](https://sonetel.com/)
 
 ### How can I get support?
 
-If you need help with our API, please contact [api.support@sonetel.com](mailto:api.support@sonetel.com).
-
-Please look at our website for information on the [available support plans](https://developer.sonetel.com/plans).
+If you need help with our API, please contact [dev.support@sonetel.com](mailto:dev.support@sonetel.com).
 
 ### How does caller ID work?
 
 When you make an outgoing call through Sonetel and your outgoing CLI settings are set to automatic, the person that is being called will see the caller ID based on the following rules:
 
-1. A Sonetel number assigned to you with business package enabled or a number that is free with Premium.
+1. A Sonetel number assigned to you that is free with the Premium or Business plan.
 2. If more than one phone number is assigned to you, then the number in the country of the person being called will be shown. If you do not have a phone number in the same country, we will use another phone number assigned to you.
 3. If there are no eligible phone numbers assigned to you, then any eligible number assigned to your Sonetel account (connected to voicemail or IVR, etc.) will be used as the caller ID.
 4. If you do not have any phone numbers that can be used as caller ID, then your verified mobile number will be used as the caller ID.

@@ -1,0 +1,1108 @@
+openapi: 3.1.0
+info:
+  version: '2.0'
+  title: Recorded calls
+  summary: The API allows the user to download list of recorded calls and the files
+  description: |-
+    Calls or conferences handled using your Sonetel account can be recorded using the call recording function. The recorded calls are stored in Sonetel and can be managed via the Call recording API.
+
+    <!-- theme: warning -->
+    > Before you can use the Call recording API, you must:
+    > 
+    > 1. [verify your identity](https://app.sonetel.com/account-settings/account-verification).
+    > 2. enable the [call recording function](https://app.sonetel.com/account-settings/call-recording/settings) from your account.
+    > 3. [Upgrade to a paid plan](https://app.sonetel.com/change-plan) if you are on the Free plan. Call recording is only available on Premium and Business plans.
+
+    Call recordings are either linked to a user or an account.
+
+    For example, if a user makes an outgoing call that is recorded then the recording will be linked to this user with their `user_id`. On the other hand, let's say a phone number in your account is connected to a SIP address or a voice app, then the recordings of the incoming calls are linked to the account and not to any user.
+
+    A recording object can also contain the details for accessing the recording file as well as the details of the call that was recorded. See the sections *Download a recording* and *Get call details* below for more details.
+
+    Access to the `/call-recording` API is limited to users with admin privileges.
+
+    <!-- theme: info -->
+    >Please note that it is your responsibility to ensure that call recording only is done when it is permitted by local law and by [Sonetel's terms and conditions](https://sonetel.com/en/help/help-topics/terms-conditions/terms-conditions/).
+
+
+    ## Start recording calls
+
+    Once you have verified your account and enabled call recording, you can choose which type of calls should be recorded from the [call recording settings](https://app.sonetel.com/account-settings/call-recording/settings).
+
+    You can select from one of the following options:
+
+    - **Record all**: Records all calls (excluding on-net calls between team members).
+    - **Let me select**: This lets you record certain type of calls.
+      1. **Record all outbound calls**: Record all the outgoing calls originating from your Sonetel account.
+      2. **Record all inbound calls**: Only record the incoming calls.
+      3. **Allowed**: Lets you record calls per phone number or user.
+     
+
+    ## Filter results
+
+    If you have a lot of call recordings and want to list only a few, you can apply filters based on the date range, the user that is involved in the call and so on.
+
+    Add the required filters as query parameters. For example, to limit the results to recordings created between 1st Jan 2021 and 3rd Feb 2021, use the following URI.
+
+    ```
+    https://public-api.sonetel.com/call-recording?account_id={accountid}&created_date_min=20210203T23:59:59Z&created_date_max=20210101T00:00:00Z
+    ```
+
+    ## Download a recording
+
+    In order to download the audio file containint the call recording, add the query parameter `fields=file_access_details`  to the API request.
+
+    Example: `https://public-api.sonetel.com/call-recording/6y25Gth432?fields=file_access_details`
+
+    > In the above example, `6y25Gth432` is the unique `call_recording_id` of the recording you wish to download. Get a list of all recordings by issuing a GET request to `/call-recording?account_id={accountid}`.
+
+    A successful request will return the following response. Use the `url` property in the `file_access_details` object to download the file.
+
+    ```json
+    {
+        "resource": "call_recording",
+        "status": "success",
+        "response": {
+            "call_recording_id": "6y25Gth432",
+            "type": "voice_call",
+            "account_id": 200000000,
+            "user_id": "",
+            "created_date": "20210719T07:00:12Z",
+            "file": {
+                "type": "mp3",
+                "size": 102400,
+                "file_id": "UNIQUE_FILE_ID_STRING",
+                "file_access_details": {
+                    "url": "UNIQUE_FILE_DOWNLOAD_URL",
+                    "issued_at": "20210719T08:14:20Z",
+                    "expires_at": "20210726T08:14:20Z"
+                }
+            }
+        }
+    }
+    ```
+
+
+    ## Get call details
+
+    In order to get the details of the call along with the call recording, add the query parameter `fields=voice_call_details` to the API request.
+
+    Example: `https://public-api.sonetel.com/call-recording/6y25Gth432?fields=voice_call_details`
+
+    A successful response will return the following response.
+
+    ```json
+    {
+        "resource": "call_recording",
+        "status": "success",
+        "response": {
+            "call_recording_id": "REd0ae0toi0000m0",
+            "call_id": "abCdEFgHIjKLmnopqRsTUvW.",
+            "type": "voice_call",
+            "account_id": 20000000,
+            "user_id": "",
+            "created_date": "20210609T10:26:22Z",
+            "voice_call_details": {
+                "from": "12125550000",
+                "to": "2000000030",
+                "codec": "PCMU",
+                "usage_record_id": 200000000,
+                "start_time": "",
+                "end_time": "20210609T10:26:34Z",
+                "call_length": 8,
+                "from_type": "phonenumber",
+                "from_name": "12125550000",
+                "caller_id": "12125550000",
+                "to_type": "user",
+                "to_name": "Ken Adams",
+                "to_orig": "12125550000@251.270.74.303"
+            },
+            "is_transcribed": false
+        }
+    }
+    ```
+
+    ## Fair usage limits
+
+    ### Call recording usage
+
+    The Call recording service is available to customers on paid plans, subject to the following fair usage limitations.
+
+    |Plan|Free usage|
+    |-----------|------------|
+    |Free|None|
+    |Premium|10 000 minutes per month|
+    |Business|50 000 minutes per month|
+
+    ### File storage
+
+    All accounts get a certain amount of free storage for storing call recordings, files shared in chat, etc. Excess storage costs $1 per month and GB.
+
+    The following table describes the following fair usage limits.
+
+    |Plan|Free storage|
+    |-----------|------------|
+    |Free|2 GB per account|
+    |Premium|100 GB per user|
+    |Business|1 TB per user|
+
+    ## Are there any limitations?
+
+    Incoming calls can only be recorded on phone numbers that are free with [website](https://sonetel.com/en/help/help-topics/telephony/free-phone-number/) or [paid plans](https://sonetel.com/plans).
+
+    Additionally, the call recording service has some [fair usage limitations](https://sonetel.com/en/help/help-topics/telephony/free-call-recording/).
+  termsOfService: 'https://sonetel.com/en/help/help-topics/terms-conditions/terms-conditions/'
+  contact:
+    url: 'https://developer.sonetel.com'
+    name: Sonetel API Support
+    email: api.support@sonetel.com
+  license:
+    name: ''
+servers:
+  - url: 'https://public-api.sonetel.com'
+    description: Production
+paths:
+  '/call-recording/{recording-id}':
+    get:
+      summary: Get call recording by ID
+      description: |-
+        # Get call recording by ID
+
+        To retrieve a specific call recording, you can issue a GET request to the resource with the `call_recording_id` as a path parameter.
+
+        Example: `GET https://public-api.sonetel.com/call-recording/6y25Gth432`
+
+        ### Successful response 
+
+        Here is a sample of how a successful response looks like.
+
+        ```json
+        {
+                "call_recording_id": "6y25Gth432",
+                "type": "voice_call",
+                "account_id": 200000000,
+                "user_id": "",
+                "created_date": "20210719T07:00:12Z"
+            }
+        ```
+
+        ### Get the userid and accountid
+
+        Instructions on how to find your account ID can be found in our [FAQ section](https://docs.sonetel.com/docs/sonetel-documentation/docs/Getting%20Started/7-FAQs.md#how-can-i-find-my-account-id).
+
+        The userid for all your users can be fetched by issuing a GET request to `/account/{accountid}/user`.
+
+        ### Additional fields
+
+        To include additional information in the response, add the query parameter `fields` with one or more values listed below.
+
+        Example: `https://public-api.sonetel.com/call-recording/6y25Gth432?fields=file,voice_call_details,call_summary`
+      operationId: get-recording-recordingId
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer <ACCESS_TOKEN>
+          required: true
+          schema:
+            type: string
+        - name: fields
+          in: query
+          description: Include additional fields in the response.
+          schema:
+            type: string
+            enum:
+              - file_access_details
+              - voice_call_details
+              - file
+              - call_summary
+        - name: recording-id
+          in: path
+          description: The `call_recording_id` of the recording you wish to manage.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Call Recording Detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Call-recording'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Recording Not Found
+      security:
+        - Production: []
+        - {}
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+    delete:
+      summary: Delete a call recording by ID
+      description: |-
+        # Delete a call recording by ID
+
+        Use this endpoint to delete a call recording that is no longer needed.
+
+        To delete a recording issue a DELETE request to the `/call-recording` endpoint adding the recording ID in the path. For example, if the recording ID that should be deleted is `a12B34DE567` then the request would be:
+
+        ```c
+        curl \
+          --location \
+          --request DELETE 'https://public-api.sonetel.com/call-recording/a12B34DE567' \
+          --header 'Authorization: Bearer ACCESS_TOKEN'
+        ```
+
+        <!-- theme: warning -->
+
+        > ### Warning
+        > 
+        > Once deleted, it is not possible to recover call recordings.
+      operationId: delete-call-recording-recording-id
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer <ACCESS_TOKEN>
+          required: true
+          schema:
+            type: string
+        - name: delete_type
+          in: query
+          description: 'List of items associated to the recording that are to be deleted. If nothing is specified or `all` is specified, the recording file and summary us deleted. Otherwise specify, `file` to delete recording only'
+          schema:
+            type: string
+            pattern: '^([^,]*)(,([^,]*))*$'
+            examples:
+              - file
+        - name: recording-id
+          in: path
+          description: The `call_recording_id` of the recording you wish to manage.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Recording Successfully Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Call-recording'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      security:
+        - Production: []
+        - {}
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  /call-recording:
+    get:
+      summary: Retrieve call recordings
+      description: |-
+        # Retrieve call recordings
+
+        Allows you to list all the call recordings in your account.
+
+        Filter the recordings by adding one or more of the query perameters listed below. For example, to search for recordings linked to a specific user you can search using their user ID: `/call-recording?account_id={accountid}&user_id={userid}`
+
+        > Please remember to add the `?account_id={accountid}` query parameter to the URL
+
+        To know how to find your account ID, please have a look at the `/account` endpoint.
+      operationId: get-call-recording
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer <ACCESS_TOKEN>
+          required: true
+          schema:
+            type: string
+        - name: account_id
+          in: query
+          description: Your Sonetel account ID
+          required: true
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          description: The user ID for which recordings are needed
+          schema:
+            type: string
+        - name: created_date_min
+          in: query
+          description: 'Limit the results to recordings created after this timestamp. For example, if you want recordings created after 6:00 PM UTC 18th Jan 2021, then use `created_date_min=20210118T18:00:00Z`'
+          schema:
+            type: string
+            format: date-time
+            examples:
+              - '2021-05-29T00:00:00Z'
+        - name: created_date_max
+          in: query
+          description: 'Limit the results to recordings created before this timestamp.  For example, if you only want recordings created after 3:45 PM UTC 19th Jan 2021, then use `created_date_max=20210119T15:45:00Z`'
+          schema:
+            type: string
+            format: date-time
+            examples:
+              - '2021-05-29T00:00:00Z'
+        - name: type
+          in: query
+          description: 'Limit the results based on the type of recording i.e. voice_call, video_call, and so on. At the moment only `voice_call` is supported.'
+          schema:
+            const: voice_call
+        - name: fields
+          in: query
+          description: Include additional fields in the response.
+          schema:
+            type: string
+            enum:
+              - file_access_details
+              - voice_call_details
+              - file
+              - call_summary
+        - name: text_id
+          in: query
+          description: 'The [Sonetel AI](reference/13_ai_textmanager.yaml) text ID for which recording is needed'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Call-recording-list'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      security:
+        - Production: []
+        - {}
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+    delete:
+      summary: Delete many recordings
+      description: "# Retrieve call recordings\r\n\r\nAllows you to delete many call recordings in your account in one request.\r\n\r\nFilter the recordings by adding one or more of the query perameters listed below. For example, to delete recordings linked to a specific user you can search using their user ID: `/call-recording?account_id={accountid}&user_id={userid}`\r\n\r\n> Please remember to add the `?account_id={accountid}` query parameter to the URL\r\n\r\nTo know how to find your account ID, please have a look at the `/account` endpoint."
+      operationId: delete-call-recording
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer <ACCESS_TOKEN>
+          required: true
+          schema:
+            type: string
+        - name: account_id
+          in: query
+          description: Your Sonetel account ID
+          required: true
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          description: The user ID for which recordings are needed
+          schema:
+            type: string
+        - name: created_date_min
+          in: query
+          description: 'Limit the results to recordings created after this timestamp. For example, if you want recordings created after 6:00 PM UTC 18th Jan 2021, then use `created_date_min=20210118T18:00:00Z`'
+          schema:
+            type: string
+            format: date-time
+            examples:
+              - '2021-05-29T00:00:00Z'
+        - name: created_date_max
+          in: query
+          description: 'Limit the results to recordings created before this timestamp.  For example, if you only want recordings created after 3:45 PM UTC 19th Jan 2021, then use `created_date_max=20210119T15:45:00Z`'
+          schema:
+            type: string
+            format: date-time
+            examples:
+              - '2021-05-29T00:00:00Z'
+        - name: type
+          in: query
+          description: 'Limit the results based on the type of recording i.e. voice_call, video_call, and so on. At the moment only `voice_call` is supported.'
+          schema:
+            const: voice_call
+        - name: text_id
+          in: query
+          description: 'The [Sonetel AI](reference/13_ai_textmanager.yaml) text ID for which recording is needed'
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Accepted
+      security:
+        - Production: []
+        - {}
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: true
+  '/call-recording/{recording-id}/summarize':
+    get:
+      summary: Summarize a call recording
+      description: "Summarize the call recording using [Sonetel AI](https://sonetel.com/en/help/help-topics/ai-helper/).\r\n\r\nThe request starts the summary generation for the call recording. Summary generation requires processing time depending on the length of the call recording.\r\nThe response returns a [`text_id`](https://sonetel.stoplight.io/docs/sonetel-documentation/e4l2bznub385e-text-manager) where the detailed summary is available, once ready.\r\n\r\nThis request consumes [AI credits](https://sonetel.com/en/help/help-topics/ai-helper/ai-credits/)"
+      operationId: get-call-recording-recording-id-summarize
+      parameters:
+        - name: recording-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Accepted
+        '402':
+          description: "No AI credits\r\n\r\nIndicates that you do not have enough [AI credits](https://sonetel.com/en/help/help-topics/ai-helper/ai-credits/) to process this request."
+        '404':
+          description: "Not Found\r\nIndicates that the call recording requested to be summarized does not exist anymore"
+      security:
+        - Production: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  /call-recording/summarize:
+    get:
+      summary: Summarize many call recordings
+      description: "Summarize call recordings in bulk using [Sonetel AI](https://sonetel.com/en/help/help-topics/ai-helper/).\r\n\r\nYou can provide the list of recordings to summarize via the request filter.\r\nYou can choose to summarize all recordings between certain dates, or for a specific user or of a specific type.\r\n\r\nThe request starts the summary generation for all call recordings identified by the filter instantly.\r\nSummary generation may, however, take time depending on number and length of recordings. Individual summaries become available as soon as they are ready.\r\n\r\nThe status and the summaries themselves can be fetched using the `text_id` and the [Sonetel text manager API](https://sonetel.stoplight.io/docs/sonetel-documentation/e4l2bznub385e-text-manager)\r\n\r\nThis request consumes [AI credits](https://sonetel.com/en/help/help-topics/ai-helper/ai-credits/). Recordings that cannot be summarized due to lack of AI credits are ignored, with latest recordings summarized first."
+      operationId: get-call-recording-summarize
+      parameters:
+        - name: account_id
+          in: header
+          description: Your Sonetel account ID
+          required: true
+          schema:
+            type: string
+            examples:
+              - 3yhtrj9874
+        - name: user_id
+          in: header
+          description: The user ID for which recordings are needed
+          schema:
+            type: string
+            examples:
+              - bnn47jh23ju
+        - name: created_date_min
+          in: header
+          description: 'Limit the results to recordings created after this timestamp. For example, if you want recordings created after 6:00 PM UTC 18th Jan 2021, then use `created_date_min=20210118T18:00:00Z`'
+          schema:
+            type: string
+            format: date-time
+            examples:
+              - '2021-05-29T00:00:00Z'
+        - name: created_date_max
+          in: header
+          description: 'Limit the results to recordings created before this timestamp.  For example, if you only want recordings created after 3:45 PM UTC 19th Jan 2021, then use `created_date_max=20210119T15:45:00Z`'
+          schema:
+            type: string
+            format: date-time
+            examples:
+              - '2021-05-29T00:00:00Z'
+        - name: type
+          in: header
+          description: 'Limit the results based on the type of recording i.e. voice_call, video_call, and so on. At the moment only `voice_call` is supported.'
+          schema:
+            const: voice_call
+      responses:
+        '202':
+          description: Accepted
+      security:
+        - Production: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+components:
+  securitySchemes:
+    Production:
+      type: oauth2
+      flows:
+        password:
+          refreshUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          tokenUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          scopes:
+            account.admin.read: Account admin read
+            account.admin.write: Account admin write
+  schemas:
+    Call-recording:
+      type: object
+      properties:
+        resource:
+          type: string
+          description: The name of the resource this response is from.
+          minLength: 1
+        status:
+          type: string
+          description: The status of the response i.e. success or failed.
+          minLength: 1
+        response:
+          type: object
+          description: Response object with the details of the call recordings
+          properties:
+            call_recording_id:
+              type: string
+              description: Unique ID assigned to identify each call recording.
+              minLength: 1
+            type:
+              type: string
+              description: The type of call recording. Only `voice_call` supported at the moment.
+              minLength: 1
+            account_id:
+              type: number
+              description: Your Sonetel account ID
+            user_id:
+              type: string
+              description: 'If the call recording is assigned to a user, this property lists the user_id.'
+            created_date:
+              type: string
+              description: The timestamp when the call recording was created.
+              minLength: 1
+            file:
+              type: object
+              description: 'Details of the call recording file object such as the size, download URL and so on.'
+              properties:
+                type:
+                  type: string
+                  description: 'File type such as mp3, etc.'
+                  minLength: 1
+                size:
+                  type: number
+                  description: File size in bytes.
+                file_id:
+                  type: string
+                  description: 'Unique file ID. '
+                  minLength: 1
+                file_access_details:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                      description: Link to download the file.
+                      minLength: 1
+                    issued_at:
+                      type: string
+                      description: Timestamp when the link was created.
+                      minLength: 1
+                    expires_at:
+                      type: string
+                      description: Timestamp when the download link will expire.
+                      minLength: 1
+                  required:
+                    - url
+                    - issued_at
+                    - expires_at
+              required:
+                - type
+                - size
+                - file_id
+                - file_access_details
+            voice_call_details:
+              type: object
+              description: Detail of the call that was recorded.
+              properties:
+                from:
+                  type: string
+                  description: 'The entity that initiated the call. Can be a PSTN number, a user, etc.'
+                  minLength: 1
+                to:
+                  type: string
+                  description: The entity to which the call was placed.
+                  minLength: 1
+                codec:
+                  type: string
+                  description: The codec that was use to connect the call.
+                  minLength: 1
+                usage_record_id:
+                  type: number
+                  description: Unique ID assigned to this call record (CDR).
+                start_time:
+                  type: string
+                  description: The time when the call started
+                end_time:
+                  type: string
+                  description: The time when the call ended.
+                  minLength: 1
+                call_length:
+                  type: number
+                  description: The duration of the call in seconds.
+                from_type:
+                  type: string
+                  description: The type of entity that initiated the call.
+                  minLength: 1
+                  examples:
+                    - 'user, phonenumber'
+                from_name:
+                  type: string
+                  description: 'If a user initiated the call, their name is listed here.'
+                  minLength: 1
+                caller_id:
+                  type: string
+                  description: The caller ID that was displayed to the recipient.
+                  minLength: 1
+                to_type:
+                  type: string
+                  description: 'The entity that answered the call such as `user`, `phonenumber`, etc.'
+                  minLength: 1
+                to_name:
+                  type: string
+                  description: A name or phone number identifying the destination.
+                  minLength: 1
+                to_orig:
+                  type: string
+                  description: A unique identifier for the destination.
+                  minLength: 1
+              required:
+                - from
+                - to
+                - codec
+                - usage_record_id
+                - start_time
+                - end_time
+                - call_length
+                - from_type
+                - from_name
+                - caller_id
+                - to_type
+                - to_name
+                - to_orig
+            summary:
+              $ref: '#/components/schemas/Call-summary'
+              description: "The Sonetel AI generated call summary.\r\nIf this object is not included in the response, it indicates that the summary was not requested or possible"
+          required:
+            - call_recording_id
+            - type
+            - account_id
+            - user_id
+            - created_date
+            - file
+            - voice_call_details
+      required:
+        - resource
+        - status
+        - response
+      examples:
+        - resource: call_recording
+          status: success
+          response:
+            call_recording_id: REd0ae0toi0000m0
+            call_id: abCdEFgHIjKLmnopqRsTUvW.
+            type: voice_call
+            account_id: 20000000
+            user_id: ''
+            created_date: '20210609T10:26:22Z'
+            voice_call_details:
+              from: '12125550000'
+              to: '2000000030'
+              codec: PCMU
+              usage_record_id: 200000000
+              start_time: ''
+              end_time: '20210609T10:26:34Z'
+              call_length: 8
+              from_type: phonenumber
+              from_name: '12125550000'
+              caller_id: '12125550000'
+              to_type: user
+              to_name: Ken Adams
+              to_orig: 12125550000@251.270.74.303
+      x-examples:
+        example-1:
+          resource: call_recording
+          status: success
+          response:
+            call_recording_id: REd11kuioi1111m1
+            type: voice_call
+            account_id: 2000000007
+            user_id: ''
+            created_date: '20210124T18:41:33Z'
+            file:
+              type: mp3
+              size: 21240
+              file_id: AbCdE1FGg2345678901234
+              file_access_details:
+                url: 'https:/example.amazonaws.com/sonetel-call-records.test/2021-01-24/AbCdE1FGg2345678901234.mp3?AUTH_HEADERS'
+                issued_at: '20210714T09:13:45Z'
+                expires_at: '20210721T09:13:45Z'
+            voice_call_details:
+              from: '2000000004'
+              to: '2000000007'
+              codec: PCMU
+              usage_record_id: 200000000
+              start_time: ''
+              end_time: '20210124T18:41:47Z'
+              call_length: 21
+              from_type: user
+              from_name: John Doe
+              caller_id: '14045551234'
+              to_type: user
+              to_name: Ken Adams
+              to_orig: 0061290000000@sonetel.com
+    Call-summary:
+      type: object
+      title: Call-summary
+      description: Call summary generated by Sonetel AI
+      properties:
+        text_id:
+          type: string
+          description: "The unique `text_id` of the call summary.\r\nThe text_id can be used to retrieve details of the summary from the [Sonetel Text manager](reference/13_ai_textmanager.yaml)"
+          readOnly: true
+          examples:
+            - 4hU4hy387
+        file_id:
+          type: string
+          description: "The unique `file_id` of the call recording in the [Sonetel file manager](reference/15_ai_filemanager.yaml)\r\nFile_id is used by Sonetel AI services as a reference to the call recording for generating summaries."
+          readOnly: true
+          examples:
+            - bh3j8km63
+        about:
+          type: string
+          description: A short Sonetel AI generated string that identifies what the call is about.
+          readOnly: true
+        score:
+          type: number
+          description: A score(1 to 5) assigned by Sonetel AI to the call recording based on an analysis of the call.
+          format: float
+          minimum: 0
+          maximum: 5
+          readOnly: true
+          examples:
+            - 4.2
+        status:
+          type: string
+          enum:
+            - not_requested
+            - in_progress
+            - ready
+            - failed
+            - retry
+          description: "The status of the call summary generation\r\n\r\n`not_requested`: The summary has not yet been not_requested\r\n\r\n`in_progress`: The summary generation is in progress\r\n\r\n`ready`: The summary is ready. The summary can be fetched using the `text_id` from the [text manager](reference/13_ai_textmanager.yaml)\r\n\r\n`failed`: The summary was requested and has failed. It is not possible to summarize this recording.\r\n\r\n`retry`: The summary was requested and failed. The summary can be requested again."
+          readOnly: true
+        error_code:
+          type: string
+          description: An error code that identifies the last error during summary generation.
+        error_date:
+          type: string
+          description: The date and time when the last error occured during summary generation
+          format: date-time
+    Call-recording-list:
+      type: object
+      properties:
+        resource:
+          type: string
+          description: The name of the resource this response is from.
+          minLength: 1
+        status:
+          type: string
+          description: The status of the response i.e. success or failed.
+          minLength: 1
+        response:
+          type: array
+          description: Response object with the details of the call recordings
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: object
+            properties:
+              call_recording_id:
+                type: string
+                description: Unique ID assigned to identify each call recording.
+                minLength: 1
+              type:
+                type: string
+                description: The type of call recording. Only `voice_call` supported at the moment.
+                minLength: 1
+              account_id:
+                type: number
+                description: Your Sonetel account ID
+              user_id:
+                type: string
+                description: 'If the call recording is assigned to a user, this property lists the user_id.'
+              created_date:
+                type: string
+                description: The timestamp when the call recording was created.
+                minLength: 1
+              file:
+                type: object
+                description: 'Details of the call recording file object such as the size, download URL and so on.'
+                properties:
+                  type:
+                    type: string
+                    description: 'File type such as mp3, etc.'
+                    minLength: 1
+                  size:
+                    type: number
+                    description: File size in bytes.
+                  file_id:
+                    type: string
+                    description: Unique file ID.
+                    minLength: 1
+                  file_access_details:
+                    type: object
+                    properties:
+                      url:
+                        type: string
+                        description: Link to download the file.
+                        minLength: 1
+                      issued_at:
+                        type: string
+                        description: Timestamp when the download link was created.
+                        minLength: 1
+                      expires_at:
+                        type: string
+                        description: Timestamp when the download link will expire.
+                        minLength: 1
+                    required:
+                      - url
+                      - issued_at
+                      - expires_at
+                required:
+                  - type
+                  - size
+                  - file_id
+                  - file_access_details
+              voice_call_details:
+                type: object
+                description: Details of the call that was recorded.
+                properties:
+                  from:
+                    type: string
+                    description: '''The entity that initiated the call. Can be a PSTN number, a user, etc.'
+                    minLength: 1
+                  to:
+                    type: string
+                    description: The entity to which the call was placed.
+                    minLength: 1
+                  codec:
+                    type: string
+                    description: The codec that was use to connect the call.
+                    minLength: 1
+                  usage_record_id:
+                    type: number
+                    description: Unique ID assigned to this call record (CDR)
+                  start_time:
+                    type: string
+                    description: The time when the call started.
+                  end_time:
+                    type: string
+                    description: The time when the call ended.
+                    minLength: 1
+                  call_length:
+                    type: number
+                    description: The duration of the call in seconds.
+                  from_type:
+                    type: string
+                    description: 'The type of entity that initiated the call. For example `user`, `phonenumber`.'
+                    minLength: 1
+                  from_name:
+                    type: string
+                    description: 'If a user initiated the call, their name is listed here otherwise it shows the phone number of the source.'
+                    minLength: 1
+                  caller_id:
+                    type: string
+                    description: The caller ID that was displayed to the recipient.
+                    minLength: 1
+                  to_type:
+                    type: string
+                    description: 'The entity that answered the call such as `user`, `phonenumber`, etc.'
+                    minLength: 1
+                  to_name:
+                    type: string
+                    description: A name or phone number identifying the destination.
+                    minLength: 1
+                  to_orig:
+                    type: string
+                    description: A unique identifier for the destination.
+                    minLength: 1
+                required:
+                  - from
+                  - to
+                  - codec
+                  - usage_record_id
+                  - start_time
+                  - end_time
+                  - call_length
+                  - from_type
+                  - from_name
+                  - caller_id
+                  - to_type
+                  - to_name
+                  - to_orig
+              summary:
+                $ref: '#/components/schemas/Call-summary'
+                description: "The Sonetel AI generated call summary.\r\nIf this object is not included in the response, it indicates that the summary was not requested or possible"
+            required:
+              - call_recording_id
+              - type
+              - account_id
+              - user_id
+              - created_date
+      required:
+        - resource
+        - status
+        - response
+      examples:
+        - resource: call_recording
+          status: success
+          response:
+            - call_recording_id: REd0ae0toi0000m0
+              call_id: abCdEFgHIjKLmnopqRsTUvW
+              type: voice_call
+              account_id: 20000000
+              user_id: ''
+              created_date: '20210609T10:26:22Z'
+            - call_recording_id: REd0ae0toi44001a
+              call_id: abCdEFgHIjKLmnopqRsXWlE
+              type: voice_call
+              account_id: 20000000
+              user_id: ''
+              created_date: '20210619T14:26:22Z'
+            - call_recording_id: REd0ae0toi33002b
+              call_id: abCdEFgHIjKLSetJxRsTUvW
+              type: voice_call
+              account_id: 20000000
+              user_id: ''
+              created_date: '20210629T18:36:22Z'
+      x-examples:
+        example-1:
+          resource: call_recording
+          status: success
+          response:
+            - call_recording_id: REd2aeicoi6345m4
+              type: voice_call
+              account_id: 20000000
+              user_id: ''
+              created_date: '20210609T11:03:00Z'
+              file:
+                type: mp3
+                size: 39744
+                file_id: FT7NfwqNiO060921110300
+                file_access_details:
+                  url: 'https://example.amazonaws.com/sonetel-call-records.sample-region/2021-06-09/FT7NfwqNiO060921110300.mp3?AUTH_HEADERS'
+                  issued_at: '20210719T09:28:48Z'
+                  expires_at: '20210726T09:28:48Z'
+              voice_call_details:
+                from: '12125550000'
+                to: '200000000'
+                codec: PCMU
+                usage_record_id: 201425671
+                start_time: ''
+                end_time: '20210609T11:03:14Z'
+                call_length: 10
+                from_type: phonenumber
+                from_name: '12125550000'
+                caller_id: '12125550000'
+                to_type: user
+                to_name: John Doe
+                to_orig: 12125550001@289.12.23.542
+            - call_recording_id: REd2ae3toi6345m4
+              type: voice_call
+              account_id: 20000000
+              user_id: ''
+              created_date: '20210609T10:26:22Z'
+              file:
+                type: mp3
+                size: 30816
+                file_id: 7gPrFgS8Wm060921102622
+                file_access_details:
+                  url: 'https://example.amazonaws.com/sonetel-call-records.sample-region/2021-06-09/7gPrFgS8Wm060921102622.mp3?AUTH_HEADERS'
+                  issued_at: '20210719T09:28:48Z'
+                  expires_at: '20210726T09:28:48Z'
+              voice_call_details:
+                from: '12125550000'
+                to: '200000000'
+                codec: PCMU
+                usage_record_id: 201425651
+                start_time: ''
+                end_time: '20210609T10:26:34Z'
+                call_length: 8
+                from_type: phonenumber
+                from_name: '12125550000'
+                caller_id: '12125550000'
+                to_type: user
+                to_name: John Doe
+                to_orig: 12125550001@289.12.23.542
+            - call_recording_id: REd2a4mboi6345m4
+              type: voice_call
+              account_id: 20000000
+              user_id: ''
+              created_date: '20210609T06:44:34Z'
+              file:
+                type: mp3
+                size: 26496
+                file_id: zAZkgYJJDU060921064434
+                file_access_details:
+                  url: 'https://example.amazonaws.com/sonetel-call-records.sample-region/2021-06-09/zAZkgYJJDU060921064434.mp3?AUTH_HEADERS'
+                  issued_at: '20210719T09:28:48Z'
+                  expires_at: '20210726T09:28:48Z'
+              voice_call_details:
+                from: '12125550000'
+                to: '200000000'
+                codec: PCMU
+                usage_record_id: 201425524
+                start_time: ''
+                end_time: '20210609T06:44:46Z'
+                call_length: 7
+                from_type: phonenumber
+                from_name: '12125550000'
+                caller_id: '12125550000'
+                to_type: user
+                to_name: John Doe
+                to_orig: 12125550001@289.12.23.542
+            - call_recording_id: REd2a4mioi6345m4
+              type: voice_call
+              account_id: 20000000
+              user_id: ''
+              created_date: '20210609T06:20:39Z'
+              file:
+                type: mp3
+                size: 19872
+                file_id: bAmrqaCZ3r060921062039
+                file_access_details:
+                  url: 'https://example.amazonaws.com/sonetel-call-records.sample-region/2021-06-09/bAmrqaCZ3r060921062039.mp3?AUTH_HEADERS'
+                  issued_at: '20210719T09:28:48Z'
+                  expires_at: '20210726T09:28:48Z'
+              voice_call_details:
+                from: '12125550000'
+                to: '200000000'
+                codec: PCMU
+                usage_record_id: 201425520
+                start_time: ''
+                end_time: '20210609T06:20:48Z'
+                call_length: 5
+                from_type: phonenumber
+                from_name: '12125550000'
+                caller_id: '12125550000'
+                to_type: user
+                to_name: John Doe
+                to_orig: 12125550001@289.12.23.542
+            - call_recording_id: REd2a4a8oi6345m4
+              type: voice_call
+              account_id: 20000000
+              user_id: ''
+              created_date: '20210609T06:06:58Z'
+              file:
+                type: mp3
+                size: 31104
+                file_id: HGmD6k1cvC060921060658
+                file_access_details:
+                  url: 'https://example.amazonaws.com/sonetel-call-records.sample-region/2021-06-09/HGmD6k1cvC060921060658.mp3?AUTH_HEADERS'
+                  issued_at: '20210719T09:28:48Z'
+                  expires_at: '20210726T09:28:48Z'
+              voice_call_details:
+                from: '12125550000'
+                to: '200000000'
+                codec: PCMU
+                usage_record_id: 201425514
+                start_time: ''
+                end_time: '20210609T06:08:04Z'
+                call_length: 8
+                from_type: phonenumber
+                from_name: '12125550000'
+                caller_id: '12125550000'
+                to_type: user
+                to_name: John Doe
+                to_orig: 12125550001@289.12.23.542
+security:
+  - Production: []
+  - {}
