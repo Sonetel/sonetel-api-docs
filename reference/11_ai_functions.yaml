@@ -1,0 +1,918 @@
+openapi: 3.1.0
+info:
+  version: '2.0'
+  title: Personalize suggested answers
+  description: |
+    Our free customer service solution provides an easy way for answering customer questions with the assistance of Artificial Intelligence (AI).
+
+    Your customers and prospects can send questions to you via the [business messenger](https://sonetel.com/en/business-messenger/help/business-messenger/free-business-messenger/) at your web site or with Facebook messenger via [your Facebook page](https://sonetel.com/en/business-messenger/help/integrations/facebook-messenger/).
+
+    The AI function will suggest answers that you can forward to the customer with a click – saving time. The answers are fetched from your home page, old customer conversations etc.
+
+    The `/ai-integration/customer_faq` API lets you quickly personalize the answers suggested by the AI. You can do this by uploading a list of frequently asked questions and their answers.
+
+    ## Personalize suggested answers
+
+    Here's how you can personalize the answers suggested by our AI:
+
+    - <b>Generate access token</b><br>Use the `/oauth/token` endpoint to generate an access token. The details are given [here](Authentication.yaml).
+    - <b>Download the template</b><br>Download the template by sending a `GET` request to `/ai-integration/customer_faq/faq_template` endpoint. This returns an Excel sheet with a few sample questions and answers.
+    - <b>Add your questions and answers</b><br>Open the template and add the frequently asked questions along with their answers.
+    - <b>Upload the template</b><br>Send a `POST` request to `/ai-integration/customer_faq/faq` along with the updated template to add the FAQs to our system.
+
+    ## Prepare the template
+
+    Here's how you can prepare the template for upload.
+
+    - <b>Open the template</b><br>Use a spreadsheet software such as Microsoft Excel, OpenOffice Calc or similar to open the template.
+    - <b>Add the FAQs</b><br>Enter the questions and answers in the respective columns and save the file in the `xlsx` format.
+
+
+    > The first row is meant for the headings. Do not include any questions or answers in this row.
+
+    ### Same answer for multiple questions
+
+    If more than one questions have the same answer, do it like this:
+    - Enter the first question and answer as usual.
+    - Enter the other questions (that have the same answer) in the rows below leaving the answer column empty.
+
+    Here's an example of how multiple questions with the same answer can be entered. Here, the questions `Hi` and `Hello` share the same answer i.e. `Hello. How can I help you?`.
+
+    |   Question    |     Answer     |
+    |---------------|----------------|
+    | Hi      | Hello. How can I help you? |
+    | Hello      |     |
+    | Thank you |   Thank you. Have a nice day.  |
+    | Thanks | |
+
+    ### Add FAQs in different languages
+
+    The FAQs can be in a language of your choice. We recommend that you prepare separate files for each language you wish to upload.
+
+    While uploading the FAQs, send the `language` parameter in the body of the request. This should be set to the two letter [ISO 639-1 code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of the language.
+
+    For example, if you are uploading FAQs in Spanish , include `{'language': 'es'}` in the request body.
+
+    ## Get Suggested Answer from AI
+
+    Use our AI to get answers to questions asked by your website visitors. Our AI looks at the FAQs you have uploaded as well as past conversations with customers to find the answer to the question and send it back to you.
+
+    Follow these steps to get suggested answers:
+
+    - **Generate access token**<br>Use the `/oauth/token` endpoint to [generate an access token](Authentication.yaml).
+    - **Prepare the request**<br>The request body should be JSON with the `question` and `language` keys.
+    - **Send the request**<br>Send a `GET` request to `/ai-integration/customer_faq/suggested-answers` with request body prepared in the previous step.
+
+
+
+    ## Download FAQs
+
+    A list of questions and answers you have already uploaded to your account, can be downloaded in the JSON or CSV format.
+
+    ### JSON
+
+    Follow these steps to get the FAQs you uploaded as a JSON response:
+
+    - **Generate access token**<br>Use the `/oauth/token` endpoint to [generate an access token](Authentication.yaml).
+    - **Send a request**<br>Send a `GET` request to the `/ai-integration/customer_faq/faq` endpoint.
+    - **Save the response**<br>The response contains the FAQs in a JSON body.
+
+    ### CSV
+
+    The list of suggested answers can be downloaded as a CSV by following these steps:
+
+    - **Generate access token**<br>Use the `/oauth/token` endpoint to [generate an access token](Authentication.yaml).
+    - **Send a request**<br>Send a `GET` request to the `/ai-integration/customer_faq/faq_csv` endpoint.
+    - **Save the CSV**<br>The response contains the FAQs as a csv file.
+
+    ## Delete suggested answers
+
+    The suggested answers for your account can be deleted by sending a `DELETE` request to `/ai-integration/customer_faq/faq`.
+
+    <!-- theme: warning -->
+
+    > It is recommend that you download a copy of any suggested answers you have uploaded before deleting them.
+servers:
+  - url: 'https://public-api.sonetel.com'
+    description: Production
+paths:
+  /ai-integration/customer_faq/faq_template:
+    get:
+      summary: Download Template
+      description: |-
+        Download the template needed to upload the frequently asked questions and their answers to our system.
+
+
+        ### Sample Code
+
+        <!--
+        type: tab
+        title: curl
+        -->
+
+        ```bash
+        curl \
+          --request GET 'https://public-api.sonetel.com/ai-integration/customer_faq/faq_template' \
+          --header 'Authorization: Bearer YOUR_ACCESS_TOKEN' \
+          -o 'Sonetel-FAQ-Template.xlsx'
+        ```
+
+        <!--
+        type: tab
+        title: Python
+        lineNumbers: true
+        -->
+
+        ```python
+        import requests
+        from sonetel import api
+        import os
+
+        """
+        Install our Python module to use the sample code:
+        https://pypi.org/project/sonetel/
+        """
+
+        user = os.environ.get('sonetelUserName')
+        pswd = os.environ.get('sonetelPassword')
+
+        s = api.Account(username=user,password=pswd)
+
+        access_token = s.get_token()
+
+        url = "https://public-api.sonetel.com/ai-integration/customer_faq/faq_template"
+
+        headers = {
+          'Authorization': f'Bearer {access_token}'
+        }
+
+        response = requests.request("GET", url, headers=headers)
+
+        if response.ok:
+            open('Sonetel-FAQ-Template.xlsx', 'wb').write(response.content)
+        else:
+            response.raise_for_status()
+        ```
+
+        <!-- type: tab-end -->
+      operationId: get-ai-integration-customer_faq-faq_template
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+      responses:
+        '200':
+          description: A successful request returns an Excel file as the response body. Save the response body as a `.xlsx` file.
+          headers:
+            Content-Type:
+              schema:
+                type: string
+              description: application/force-download
+        '401':
+          $ref: '#/components/responses/unauthorized'
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: false
+  /ai-integration/customer_faq/faq:
+    get:
+      summary: List all FAQs
+      description: |-
+        Get a list of all the FAQs you have uploaded to your Sonetel account.
+
+        ### Sample Code
+
+        <!--
+        type: tab
+        title: curl
+        -->
+
+        ```bash
+        curl \
+          --request GET 'https://public-api.sonetel.com/ai-integration/customer_faq/faq' \
+          --header 'Accept: application/json' \
+          --header 'Authorization: Bearer YOUR_ACCESS_TOKEN'
+        ```
+
+        <!--
+        type: tab
+        title: Python
+        -->
+        ```python
+        import requests
+        from sonetel import api
+        import os
+
+        """
+        Install our Python module to use the sample code:
+        https://pypi.org/project/sonetel/
+        """
+
+        user = os.environ.get('sonetelUserName')
+        pswd = os.environ.get('sonetelPassword')
+
+        s = api.Account(username=user,password=pswd)
+
+        access_token = s.get_token()
+
+        url = "https://public-api.sonetel.com/ai-integration/customer_faq/faq"
+
+        headers = {
+          'Accept': 'application/json',
+          'Authorization': f'Bearer {access_token}'
+        }
+
+        response = requests.request("GET", url, headers=headers)
+
+        if response.ok:
+            print(response.text)
+        else:
+            response.raise_for_status()
+        ```
+
+        <!-- type: tab-end -->
+      operationId: get-faq
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - $ref: '#/components/parameters/Accept'
+      responses:
+        '200':
+          $ref: '#/components/responses/get-faq-success'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: false
+    post:
+      summary: Upload FAQs
+      description: |-
+        To have our AI-assisted Business Messenger offer you suggestions that are better suited to your business, you can upload questions frequently asked by your customers.
+
+        ### Sample Code
+
+        <!--
+        type: tab
+        title: curl
+        -->
+
+        ```bash
+        curl \
+          --request POST 'https://public-api.sonetel.com/ai-integration/customer_faq/faq' \
+          --header 'Authorization: Bearer ACCESS_TOKEN' \
+          --form 'file=@"/path/to/SonetelFAQTemplate.xlsx"'
+        ```
+
+        <!--
+        type: tab
+        title: Python
+        -->
+        ```python
+        import requests
+        from sonetel import api
+        import os
+
+        """
+        Install our Python module to use the sample code:
+        https://pypi.org/project/sonetel/
+        """
+
+        user = os.environ.get('sonetelUserName')
+        pswd = os.environ.get('sonetelPassword')
+
+        s = api.Account(username=user,password=pswd)
+
+        access_token = s.get_token()
+
+        url = "https://public-api.sonetel.com/ai-integration/customer_faq/faq"
+
+        headers = {
+          'Authorization': f'Bearer {access_token}'
+        }
+
+        payload={'language': 'en'}
+
+        files=[
+          ('file',('SonetelFAQTemplate.xlsx',open('SonetelFAQTemplate.xlsx','rb'),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
+        ]
+
+        response = requests.request("POST", url, headers=headers, files=files, data=payload)
+
+        if response.ok:
+            print(response.text)
+        else:
+            response.raise_for_status()
+        ```
+
+        <!-- type: tab-end -->
+      operationId: post-faq
+      parameters:
+        - name: Content-Type
+          in: header
+          description: The data type must be `multipart/form-data`.
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Authorization'
+        - $ref: '#/components/parameters/Accept'
+      requestBody:
+        description: |-
+          The Excel sheet containing the frequently asked questions should be sent in the body of the request as binary data.
+
+          If the language of the FAQs is not English, the `language` parameter should be set to the two letter ISO-2 code (formally known as the [ISO 639-1 standard](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)) for the language such as `hi` for Hindi, `es` for Spanish and so on.
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  description: The file object with the prepared questions and answers.
+                language:
+                  type: string
+                  description: The ISO-2 language code of the language that the suggested answers are in.
+              required:
+                - file
+              x-examples:
+                example-1:
+                  file: File_Object
+      responses:
+        '200':
+          $ref: '#/components/responses/faqs-uploaded'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: false
+    delete:
+      summary: Delete all FAQs
+      description: |-
+        The DELETE method allows you to remove the FAQs already uploaded to your account. This is helpful when you're updating the existing FAQs.
+
+        > Remember to save a copy of the uploaded FAQs if you don't have a backup. Use the `/faq_csv` endpoint to get a CSV.
+
+        ### Sample Code
+
+        <!--
+        type: tab
+        title: curl
+        -->
+
+        ```bash
+        curl \
+          --request DELETE 'https://public-api.sonetel.com/ai-integration/customer_faq/faq' \
+          --header 'Authorization: Bearer ACCESS_TOKEN'
+        ```
+
+        <!--
+        type: tab
+        title: Python
+        -->
+        ```python
+        import requests
+        from sonetel import api
+        import os
+
+        """
+        Install our Python module to use the sample code:
+        https://pypi.org/project/sonetel/
+        """
+
+        user = os.environ.get('sonetelUserName')
+        pswd = os.environ.get('sonetelPassword')
+
+        s = api.Account(username=user,password=pswd)
+
+        access_token = s.get_token()
+
+        url = "https://public-api.sonetel.com/ai-integration/customer_faq/faq"
+
+        headers = {
+          'Authorization': f'Bearer {access_token}',
+          'Accept': 'application/json'
+        }
+
+        response = requests.request("DELETE", url, headers=headers)
+
+        if response.ok:
+            print(response.text)
+        else:
+            response.raise_for_status()
+
+        ```
+
+        <!-- type: tab-end -->
+      operationId: delete-faq
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - $ref: '#/components/parameters/Accept'
+      responses:
+        '200':
+          $ref: '#/components/responses/delete-success'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: false
+  /ai-integration/customer_faq/faq_csv:
+    get:
+      summary: Download as CSV
+      description: |-
+        Download all the FAQs that are uploaded to your account as a CSV file.
+
+        ### Sample Code
+
+        <!--
+        type: tab
+        title: curl
+        -->
+
+        ```bash
+        curl \
+          --request GET 'https://public-api.sonetel.com/ai-integration/customer_faq/faq_csv' \
+          --header 'Authorization: Bearer ACCESS_TOKEN'
+        ```
+
+        <!--
+        type: tab
+        title: Python
+        -->
+        ```python
+        import requests
+        from sonetel import api
+        import os
+
+        """
+        Install our Python module to use the sample code:
+        https://pypi.org/project/sonetel/
+        """
+
+        user = os.environ.get('sonetelUserName')
+        pswd = os.environ.get('sonetelPassword')
+
+        s = api.Account(username=user,password=pswd)
+
+        access_token = s.get_token()
+
+        url = "https://public-api.sonetel.com/ai-integration/customer_faq/faq_csv"
+
+        headers = {
+          'Authorization': f'Bearer {access_token}',
+          'Accept': 'application/json'
+        }
+
+        response = requests.request("GET", url, headers=headers)
+
+        if response.ok:
+            print(response.text)
+        else:
+            response.raise_for_status()
+
+        ```
+
+        <!-- type: tab-end -->
+      operationId: get-customer_faq-csv
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+      responses:
+        '200':
+          description: A success response contains the CSV file as the response body.
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: 'attachment;filename=Sonetel-FAQ-{ACCOUNTID}.csv'
+              description: 'Indicate how the response should be handled, also contains the file name of the CSV.'
+            Content-Type:
+              schema:
+                type: string
+                example: application/force-download
+              description: Indicates the response's media type.
+        '401':
+          $ref: '#/components/responses/unauthorized'
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: false
+  /ai-integration/customer_faq/suggested-answers:
+    get:
+      summary: Get Suggested Answer from AI
+      description: |-
+        Get answers to frequently asked questions from our AI. Just send the question as a JSON body along with the language if the question is not in English. Our AI will look through the FAQs you uploaded as well as your older chat conversations and provide a suggested answer.
+
+        ### Sample Code
+
+        <!--
+        type: tab
+        title: curl
+        -->
+
+        ```bash
+        curl \
+          --request GET \
+          'https://public-api.sonetel.com/ai-integration/customer_faq/suggested-answers' \
+          --header 'Authorization: Bearer ACCESS_TOKEN' \
+          --header 'Content-Type: application/json' \
+          --header 'Accept: application/json' \
+          --data-raw '{
+            "question":"hello",
+            "language": "en",
+            "account_id": "ACCOUNT_ID"
+        }'
+        ```
+
+        <!--
+        type: tab
+        title: Python
+        -->
+        ```python
+        import requests
+        from sonetel import api
+        import os
+
+        """
+        Install our Python module to use the sample code:
+        https://pypi.org/project/sonetel/
+        """
+
+        user = os.environ.get('sonetelUserName')
+        pswd = os.environ.get('sonetelPassword')
+
+        s = api.Account(username=user,password=pswd)
+
+        access_token = s.get_token()
+
+        url = "https://public-api.sonetel.com/ai-integration/customer_faq/suggested-answers"
+
+        headers = {
+          'Authorization': f'Bearer {access_token}',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+
+        payload = {
+            'question':'hello',
+            'language': 'en',
+            'account_id': s.get_accountid()
+        }
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+
+        if response.ok:
+            print(response.text)
+        else:
+            response.raise_for_status()
+
+        ```
+
+        <!-- type: tab-end -->
+      operationId: get-suggested-answers
+      parameters:
+        - name: Content-Type
+          in: header
+          description: The content type of the request.
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - $ref: '#/components/parameters/Authorization'
+        - $ref: '#/components/parameters/Accept'
+      requestBody:
+        $ref: '#/components/requestBodies/get-suggested-answer'
+      responses:
+        '200':
+          $ref: '#/components/responses/suggested-answer'
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: true
+components:
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: The authorization header contains your access token and is used to authenticate requests. Generate an `access_token` using the `/oauth/token` endpoint.
+      required: true
+      schema:
+        type: string
+        examples:
+          - Bearer <ACCESS_TOKEN>
+    Accept:
+      name: Accept
+      in: header
+      description: The content type that should be returned in the response.
+      required: true
+      schema:
+        type: string
+        default: application/json
+  requestBodies:
+    get-suggested-answer:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              question:
+                type: string
+                description: The question for which you want the answer from the AI.
+              language:
+                type: string
+                description: The 2 letter ISO code of the question's language. Required if the question is in any language other than English.
+                default: en
+                examples:
+                  - 'en, sv, ar'
+              account_id:
+                type: string
+                description: Your Sonetel account ID
+            required:
+              - question
+              - account_id
+            x-examples:
+              example-1:
+                question: Do you accept credit cards?
+                language: en
+                account_id: '206000000'
+  securitySchemes:
+    Sonetel:
+      type: oauth2
+      description: Get an access token from the `/oauth/token` and pass it as a Bearer token in the `Authorization` header.
+      flows:
+        password:
+          refreshUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          tokenUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          scopes: {}
+  responses:
+    unauthorized:
+      description: Error response when the request is made without the `Authorization` header or with an expired token.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: The error code
+              error_description:
+                type: string
+                description: A short message describing the details of the error.
+            x-examples:
+              example-1:
+                error: unauthorized
+                error_description: Full authentication is required to access this resource
+    delete-success:
+      description: Delete the existing FAQs uploaded to your account.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                description: The status of the request
+              message:
+                type: string
+                description: The message with details of the operation
+              response:
+                type: 'null'
+                description: The response value is `null` in case of a successful deletion.
+            x-examples:
+              example-1:
+                status: SUCCESS
+                message: 'Data deleted successfully. Account id : 200000000'
+                response: null
+    faqs-uploaded:
+      description: The response sent when the FAQs are uploaded succesfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                description: The status of the request
+              message:
+                type: string
+                description: Message describing the status of the request.
+              response:
+                type: object
+                description: The response object
+                properties:
+                  accountId:
+                    type: string
+                    description: The account ID to which the FAQs were.
+                  languages:
+                    type: array
+                    description: List of all the different FAQs uploaded.
+                    items:
+                      type: object
+                      properties:
+                        lang:
+                          type: string
+                          description: The ISO alpha-2 code for the language
+                        business:
+                          type: object
+                          description: Questions and answers that relate to a particular area of your business.
+                          properties:
+                            source_url:
+                              type: string
+                              description: |-
+                                The URL of the webpage from where the FAQs were automatically uploaded.
+
+                                This is only used if the FAQs were uploaded automatically by our system.
+                            qa:
+                              type: array
+                              description: Array listing the each question and answer as a separate object
+                              items:
+                                type: object
+                                properties:
+                                  que:
+                                    type: array
+                                    description: Question parsed from the Excel template.
+                                    items:
+                                      type: string
+                                  ans:
+                                    type: string
+                                    description: Answer parsed from the Excel template.
+            x-examples:
+              example-1:
+                status: SUCCESS
+                message: Adding FAQ and Event done successfully!
+                response:
+                  accountId: '200000000'
+                  languages:
+                    - lang: en
+                      business:
+                        source_url: null
+                        qa:
+                          - que:
+                              - Hi
+                              - Hello
+                            ans: 'Hi, How can I help you?'
+                          - que:
+                              - Thank you
+                            ans: Thank you. Have a nice day!
+                          - que:
+                              - When are you open?
+                              - What time do you open?
+                              - Are you open today?
+                            ans: We are open from Monday to Friday between 9 AM - 9 PM IST.
+                          - que:
+                              - What payments do you accept?
+                            ans: 'We accept cash, MasterCard, Visa and UPI.'
+                          - que:
+                              - Do you accept Gpay?
+                            ans: 'Yes, we accept Gpay.'
+          examples:
+            FAQs upload success:
+              value:
+                status: SUCCESS
+                message: Adding FAQ and Event done successfully!
+                response:
+                  accountId: '200000000'
+                  languages:
+                    - lang: hi
+                      business:
+                        source_url: null
+                        qa:
+                          - que:
+                              - नमस्ते
+                              - नमस्कार!
+                            ans: नमस्ते क्या आपको कोई मदद चाहिए?
+                          - que:
+                              - धन्यवाद।
+                            ans: शुक्रिया। आपका दिन शुभ हो!
+                    - lang: en
+                      business:
+                        source_url: null
+                        qa:
+                          - que:
+                              - Hi
+                              - Hello
+                            ans: Hello. How can I help you?
+                          - que:
+                              - Thank you
+                              - thanks
+                            ans: Thank you. Have a nice day.
+    get-faq-success:
+      description: The response returned when the FAQs are successfully fetched from the system.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                description: The status of the request
+              message:
+                type: string
+                description: Message describing the status of the request.
+              response:
+                type: array
+                description: The response object
+                items:
+                  type: object
+                  properties:
+                    accountId:
+                      type: string
+                      description: The Sonetel account ID
+                    languages:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          lang:
+                            type: string
+                            description: The 2 letter ISO code of the question's language.
+                          business:
+                            type: object
+                            properties:
+                              qa:
+                                type: array
+                                description: An array containing the uploaded questions and answers as separate objects.
+                                items:
+                                  type: object
+                                  properties:
+                                    que:
+                                      type: array
+                                      description: 'The frequently asked question. If more than one question have the same answer, all the questions are listed here as elements of an array.'
+                                      items:
+                                        type: string
+                                    ans:
+                                      type: string
+                                      description: The answer the question(s).
+            x-examples:
+              example-1:
+                status: SUCCESS
+                message: Fetched Data successfully.
+                response:
+                  - accountId: '200000000'
+                    languages:
+                      - lang: en
+                        business:
+                          source_url: null
+                          qa:
+                            - que:
+                                - Hi
+                                - Hello
+                              ans: 'Hi, How can I help you?'
+                            - que:
+                                - Thank you
+                              ans: Thank you. Have a nice day!
+                            - que:
+                                - When are you open?
+                                - What time do you open?
+                                - Are you open today?
+                              ans: We are open from Monday to Friday between 9 AM - 9 PM IST.
+                            - que:
+                                - What payments do you accept?
+                              ans: 'We accept cash, MasterCard, Visa and UPI.'
+                            - que:
+                                - Do you accept Gpay?
+                              ans: 'Yes, we accept Gpay.'
+    suggested-answer:
+      description: The response containing the suggested answers.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                enum:
+                  - SUCCESS
+                  - FAIL
+                description: The status of the response.
+              message:
+                type: string
+                description: A short text describing the status of the response.
+              response:
+                type: object
+                properties:
+                  question-id:
+                    type: string
+                    description: A unique ID assigned to the question.
+                  answers:
+                    type: array
+                    description: Array containing the answers to the question. The array is empty if no relevant answer was found.
+                    items:
+                      type: object
+                  account-id:
+                    type: string
+                    description: Your Sonetel account ID.
+                  company-url:
+                    type: 'null'
+                    description: 'If the suggested answer was automatically fetched from your website''s FAQs, this includes the URL.'
+                  language:
+                    type: string
+                    description: 'The 2 letter [ISO language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).'
+            x-examples:
+              example-1:
+                status: SUCCESS
+                message: Got some suggestions.
+                response:
+                  question-id: ''
+                  answers: []
+                  account-id: '200000000'
+                  company-url: null
+                  language: en
+x-internal: false

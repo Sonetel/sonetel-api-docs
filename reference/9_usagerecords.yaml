@@ -1,0 +1,792 @@
+openapi: 3.0.0
+info:
+  version: '2.0'
+  title: Usage Records
+  description: |
+    Use our `/usagerecord` APIs to get the details of calls and other charges applied to your Sonetel account. This is the same data that is available in our web app's [usage](https://app.sonetel.com/account-settings/usage) section.
+
+
+    ## Get started
+
+    Here's how you can get the usage records for your account.
+
+    - **Generate access token**<br>Use the `/oauth/token` endpoint to generate an access token. The details are given [here](Authentication.yaml).
+    - **Call our API**<br>Issue a `GET` request to `/usage/account/ACCOUNT_ID/usagerecord` where `ACCOUNT_ID` is your Sonetel account ID.
+      - Filter the results using the query parameters such as `service`, `charge_type` and so on.
+      - We recommend limiting the number of results per page by including the `count` parameter. If this is omitted, our system will automatically limit the number of results to 25 per page.
+    - **Parse the results**<br>The response contains the results in the JSON format. Use the `next` and `previous` URIs to browse through results.
+
+    ## Filter the results
+
+    The results can be filtered by adding one or more query parameters to the `GET` request. The various filters available along with their description are given below.
+
+    - **charge_type**: The type of usage that the record represents. For example, set this to `usage_time` to only get records for usage that is time dependent i.e. incoming and outgoing calls.
+    - **count**: Used to limit the number of results returned per page.
+    - **service**: The type of the service that is associated with the usage. For example, `inbound_call`.
+    - **start_time**: The starting date and time for which usage is included in the results.
+    - **end_time**: The last date and time for which usage is included in the results.
+
+    For example, to get the usage records for calls made between 1 January 2022 and 3 February 2022, you can use `/usage/account/200000000/usagerecord?charge_type=usage_time&start_time=01012020T00:00:00Z&end_time=03022022T23:59:59Z&count=20`.
+
+    > Dates are specified in the ISO8601 format i.e. `YYYYMMDDTHH:MM:SSZ`. For example, 31st January 2022 11:23:59 PM is `20220131T23:59:59Z`
+
+    ### Pagination
+
+    The `/usagerecord` endpoint supports pagination to ensure a faster response time. The number of records returned per page can be limited by adding the `count` parameter in the request URL.
+
+    Example: `https://public-api.sonetel.com/usagerec/account/1234567/usagerecord?count=15`
+
+    The response data is then divided into multiple pages if the total number of results (`max_count`) is more than the value specified by `count`.
+
+    The pagination object contains the information needed to browse the results such as the URIs for the `next` & `previous` set of results.
+
+
+    ```json
+    "pagination": 
+        {
+            "req_id": "07bd24ba-3ab4-4e2c-a641-d6a62a59ff40-2000:01:01",
+            "max_count": "100",
+            "next": "https://public-api.sonetel.com/usagerec/account/1234567/usagerecord?req_id=07bd24ba-3ab4-4e2c-a641-d6a62a59ff40-2000:01:01&count=25&after=25&charge_type=usage_time",
+            "previous": "",
+            "before": "0",
+            "count": "25",
+            "refresh": "https://public-api.sonetel.com/usagerec/account/1234567/usagerecord?req_id=07bd24ba-3ab4-4e2c-a641-d6a62a59ff40-2000:01:01&reload=yes&count=25&before=0&charge_type=usage_time",
+            "after": "25"
+        }
+    ```
+
+    ## Download CSV
+
+    To download the usage records for offline analysis, use the `/usagerecord/download` endpoint.
+
+    1. **Generate access token**<br>Use the `/oauth/token` endpoint to generate an access token.
+    2. **Send the request**<br>Issue a `GET` request to `/usagerecord/download` including any URL parameters to filter the results.
+    3. **Download the file**<br>The response contains the URL to download the CSV file.
+
+    Here are sample requests to download usage records for calls.
+
+    <!--
+    type: tab
+    title: curl
+    -->
+
+    ```c
+    curl \
+      --request GET 'https://public-api.sonetel.com/usage/account/YOUR_ACCOUNT_ID/usagerecord/download?charge_type=usage_time' \
+      --header 'Accept: application/json, text/plain, */*' \
+      --header 'Connection: keep-alive' \
+      --header 'Authorization: Bearer VALID_ACCESS_TOKEN' \
+    ```
+
+    <!--
+    type: tab
+    title: Python
+    -->
+
+    ```python
+    import requests
+    from sonetel import api
+    import os
+
+    # Assumes that your credentials are stored as environment variables
+    # Read more about this:
+    # https://github.com/Sonetel/sonetel-python#storing-your-credentials
+
+    user = os.environ.get('sonetelUserName')
+    pswd = os.environ.get('sonetelPassword')
+
+    s = api.Account(username=user,password=pswd)
+
+    base_url = 'https://public-api.sonetel.com'
+    account_id = s.get_accountid()
+    access_token = s.get_token()
+
+    request_url = f"{base_url}/usage/account/{account_id}/usagerecord/download"
+
+    headers = {
+      'Accept': 'application/json, text/plain, */*',
+      'Connection': 'keep-alive',
+      'Authorization': f'Bearer {access_token}'
+    }
+
+    response = requests.request("GET", request_url, headers=headers)
+
+    print(response.json())
+    ```
+    > **Note**: Enter the command `pip install sonetel` in a terminal window to install our [Python module](https://pypi.org/project/sonetel/) used in the code above.
+
+    <!-- type: tab-end -->
+  contact: {}
+servers:
+  - url: 'https://public-api.sonetel.com'
+    description: Production
+paths:
+  '/usage/account/{accountid}/usagerecord':
+    get:
+      summary: Get usage records
+      description: Use this endpoint to get your usage records as a JSON response. Use the query parameters to filter the data.
+      operationId: get-usagerecord
+      parameters:
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/charge_type'
+        - $ref: '#/components/parameters/service'
+        - $ref: '#/components/parameters/end_time'
+        - $ref: '#/components/parameters/start_time'
+        - $ref: '#/components/parameters/accountid'
+        - $ref: '#/components/parameters/Authorization'
+      responses:
+        '200':
+          $ref: '#/components/responses/usage-record-get'
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  '/usage/account/{accountid}/usagerecord/download':
+    get:
+      summary: Download usage records
+      description: |-
+        Download the usage records in a CSV for offline analysis.
+
+        > If `start_time` and `end_time` are not included in the request, only 15 records are downloaded by default.
+      operationId: get-usagerecord-download
+      parameters:
+        - $ref: '#/components/parameters/charge_type'
+        - $ref: '#/components/parameters/start_time'
+        - $ref: '#/components/parameters/end_time'
+        - $ref: '#/components/parameters/service'
+        - $ref: '#/components/parameters/accountid'
+        - $ref: '#/components/parameters/Authorization'
+      responses:
+        '200':
+          $ref: '#/components/responses/usage-record-download'
+        '401':
+          description: A 401 response is sent when the access token is either expired or malformed.
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+components:
+  parameters:
+    service:
+      name: service
+      in: query
+      description: String identifier for the service used.
+      schema:
+        type: string
+        enum:
+          - outbound_call
+          - inbound_call
+          - phnum_subscription
+          - on-net_call
+          - fax_to_email
+          - sms_to_email
+          - priceplan_premium
+          - voiceapp_menu
+          - voiceapp_company-voicemail
+          - voiceapp_prompt-recording
+          - voiceapp_call-thru
+          - overusage
+          - voiceapp_user-voicemail
+          - conference
+          - priceplan_business
+    charge_type:
+      name: charge_type
+      in: query
+      description: The type of charge applied to the account.
+      schema:
+        type: string
+        enum:
+          - usage_fixed
+          - usage_time
+          - subscription_setup
+          - subscription_recurring
+    count:
+      name: count
+      in: query
+      description: Limits the number of results per page. Used in pagination.
+      required: false
+      schema:
+        type: number
+    start_time:
+      name: start_time
+      in: query
+      description: The starting date and time for which usage is included in the results.
+      required: false
+      schema:
+        type: string
+        example: '20220630T18:30:00Z'
+    end_time:
+      name: end_time
+      in: query
+      description: The last date and time for which usage is included in the results.
+      schema:
+        type: string
+        example: '20220731T18:29:59Z'
+    accountid:
+      name: accountid
+      in: path
+      description: Your Sonetel account ID.
+      required: true
+      schema:
+        type: string
+    Authorization:
+      name: Authorization
+      in: header
+      description: The authorization header contains your access token and is used to authenticate requests. Generate an `access_token` using the `/oauth/token` endpoint.
+      required: true
+      schema:
+        type: string
+        example: Bearer <ACCESS_TOKEN>
+  securitySchemes:
+    production:
+      type: oauth2
+      description: Get an access token from the `/oauth/token` and pass it as a Bearer token in the `Authorization` header.
+      flows:
+        password:
+          refreshUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          tokenUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          scopes: {}
+  responses:
+    usage-record-get:
+      description: A success response returns the usage records along with pagination information.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              resource:
+                type: string
+                description: Name of the resource being accessed
+                readOnly: true
+              status:
+                type: string
+                description: Status of the request
+                readOnly: true
+              endFlag:
+                type: string
+                enum:
+                  - 'true'
+                  - 'false'
+                description: A boolean value that indicates whether or not data is available in the next page.
+                readOnly: true
+              startFlag:
+                type: string
+                enum:
+                  - 'true'
+                  - 'false'
+                description: A boolean value that indicates whether or not data is available in the last page.
+                readOnly: true
+              pagination:
+                type: object
+                description: Information about pagination.
+                properties:
+                  req_id:
+                    type: string
+                    description: A unique ID generated for each request. This is used in pagination.
+                    readOnly: true
+                  max_count:
+                    type: string
+                    description: The total number of results
+                    readOnly: true
+                  next:
+                    type: string
+                    description: URI for the next set of results
+                    readOnly: true
+                  previous:
+                    type: string
+                    description: URI for the previous set of results
+                    readOnly: true
+                  before:
+                    type: string
+                    description: Number of results in the previous page
+                    readOnly: true
+                  count:
+                    type: string
+                    description: Number of results in the current page
+                    readOnly: true
+                  refresh:
+                    type: string
+                    description: URI to refresh the current set of results
+                    readOnly: true
+                  after:
+                    type: string
+                    description: Number of results on the next page
+                    readOnly: true
+                readOnly: true
+              response:
+                type: array
+                description: Array carrying the usage records
+                readOnly: true
+                items:
+                  type: object
+                  description: The usage record object.
+                  properties:
+                    record_id:
+                      type: string
+                      description: The unique Id of the usage record.
+                      readOnly: true
+                    timestamp:
+                      type: string
+                      description: 'The date/time when the service was used. In case of calls and services that are used over a period of time, the detailed specifications are provided in other fields.'
+                      readOnly: true
+                    service:
+                      type: string
+                      description: The service used
+                      readOnly: true
+                    account_id:
+                      type: string
+                      description: The Sonetel account ID.
+                      readOnly: true
+                    usage_details:
+                      type: object
+                      description: |-
+                        Details of the usage record. The details vary depending on the type of usage for which the record has been generated.
+
+                        Each usage record only contains one usage type i.e. `call`, `phnumsubscription` and so on.
+                      properties:
+                        call:
+                          type: object
+                          description: Usage details for all types of phone calls.
+                          properties:
+                            start_time:
+                              type: string
+                              description: The usage start date & time.
+                              readOnly: true
+                            end_time:
+                              type: string
+                              description: The usage end date & time.
+                              readOnly: true
+                            call_length:
+                              type: string
+                              description: The length of the call in seconds
+                              readOnly: true
+                            from_type:
+                              type: string
+                              description: The type of source from where the call originated
+                              readOnly: true
+                            from:
+                              type: string
+                              description: The ID of the source from where the call originated
+                              readOnly: true
+                            caller_id:
+                              type: string
+                              description: The caller-ID sent to the called destination.
+                              readOnly: true
+                            to_type:
+                              type: string
+                              description: The type of destination where the call is sent.
+                              readOnly: true
+                            to:
+                              type: string
+                              description: 'The ID of the destination where the call is sent. For example, in case of outbound calls this will be the number called.'
+                              readOnly: true
+                            to_orig:
+                              type: string
+                              description: |-
+                                The original value of the destination where the call is sent. The field `to` is usually a translated value.
+
+                                For example, a number may be dialed in a country’s local format. In which case, the value `to_orig` carries the local number(e.g. `076513234`), while the field `to` contains the translated E164 number(e.g. `4676513234`)
+                              readOnly: true
+                            app_type:
+                              type: string
+                              description: 'A string field that indicates whether the call was connected to a voice app. It is empty if the call is not connected '
+                              readOnly: true
+                          readOnly: true
+                        phnumsubscription:
+                          type: object
+                          description: Usage details related to phone number subscriptions
+                          properties:
+                            phnum:
+                              type: string
+                              description: 'The Sonetel phone to which this record applies. In case of a number series, the value in the field is the first phone number in the series.'
+                              readOnly: true
+                            country:
+                              type: string
+                              description: The country of the phone number
+                              readOnly: true
+                            area_code:
+                              type: string
+                              description: The telephone area code of the phone number
+                              readOnly: true
+                            city:
+                              type: string
+                              description: Name of the city where the number is. The name is descriptive and does not follow any standard.
+                              readOnly: true
+                            type:
+                              type: string
+                              enum:
+                                - national
+                                - geographic
+                                - tollfree
+                                - mobile
+                              description: 'The type of number – this can be either “national”, “geographic”, “tollfree", "mobile"'
+                              readOnly: true
+                            range:
+                              type: string
+                              description: Applicable if the phone number subscription is of a number that is a part of a phone number series. The value specifies the quantity of phone numbers in the number series of which this phone number is a part of.
+                              readOnly: true
+                            price_category:
+                              type: string
+                              enum:
+                                - '1'
+                                - '2'
+                                - '3'
+                                - '4'
+                                - '5'
+                              description: |-
+                                The price category of the number/series. The allowed values are 1- regular, 2- gold, 3 - gold+, 4 - gold++, 5 -gold+++.
+
+                                Does not apply to new phone numbers purchased.
+                              readOnly: true
+                          readOnly: true
+                        inbound_sms:
+                          type: object
+                          description: Details of the usage related to incoming SMS.
+                          properties:
+                            from:
+                              type: string
+                              description: The sender's phone number.
+                              readOnly: true
+                            to:
+                              type: string
+                              description: The Sonetel number to which the SMS was sent.
+                              readOnly: true
+                            delivered_to:
+                              type: string
+                              description: The email address of the user to whom the SMS was delivered.
+                              format: email
+                              readOnly: true
+                          readOnly: true
+                      readOnly: true
+                    charges:
+                      type: object
+                      description: Details of the charges applied to the usage record
+                      properties:
+                        priceplan:
+                          type: string
+                          description: |-
+                            The price plan applicable for charges.
+
+                            Price plans define special discounts and prices for services. An account that subscribes to a price plan will have pricing applicable as per the price plan.
+                          readOnly: true
+                        currency:
+                          type: string
+                          enum:
+                            - USD
+                            - SEK
+                            - EUR
+                          description: The currency in which the charges are applied.
+                          readOnly: true
+                        count:
+                          type: string
+                          description: 'The number of instances that are charged. For example, the number of users in case of monthly plan charges.'
+                          readOnly: true
+                        usage_fixed:
+                          type: string
+                          description: 'Charges applied for fixed cost services such as incoming SMS, calls to a voice app and so on.'
+                          readOnly: true
+                        usage_time:
+                          type: string
+                          description: The time based usage fee charged to this record. This normally applies to calls as they are charged per minute.
+                          readOnly: true
+                        subscription_setup:
+                          type: string
+                          description: The one time fee charged to this usage record. Usually applied to phone number subscriptions.
+                          readOnly: true
+                        subscription_recurring:
+                          type: string
+                          description: The recurring fee charged to this usage record.
+                          readOnly: true
+                        usage_vat:
+                          type: string
+                          description: |-
+                            The VAT value associated with this usage. VAT is only charged for accounts that have billing addresses within the European Union.
+
+                            VAT is waived off if you enter your VAT ID at app.sonetel.com.
+                          readOnly: true
+                        renew_mode:
+                          type: string
+                          description: The renewal mode of the subscription. Not set for other types of usage records such as calls.
+                          readOnly: true
+                          example: '1m, 1y, 3y'
+                      readOnly: true
+                  readOnly: true
+            readOnly: true
+            x-examples:
+              example-1:
+                resource: usagerecord
+                status: success
+                endFlag: 'true'
+                pagination:
+                  req_id: '7bf20e91-c568-4c18-84e7-e13014fcd4e0-2022:08:01'
+                  max_count: '241818'
+                  next: 'https://public-api.sonetel.com/usagerec/account/25001234/usagerecord?req_id=7bf20e91-c568-4c18-84e7-e13014fcd4e0-2022:08:01&count=4&after=4'
+                  previous: ''
+                  before: '0'
+                  count: '4'
+                  refresh: 'https://public-api.sonetel.com/usagerec/account/25001234/usagerecord?req_id=7bf20e91-c568-4c18-84e7-e13014fcd4e0-2022:08:01&reload=yes&count=4&before=0'
+                  after: '4'
+                response:
+                  - record_id: '400774995'
+                    timestamp: '2022/08/01T08:51:12Z'
+                    service: inbound_call
+                    account_id: '25001234'
+                    usage_details:
+                      call:
+                        start_time: '2022/08/01T08:51:12Z'
+                        end_time: '2022/08/01T08:51:37Z'
+                        call_length: '25'
+                        from_type: phonenumber
+                        from: '+6594660000'
+                        caller_id: '+6594660000'
+                        to_type: phonenumber
+                        to: '+6531589999'
+                        to_orig: ''
+                        app_type: ''
+                    charges:
+                      priceplan: regular
+                      currency: SEK
+                      count: ''
+                      usage_fixed: ''
+                      usage_time: '0.0'
+                      subscription_setup: ''
+                      subscription_recurring: ''
+                      usage_vat: '0.0'
+                      renew_mode: none
+                  - record_id: '400774994'
+                    timestamp: '2022/08/01T08:51:12Z'
+                    service: voiceapp_menu
+                    account_id: '25001234'
+                    usage_details:
+                      call:
+                        start_time: '2022/08/01T08:51:12Z'
+                        end_time: '2022/08/01T08:51:37Z'
+                        call_length: '25'
+                        from_type: phonenumber
+                        from: '+6594660000'
+                        caller_id: '+6594660000'
+                        to_type: sip
+                        to: vai6345m4oioic
+                        to_orig: ''
+                        app_type: ''
+                    charges:
+                      priceplan: regular
+                      currency: SEK
+                      count: ''
+                      usage_fixed: '0'
+                      usage_time: ''
+                      subscription_setup: ''
+                      subscription_recurring: ''
+                      usage_vat: '0.0'
+                      renew_mode: none
+                  - record_id: '400772567'
+                    timestamp: '2022/08/01T07:37:54Z'
+                    service: inbound_call
+                    account_id: '25001234'
+                    usage_details:
+                      call:
+                        start_time: '2022/08/01T07:37:54Z'
+                        end_time: '2022/08/01T07:38:20Z'
+                        call_length: '26'
+                        from_type: phonenumber
+                        from: '+14162000000'
+                        caller_id: '+14162000000'
+                        to_type: phonenumber
+                        to: '+18559999999'
+                        to_orig: ''
+                        app_type: ''
+                    charges:
+                      priceplan: regular
+                      currency: SEK
+                      count: ''
+                      usage_fixed: ''
+                      usage_time: '0.64'
+                      subscription_setup: ''
+                      subscription_recurring: ''
+                      usage_vat: '0.16'
+                      renew_mode: none
+                  - record_id: '400772566'
+                    timestamp: '2022/08/01T07:37:54Z'
+                    service: voiceapp_menu
+                    account_id: '25001234'
+                    usage_details:
+                      call:
+                        start_time: '2022/08/01T07:37:54Z'
+                        end_time: '2022/08/01T07:38:20Z'
+                        call_length: '26'
+                        from_type: phonenumber
+                        from: '+14162000000'
+                        caller_id: '+14162000000'
+                        to_type: sip
+                        to: vai6345m4pgxic
+                        to_orig: ''
+                        app_type: ''
+                    charges:
+                      priceplan: regular
+                      currency: SEK
+                      count: ''
+                      usage_fixed: '0'
+                      usage_time: ''
+                      subscription_setup: ''
+                      subscription_recurring: ''
+                      usage_vat: '0.0'
+                      renew_mode: none
+          examples:
+            Usage Record:
+              value:
+                resource: usagerecord
+                status: success
+                endFlag: 'true'
+                pagination:
+                  req_id: '7bf20e91-c568-4c18-84e7-e13014fcd4e0-2022:08:01'
+                  max_count: '241818'
+                  next: 'https://public-api.sonetel.com/usagerec/account/25001234/usagerecord?req_id=7bf20e91-c568-4c18-84e7-e13014fcd4e0-2022:08:01&count=4&after=4'
+                  previous: ''
+                  before: '0'
+                  count: '4'
+                  refresh: 'https://public-api.sonetel.com/usagerec/account/25001234/usagerecord?req_id=7bf20e91-c568-4c18-84e7-e13014fcd4e0-2022:08:01&reload=yes&count=4&before=0'
+                  after: '4'
+                response:
+                  - record_id: '400774995'
+                    timestamp: '2022/08/01T08:51:12Z'
+                    service: inbound_call
+                    account_id: '25001234'
+                    usage_details:
+                      call:
+                        start_time: '2022/08/01T08:51:12Z'
+                        end_time: '2022/08/01T08:51:37Z'
+                        call_length: '25'
+                        from_type: phonenumber
+                        from: '+6594660000'
+                        caller_id: '+6594660000'
+                        to_type: phonenumber
+                        to: '+6531589999'
+                        to_orig: ''
+                        app_type: ''
+                    charges:
+                      priceplan: regular
+                      currency: SEK
+                      count: ''
+                      usage_fixed: ''
+                      usage_time: '0.0'
+                      subscription_setup: ''
+                      subscription_recurring: ''
+                      usage_vat: '0.0'
+                      renew_mode: none
+                  - record_id: '400774994'
+                    timestamp: '2022/08/01T08:51:12Z'
+                    service: voiceapp_menu
+                    account_id: '25001234'
+                    usage_details:
+                      call:
+                        start_time: '2022/08/01T08:51:12Z'
+                        end_time: '2022/08/01T08:51:37Z'
+                        call_length: '25'
+                        from_type: phonenumber
+                        from: '+6594660000'
+                        caller_id: '+6594660000'
+                        to_type: sip
+                        to: vai6345m4oioic
+                        to_orig: ''
+                        app_type: ''
+                    charges:
+                      priceplan: regular
+                      currency: SEK
+                      count: ''
+                      usage_fixed: '0'
+                      usage_time: ''
+                      subscription_setup: ''
+                      subscription_recurring: ''
+                      usage_vat: '0.0'
+                      renew_mode: none
+                  - record_id: '400772567'
+                    timestamp: '2022/08/01T07:37:54Z'
+                    service: inbound_call
+                    account_id: '25001234'
+                    usage_details:
+                      call:
+                        start_time: '2022/08/01T07:37:54Z'
+                        end_time: '2022/08/01T07:38:20Z'
+                        call_length: '26'
+                        from_type: phonenumber
+                        from: '+14162000000'
+                        caller_id: '+14162000000'
+                        to_type: phonenumber
+                        to: '+18559999999'
+                        to_orig: ''
+                        app_type: ''
+                    charges:
+                      priceplan: regular
+                      currency: SEK
+                      count: ''
+                      usage_fixed: ''
+                      usage_time: '0.64'
+                      subscription_setup: ''
+                      subscription_recurring: ''
+                      usage_vat: '0.16'
+                      renew_mode: none
+                  - record_id: '400772566'
+                    timestamp: '2022/08/01T07:37:54Z'
+                    service: voiceapp_menu
+                    account_id: '25001234'
+                    usage_details:
+                      call:
+                        start_time: '2022/08/01T07:37:54Z'
+                        end_time: '2022/08/01T07:38:20Z'
+                        call_length: '26'
+                        from_type: phonenumber
+                        from: '+14162000000'
+                        caller_id: '+14162000000'
+                        to_type: sip
+                        to: vai6345m4pgxic
+                        to_orig: ''
+                        app_type: ''
+                    charges:
+                      priceplan: regular
+                      currency: SEK
+                      count: ''
+                      usage_fixed: '0'
+                      usage_time: ''
+                      subscription_setup: ''
+                      subscription_recurring: ''
+                      usage_vat: '0.0'
+                      renew_mode: none
+      headers:
+        Content-Type:
+          schema:
+            type: string
+          description: application/json;charset=UTF-8
+        Connection:
+          schema:
+            type: string
+          description: keep-alive
+    usage-record-download:
+      description: A success response will return the URL from where the usage records can be downloaded.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              resource:
+                type: string
+                description: Name of the resource called
+              status:
+                type: string
+                description: The status of the request
+              response:
+                type: string
+                description: The URL from where to download the usage records.
+            x-examples:
+              example-1:
+                resource: usagerecord
+                status: success
+                response: 'https://downloads-usage.sonetel.com/usage/usage_200000123_165554332456.csv'
+          examples:
+            Download usage record:
+              value:
+                resource: usagerecord
+                status: success
+                response: 'https://downloads-usage.sonetel.com/usage/usage_2000000007_1659517051676.csv'
+      headers:
+        Content-Type:
+          schema:
+            type: string
+          description: application/json;charset=UTF-8

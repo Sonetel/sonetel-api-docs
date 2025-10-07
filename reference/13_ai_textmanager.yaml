@@ -1,0 +1,2459 @@
+openapi: 3.1.0
+info:
+  version: '2.0'
+  title: Text Manager
+  summary: The text manager to store and manage Sonetel AI generated text
+  description: |-
+    The Sonetel Text manager is where AI generated text, created and processed, by the Sonetel /ai-services is stored and managed.
+    The generated text along with various fields and meta-data is available via this API.
+    All text is versioned with the default operations always occuring on the latest version of the text.
+    The API also enables you to view and manage individual versions.
+    All operations are authenticated using the [Sonetel access token](Authentication.yaml).
+    In order to provide additional segmentation (such as to segment texts for your users/customers), use `business-id` for setting context for stored text by specifying your user or customer Id as `business_id`
+    Each text must have a `type` which indicates what type of text it is.
+
+    ## Definitions
+
+    ### Text_Id
+    Text used or managed by the AI services is stored in text objects. Text_Id is a unique Id assigned to each text object that contains the text, its properties (such as language, type etc.).
+    Each text may many versions, each having its own properties and associated meta data.
+
+    ### Text type
+    A text object may be a specific `type`. Here is the list of currenty support types.
+
+    `business-description` `blog-title-list` `blog-article` `poem` `marketing-email` `website` `webpage` `meeting-minutes` `vm-summary` `call-summary`
+
+    ### Version
+    A text may have many versions at any point in time, generally created based on user feedback. Versions start with `1` and increment sequentially. Versions can be created, deleted or specific versions of text may be updated.
+    There is always a `latest_version` of a text.
+    Each version of text has properties and meta-data associated to it.
+
+
+    ### Input text
+    Input text is textual instructions that a may be provided to the Sonetel AI to do its job. Input text is used by the Sonetel AI while generating completion text
+
+    ### Completion text
+    Completion text is the original Sonetel AI generated raw text, created based on user requests and/or feedback. This text is processed and enriched to generate final processed text. Meta data may also be generated during processing.
+
+    ### Processed text
+    Processed text is the final generated text after all processing has been done by the Sonetel AI services. The `status` specifies if the text is processed completely or not
+
+    ### Meta-data
+    Meta data of a text version. Details TBD
+
+
+    ## Use cases
+
+    ### Create Text
+
+    To create a text object, send a `POST` request to [/textmgr/text](reference/13_ai_textmanager.yaml/paths/~1textmgr~1text)
+
+    The API returns the new text object created.
+    Version `1` of the text is also automatically created.
+
+    ### Create a new version of text
+
+    To create a new version of a text, send a `POST` to the [/textmgr/text/{text_id}/version](reference/13_ai_textmanager.yaml/paths/~1textmgr~1text~1{text_id}~1version).
+
+    The new version is automatically set as the latest version and is also returned in the response.
+
+
+    ### Get list of texts in an account
+
+    To get the list of texts in an account based on various search criteria, use the [List text API]((reference/13_ai_textmanager.yaml/paths/~1textmgr~1text)).
+    You will receive the latest text version. You may optionally request additional information about the text by specifying `fields` in the request.
+
+    Get list of texts in your account
+    <br>`GET` [/textmgr/text](reference/13_ai_textmanager.yaml/paths/~1textmgr~1text)
+    <br><br>To get a specific type of text (e.g. a list of blog titles) along with the actual textual list in html
+    <br>`GET` [/textmgr/text?type=blog-title-list&fields=processed_text&format=html](reference/13_ai_textmanager.yaml/paths/~1textmgr~1text)
+
+    ### Get text using a text_id
+
+    To get a specific text, use `GET` [/textmgr/text/{text_id}](reference/13_ai_textmanager.yaml/paths/~1textmgr~1text).
+
+    The latest version of text is returned by default. You may optionally request to get a specific version, or get all versions of the text, optionally with meta_data and other information
+
+    To get a specific text and information about the latest version
+    <br>`GET` [/textmgr/text/text_id](reference/13_ai_textmanager.yaml/paths/~1textmgr~1text)
+
+
+    To get a list of versions of the text and the processed data for each version
+    <br>`GET` [/textmgr/text/text_id?version=all&fields=processed_data](reference/13_ai_textmanager.yaml/paths/~1textmgr~1text)
+
+
+    ### Reset the latest version
+
+    To set a specific text version as the latest version, delete the version after it. This automatically sets the specified version as the latest.
+
+    `DELETE` [/textmgr/text/{text_id}/version/{version}](13_ai_textmanager.yaml/paths/~1textmgr~1text~1{text_id}~1version~1{version}).
+
+    For e.g. to set version `3` as latest, delete version `4`
+
+    ### Delete a text
+
+    To delete a specific text, issue a `DELETE` to [/textmgr/text/text_id](reference/13_ai_textmanager.yaml/paths/~1textmgr~1text~1{text_id})
+
+    All versions of the text are deleted
+  termsOfService: 'https://sonetel.com/en/help/help-topics/terms-conditions/terms-conditions/'
+  contact:
+    name: Sonetel API Support
+    url: www.sonetel.com
+    email: api.support@sonetel.com
+servers:
+  - url: 'https://public-api.sonetel.com'
+    description: Production
+paths:
+  /textmgr/text:
+    get:
+      summary: List texts
+      description: 'Fetch a list of text objects based on criteria. The response returns a list of text objects and associated fields. Optionally, the latest version of each text may also be returned.'
+      operationId: get-textmgr-text
+      parameters:
+        - name: account_id
+          in: query
+          description: The Sonetel account id
+          schema:
+            type: string
+            examples:
+              - '52688784'
+          examples:
+            default:
+              value: '52688784'
+        - name: business_id
+          in: query
+          description: The business Id for which texts should be returned
+          schema:
+            type: string
+            examples:
+              - 2hngtre
+        - name: language
+          in: query
+          description: 'Text available in this language should be returned. [2 char ISO](https://en.wikipedia.org/wiki/ISO_639-1) or [IETF language tags](https://en.wikipedia.org/wiki/IETF_language_tag)'
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 35
+            default: en
+            examples:
+              - sv-sv
+        - name: user_id
+          in: query
+          description: Texts associated to this user_id should be returned
+          schema:
+            type: string
+            examples:
+              - '19876'
+          examples:
+            default:
+              value: '19876'
+        - name: type
+          in: query
+          description: Texts of this type are returned
+          schema:
+            type: string
+            enum:
+              - business-description
+              - blog-title-list
+              - blog-article
+              - poem
+              - marketing-email
+              - website
+              - webpage
+              - meeting-minutes
+              - vm-summary
+              - call-summary
+            examples:
+              - business-description
+        - name: fields
+          in: query
+          description: 'Specify (comma separated) what additional fields are required to be returned. The default response only carries limited fields. Possible values: `processed_text` `completion_text` `status` `meta_data` `user_input`'
+          schema:
+            type: string
+            examples:
+              - 'processed_text,meta_data'
+        - name: create_date
+          in: query
+          description: 'Filter create date with operators `*__gte*` (Greater than or equal to), `*__lte*` (Less than or equal to), or `*=*`'
+          schema:
+            type: string
+            examples:
+              - 'create_date__gte''2019-08-24T14:15:22Z'''
+        - name: update_date
+          in: query
+          description: 'Filter update date with operators `*__gte*` (Greater than or equal to), `*__lte*` (Less than or equal to), or `*=*`'
+          schema:
+            type: string
+            examples:
+              - 'update_date__lte''2019-08-24T14:15:22Z'''
+      responses:
+        '200':
+          $ref: '#/components/responses/Text-list'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: true
+    post:
+      summary: Create a text
+      description: Create a new text object. The version 1 of the text is automatically created and set as the latest version
+      operationId: post-textmgr-text
+      requestBody:
+        $ref: '#/components/requestBodies/Post-text'
+      responses:
+        '200':
+          $ref: '#/components/responses/Create-text-response'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: true
+    delete:
+      summary: Delete many text(s)
+      description: Delete a set of texts and all associated versions. This API may be used when many text objects need to be deleted together
+      operationId: delete-textmgr-text
+      parameters:
+        - name: account_id
+          in: query
+          description: Sonetel account Id for which texts are to be deleted
+          required: true
+          schema:
+            type: string
+            examples:
+              - '52688784'
+          examples:
+            default:
+              value: '52688784'
+        - name: business_id
+          in: query
+          description: Business for which all texts are to be deleted
+          schema:
+            type: string
+            examples:
+              - 2hngtre
+        - name: type
+          in: query
+          description: Type of text which should be deleted
+          schema:
+            type: string
+            enum:
+              - business-description
+              - blog-title-list
+              - blog-article
+              - poem
+              - marketing-email
+              - website
+              - webpage
+              - meeting-minutes
+              - vm-summary
+              - call-summary
+      responses:
+        '202':
+          $ref: '#/components/responses/delete-success'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: true
+  '/textmgr/text/{text_id}':
+    get:
+      summary: GET text by id
+      description: |-
+        Fetch a text by Id.
+        You can specify one or more versions of the text. You may also specify which fields of the text should be returned.
+      operationId: get-textmgr-text-text-id
+      parameters:
+        - name: version
+          in: query
+          description: 'Specify version required. If not specified, the latest is fetched. If `all` is specified, all versions are fetched. A specific version fetches the single required version'
+          schema:
+            type: integer
+            examples:
+              - 3
+        - name: format
+          in: query
+          description: Specify the format in which text should be returned
+          schema:
+            type: string
+            enum:
+              - json
+              - html
+              - pdf
+            default: json
+            examples:
+              - html
+        - name: fields
+          in: query
+          description: Specify what fields are required
+          schema:
+            type: string
+            enum:
+              - processed_text
+              - completion_text
+              - user_input
+              - meta_data
+            examples:
+              - processed_text
+        - name: text_id
+          in: path
+          description: The text Id being updated
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-text-id'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+    put:
+      summary: Update text fields
+      description: 'Updates text fields such as `user_id`, `business_id`'
+      operationId: put-ai-textman-text-text-id
+      parameters:
+        - name: text_id
+          in: path
+          description: The text Id being updated
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/Put-text-id'
+      responses:
+        '200':
+          $ref: '#/components/responses/Put-text-id-response'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: true
+    delete:
+      summary: Delete a text
+      description: |-
+        Delete a text. This deletes all versions of the text.
+        The deleted text is returned
+      operationId: delete-ai-textmgr-text-text-id
+      parameters:
+        - name: text_id
+          in: path
+          description: The text Id being updated
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-text-id'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: true
+  '/textmgr/text/{text_id}/version':
+    post:
+      summary: Create text version
+      description: Create a new version of the text and set that as the latest
+      operationId: post-textmgr-text-text-id-version
+      parameters:
+        - name: text_id
+          in: path
+          description: The text Id for which version is created
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/Post-text-version'
+      responses:
+        '200':
+          $ref: '#/components/responses/Put-version-response'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  '/textmgr/text/{text_id}/version/{version}':
+    put:
+      summary: Update a text version (internal)
+      description: |-
+        Update a specific text version by providing what fields to update
+        This API is not available publicly and is used only by internal Sonetel applications
+      operationId: put-textmgr-text-text-id-version-version-id
+      parameters:
+        - name: text_id
+          in: path
+          description: The text Id for which version is updated
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: path
+          description: The specific version being updated. `latest` may be specified to update the latest version
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/Put-text-version'
+      responses:
+        '200':
+          $ref: '#/components/responses/Put-version-response'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: true
+    delete:
+      summary: Delete text version
+      description: |-
+        Delete a specific text version.
+        Deleting a version deletes all later versions of the specified text and also resets the latest version
+        A new version list is returned
+      operationId: delete-textmgr-text-text-id-version-version-id
+      parameters:
+        - name: text_id
+          in: path
+          description: The text Id for which version is updated
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: path
+          description: The specific version being updated. `latest` may be specified to update the latest version
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Delete-version'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  '/textmgr/text/{text_id}/write':
+    post:
+      summary: Write text (internal)
+      description: |-
+        Write processed or completion text.
+        Used only internally by Sonetel applications, this endpoint enables applications to update the completion text or processed text
+        The text is written is to the latest version of the text, unless a specific version is provided in the request.
+        Since text may be written in chunks as it is received from other remote services, this endpoint enables an application to specify if the writing is completed or if it is an interim text update
+      operationId: post-textmgr-text-text-id-write
+      parameters:
+        - name: version
+          in: query
+          description: Specify version which should be written to. Default is the latest
+          schema:
+            type: number
+            examples:
+              - 3
+        - name: text_id
+          in: path
+          description: The text Id being written to
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The request specifies the version to be set as the latest version
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text_type:
+                  type: string
+                  enum:
+                    - processed_text
+                    - completion_text
+                  description: The field that should be updated - completion text or processed text
+                  examples:
+                    - completion_text
+                text:
+                  type: string
+                  description: The text that should be be appended to the text written so far
+                  examples:
+                    - this text would be appended to the text already stored so far
+                status:
+                  type: string
+                  enum:
+                    - in_progress
+                    - completed
+                  description: Specifies is the text is final and the status can be changed to completed after writing. Or if more text is coming
+                  examples:
+                    - in_progress
+                error:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      description: The error code in case of failure
+                      examples:
+                        - 4001233-yt
+                    error_description:
+                      type: string
+                      description: A textual description of the error
+                      examples:
+                        - Not enough AI credits
+              required:
+                - text_type
+                - text
+                - status
+      responses:
+        '202':
+          description: The submitted text has been accepted
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: true
+  '/textmgr/text/{text_id}/business-description':
+    get:
+      summary: Get business description
+      description: Fetch business description
+      operationId: get-textmgr-text-id-business-description
+      parameters:
+        - name: version
+          in: query
+          description: 'The version that should be returned. If not specified, the latest version is returned'
+          schema:
+            type: number
+            minimum: 1
+            examples:
+              - 2
+        - name: text_id
+          in: path
+          description: The text Id for which business description should be returned
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-business-description-by-id'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  /textmgr/business-description:
+    get:
+      summary: List business description
+      description: Fetch a list of business description
+      operationId: get-txtmgr-business-description
+      parameters:
+        - name: account_id
+          in: query
+          description: List business descriptions for this account Id
+          schema:
+            type: string
+        - name: business_id
+          in: query
+          description: List business descriptions for this business Id
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          description: List business descriptions for this user Id
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: List business descriptions with this status
+          schema:
+            type: string
+            enum:
+              - not_stated
+              - in_progress
+              - ready
+            examples:
+              - in_progress
+        - name: version
+          in: query
+          description: 'List business descriptions for a specific version (provide version number, e.g. `version=2`) or all versions (`version=all`l)'
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-business-description-list'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  '/textmgr/text/{text-id}/webpage':
+    get:
+      summary: Get Web page
+      description: Get web page data
+      operationId: get-textmgr-text-text-id-webpage
+      parameters:
+        - name: text-id
+          in: path
+          description: The text Id of the web page
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-web-page-by-id'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  /textmgr/webpage:
+    get:
+      summary: List web pages
+      description: Fetch a list of web pages based on criteria
+      operationId: get-textmgr-webpage
+      parameters:
+        - name: account_id
+          in: query
+          description: List web pages for this account Id
+          schema:
+            type: string
+        - name: business_id
+          in: query
+          description: List web pages for this business Id
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          description: List web pages for this user Id
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: List web pages with this status
+          schema:
+            type: string
+            enum:
+              - not_started
+              - in_progress
+              - ready
+            examples:
+              - in_progress
+        - name: language
+          in: query
+          description: 'List web pages in this language. [2 char ISO](https://en.wikipedia.org/wiki/ISO_639-1) or [IETF language tags](https://en.wikipedia.org/wiki/IETF_language_tag)'
+          schema:
+            type: string
+        - name: url
+          in: query
+          description: 'List web pages matching the url string. Search is done using [Lucene search syntax](https://lucene.apache.org/core/2_9_4/queryparsersyntax.html)'
+          schema:
+            type: string
+            examples:
+              - url=www.sonetel.com/en/*
+        - name: page_type
+          in: query
+          description: List web pages matching this page type
+          schema:
+            type: string
+            enum:
+              - home
+              - contact
+              - product
+        - name: parent_text_id
+          in: query
+          description: List web pages that have this text Id as parent
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-web-page-list'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  '/textmgr/text/{text_id}/blog-title-list':
+    get:
+      summary: Get blog title list
+      description: Fetch a blog title list based on text Id
+      operationId: get-textmgr-text-text_id-blog-title-list
+      parameters:
+        - name: version
+          in: query
+          description: 'Specify version required. If not specified, the latest is fetched. If `all` is specified, all versions are fetched. A specific version fetches the single required version'
+          schema:
+            type: string
+            examples:
+              - '1'
+        - name: text_id
+          in: path
+          description: Text Id of the blog title list
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-blog-title-list-by-id'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  /textmgr/blog-title-list:
+    get:
+      summary: List Blog title lists
+      description: Fetch blog title lists based on search criteria
+      operationId: get-textmgr-blog-title-list
+      parameters:
+        - name: account_id
+          in: query
+          description: List blog title lists for this account Id
+          schema:
+            type: string
+        - name: business_id
+          in: query
+          description: List blog title lists for this business Id
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          description: List blog title lists for this user Id
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: List blog title lists with this status
+          schema:
+            type: string
+            enum:
+              - not_started
+              - ready
+            examples:
+              - not_started
+        - name: language
+          in: query
+          description: 'List blog title lists in this language. [2 char ISO](https://en.wikipedia.org/wiki/ISO_639-1) or [IETF language tags](https://en.wikipedia.org/wiki/IETF_language_tag)'
+          schema:
+            type: string
+        - name: version
+          in: query
+          description: 'List blog title lists for a specific version (provide version number, e.g. `version=2`) or all versions (`version=all`l)'
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-blog-title-lists'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  '/textmgr/text/{text_id}/blog':
+    get:
+      summary: Get blog article
+      description: Fetch a blog article based on its text Id.
+      operationId: get-textmgr-text-text_id-blog
+      parameters:
+        - name: text_id
+          in: path
+          description: The text Id of the blog article
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-blog-by-id'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  /textmgr/blog:
+    get:
+      summary: List blogs
+      description: Fetch a list of blogs based on search criteria
+      operationId: get-textmgr-blog
+      parameters:
+        - name: account_id
+          in: query
+          description: List blogs for this account Id
+          schema:
+            type: string
+        - name: business_id
+          in: query
+          description: List blogs for this business Id
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          description: List blogs for this user Id
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: List blogs with this status
+          schema:
+            type: string
+            enum:
+              - not_started
+              - ready
+            examples:
+              - not_started
+        - name: language
+          in: query
+          description: 'List blogs in this language. [2 char ISO](https://en.wikipedia.org/wiki/ISO_639-1) or [IETF language tags](https://en.wikipedia.org/wiki/IETF_language_tag)'
+          schema:
+            type: string
+        - name: version
+          in: query
+          description: 'List blogs for a specific version (provide version number, e.g. `version=2`) or all versions (`version=all`l)'
+          schema:
+            type: string
+        - name: title
+          in: query
+          description: List blogs with this title
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-blog-list'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  '/textmgr/text/{text_id}/meeting-minutes':
+    get:
+      summary: Get meeting minutes
+      description: Fetch meeting minutes based on its `text_id`
+      operationId: get-textmgr-text-text_id-meeting-minutes
+      parameters:
+        - name: text_id
+          in: path
+          description: The text_id of the meeting minutes
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-meeting-minutes-by-id'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+    delete:
+      summary: Delete meeting-minutes
+      description: Delete meeting-minutes
+      operationId: delete-textmgr-text-text_id-meeting-minutes
+      parameters:
+        - name: text_id
+          in: path
+          description: The text_id of the meeting minutes
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-meeting-minutes-by-id'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+    put:
+      summary: Update meeting minutes
+      description: 'Update meeting minutes. A few fields such as name, date, notes and participants may be updated'
+      operationId: put-textmgr-text-text_id-meeting-minutes
+      parameters:
+        - name: text_id
+          in: path
+          description: The text_id of the meeting minutes
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/Put-meeting-minutes'
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-meeting-minutes-by-id'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  /textmgr/meeting-minutes:
+    get:
+      summary: List meeting minutes
+      description: List meeting minutes based on search criteria
+      operationId: get-textmgr-meeting-minutes
+      parameters:
+        - name: account_id
+          in: query
+          description: List meeting minutes for this account Id
+          schema:
+            type: string
+        - name: business_id
+          in: query
+          description: List meeting minutes for this business Id
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          description: List meeting minutes for this user Id
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: List meeting minutes with this status
+          schema:
+            type: string
+            enum:
+              - not_started
+              - ready
+            examples:
+              - not_started
+        - name: language
+          in: query
+          description: 'List meeting minutes in this language. [2 char ISO](https://en.wikipedia.org/wiki/ISO_639-1) or [IETF language tags](https://en.wikipedia.org/wiki/IETF_language_tag)'
+          schema:
+            type: string
+        - name: version
+          in: query
+          description: 'List meeting minutes for a specific version (provide version number, e.g. `version=2`) or all versions (`version=all`l)'
+          schema:
+            type: string
+        - name: meeting_date
+          in: query
+          description: 'List meeting minutes based on meeting date. Filter meeting date with operators `*__gte*` (Greater than or equal to), `*__lte*` (Less than or equal to), or `*=*`'
+          schema:
+            type: string
+            examples:
+              - 'meeting_date__lte''2019-08-24T14:15:22Z'''
+          examples:
+            default:
+              value: 'meeting_date__lte''2019-08-24T14:15:22Z'''
+        - name: fields
+          in: query
+          description: 'List of fields that must be returned. Specify one or more fields comma separated. Basic details including `text_info`, `name`, `meeting_date` is always returned. Can take values `transcript`, `minutes`,`file`, `notes`, `participants`,'
+          schema:
+            type: string
+            examples:
+              - 'participants,minutes'
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-meeting-minutes-list'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  '/textmgr/text/{text_id}/vm-summary':
+    get:
+      summary: Get voicemail summary
+      description: Fetch voicemail summary based on `text_id`
+      operationId: get-textmgr-text-text_id-vm-summary
+      parameters:
+        - name: text_id
+          in: path
+          description: The text_id of the voicemail summary
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-vmail-summary-by-id'
+      security:
+        - Sonetel: []
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: true
+  /textmgr/vm-summary:
+    get:
+      summary: List voicemail summaries
+      description: List meeting minutes based on search criteria
+      operationId: get-textmgr-vm-summary
+      parameters:
+        - name: account_id
+          in: query
+          description: List Voicemail summaries for this account Id
+          schema:
+            type: string
+        - name: business_id
+          in: query
+          description: List Voicemail summaries for this business Id
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          description: List Voicemail summaries for this user Id
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: List Voicemail summaries with this status
+          schema:
+            type: string
+            enum:
+              - not_started
+              - ready
+            examples:
+              - not_started
+        - name: language
+          in: query
+          description: 'List Voicemail summaries in this language. [2 char ISO](https://en.wikipedia.org/wiki/ISO_639-1) or [IETF language tags](https://en.wikipedia.org/wiki/IETF_language_tag)'
+          schema:
+            type: string
+        - name: date
+          in: query
+          description: 'List Voicemail summaries based on date they were generated. Filter date with operators `*__gte*` (Greater than or equal to), `*__lte*` (Less than or equal to), or `*=*`'
+          schema:
+            type: string
+            examples:
+              - 'meeting_date__lte''2019-08-24T14:15:22Z'''
+          examples:
+            default:
+              value: 'meeting_date__lte''2019-08-24T14:15:22Z'''
+        - name: fields
+          in: query
+          description: 'List of fields that must be returned. Specify one or more fields comma separated. Basic details including `text_info`, `vmail_id`, `name`, `company_name`, `word_count` is always returned. Can take values `transcript`, `summary`, `file`'
+          schema:
+            type: string
+            examples:
+              - 'participants,minutes'
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-vmail-summary-list'
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+      x-internal: true
+  '/textmgr/text/{text_id}/call-summary':
+    get:
+      summary: Fetch call summary
+      description: Fetch call summary based on its `text_id`
+      operationId: get-textmgr-text-text_id-call-summary
+      parameters:
+        - name: text_id
+          in: path
+          description: The `text_id` of the call summary
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-call-summary-by-id'
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+    delete:
+      summary: Delete call summary
+      description: Delete a call summary
+      operationId: delete-textmgr-text-call-summary-text_id
+      parameters:
+        - name: text_id
+          in: path
+          description: The `text_id` of the call summary
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-call-summary-by-id'
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  /textmgr/call-summary:
+    get:
+      summary: List call summaries
+      description: List meeting minutes based on search criteria
+      operationId: get-textmgr-call-summary
+      parameters:
+        - name: account_id
+          in: query
+          description: List call summaries for this account Id
+          schema:
+            type: string
+        - name: business_id
+          in: query
+          description: List call summaries for this business Id
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          description: List call summaries for this user Id
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: List call summaries with this status
+          schema:
+            type: string
+            enum:
+              - not_started
+              - ready
+            examples:
+              - not_started
+        - name: language
+          in: query
+          description: 'List call summaries in this language. [2 char ISO](https://en.wikipedia.org/wiki/ISO_639-1) or [IETF language tags](https://en.wikipedia.org/wiki/IETF_language_tag)'
+          schema:
+            type: string
+        - name: meeting_date
+          in: query
+          description: 'List call summaries based on call date. Filter call date with operators `*__gte*` (Greater than or equal to), `*__lte*` (Less than or equal to), or `*=*`'
+          schema:
+            type: string
+            examples:
+              - 'meeting_date__lte''2019-08-24T14:15:22Z'''
+          examples:
+            default:
+              value: 'meeting_date__lte''2019-08-24T14:15:22Z'''
+        - name: fields
+          in: query
+          description: 'List of fields that must be returned. Specify one or more fields comma separated. Basic details including `text_info`, `call_rec_id`, is always returned. Can take values `call_details`, `transcript`, `summary`, `analysis`, `classification`, `follow_up_email`'
+          schema:
+            type: string
+            examples:
+              - 'call_details,transcript,summary'
+        - name: call_rec_id
+          in: query
+          description: Get call summary for this call recording Id
+          schema:
+            type: string
+        - name: sip_call_id
+          in: query
+          description: Get call summary for this SIP call Id
+          schema:
+            type: string
+        - name: intent
+          in: query
+          description: Get call summaries with this intent
+          schema:
+            type: string
+        - name: direction
+          in: query
+          description: Get call summaries for calls with this direction
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Get-call-summary-list'
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+components:
+  requestBodies:
+    Post-text:
+      description: The data for the text object to be created. All fields except the type are optional
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                enum:
+                  - business-description
+                  - blog-title-list
+                  - blog-article
+                  - website
+                  - webpage
+                  - poem
+                  - photo-search-terms
+                  - marketing-email
+                  - meeting-minutes
+                  - vm-summary
+                  - call-summary
+                description: The text type
+              language:
+                type: string
+                description: 'The language of the text language. [2 char ISO](https://en.wikipedia.org/wiki/ISO_639-1) or [IETF language tags](https://en.wikipedia.org/wiki/IETF_language_tag)'
+                default: en
+                examples:
+                  - sv-sv
+              account_id:
+                type: string
+                description: The Sonetel account Id
+                examples:
+                  - '52688784'
+              business_id:
+                type: string
+                description: Optional business Id
+                examples:
+                  - 2hngtre
+              user_id:
+                type: string
+                description: The user Id to which the text is associated
+                examples:
+                  - '19876'
+              user_input:
+                type: string
+                description: The optional user specified input feedback text that is used by AI service for generating the final processed text
+              parent_text_id:
+                type: string
+                description: The parent text Id to this text object
+              in_use_with:
+                $ref: '#/components/schemas/InUseWith'
+                description: The services the text is in use with
+            required:
+              - type
+        application/xml:
+          schema:
+            type: object
+    Put-text-id:
+      description: List of fields to be updated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              business_id:
+                type: string
+                description: The business Id
+                examples:
+                  - 2hngtre
+              user_id:
+                type: string
+                description: The user_id to which the text is associated
+                examples:
+                  - '19876'
+              language:
+                type: string
+                description: 'Text available in this language should be returned. [2 char ISO](https://en.wikipedia.org/wiki/ISO_639-1) or [IETF language tags](https://en.wikipedia.org/wiki/IETF_language_tag)'
+                minLength: 2
+                maxLength: 35
+                examples:
+                  - sv-sv
+              parent_text_id:
+                type: string
+                description: The parent text Id
+                examples:
+                  - hn3h8645s
+    Put-text-version:
+      description: Request fields to update a specific version of the text
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Text-version-object-no-Id'
+    Post-text-version:
+      description: List of fields while creating a new version
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              user_input:
+                type: string
+    Put-meeting-minutes:
+      description: Update meeting minutes
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The meeting name
+                examples:
+                  - Europe sales
+              meeting_date:
+                type: string
+                description: The date/time of the meeting.
+                format: date-time
+              notes:
+                type: string
+                description: Notes input by the user
+              participants:
+                type: array
+                description: List of participants and their names
+                items:
+                  type: string
+              auto_expire:
+                type: string
+                description: "The date time when this meeting minutes text must be deleted automatically.\r\nIf not specified or set to empty, this value implies that the text is never automatically deleted"
+                format: date-time
+  securitySchemes:
+    Sonetel:
+      type: oauth2
+      description: Get an access token from the `/oauth/token` and pass it as a Bearer token in the `Authorization` header.
+      flows:
+        password:
+          refreshUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          tokenUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          scopes: {}
+  responses:
+    delete-success:
+      description: List of deleted text Ids
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              text_id_list:
+                type: array
+                description: List of text Ids that are deleted
+                items:
+                  type: string
+                  examples:
+                    - 4gh6354
+            required:
+              - text_id_list
+            x-examples:
+              example-1:
+                status: SUCCESS
+                message: 'Data deleted successfully. Account id : 200000000'
+                response: null
+          examples:
+            Example 1:
+              value:
+                text_id_list:
+                  - 4gh6354
+                  - gnr873654
+    Create-text-response:
+      description: The newly created text object
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              text_id:
+                type: string
+                description: The unique text Id
+                examples:
+                  - hn3h8645s
+              type:
+                type: string
+                enum:
+                  - business-description
+                  - blog-title-list
+                  - blog-article
+                  - website
+                  - webpage
+                  - poem
+                  - photo-search-terms
+                  - marketing-email
+                  - meeting-minutes
+                  - vm-summary
+                  - call-summary
+                description: The text type
+              language:
+                type: string
+                description: 'Text available in this language should be returned. [2 char ISO](https://en.wikipedia.org/wiki/ISO_639-1) or [IETF language tags](https://en.wikipedia.org/wiki/IETF_language_tag)'
+              account_id:
+                type: string
+                description: The Sonetel account Id
+                examples:
+                  - '52688784'
+              business_id:
+                type: string
+                description: Optional business Id
+                examples:
+                  - 2hngtre
+              user_id:
+                type: string
+                description: The user Id to which the text is associated
+                examples:
+                  - '19876'
+              user_input:
+                type: string
+                description: The optional user specified input feedback text that is used by AI service for generating the final processed text
+              in_use_with:
+                $ref: '#/components/schemas/InUseWith'
+                description: The services the text is in use with
+            required:
+              - type
+              - language
+              - account_id
+            x-examples:
+              Example 1:
+                id: text_id
+                text: <Prepared-text>
+    Text-list:
+      description: A list of text objects
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Text'
+    Get-text-id:
+      description: Text object with one or more versions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Text-many-versions'
+    Put-text-id-response:
+      description: Text Id with latest version
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Text'
+    Put-version-response:
+      description: Text version information
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Text-version-object'
+    Delete-version:
+      description: Deleted text version
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Text-version-object'
+    Get-business-description-by-id:
+      description: The business description data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Business-description'
+        application/xml:
+          schema:
+            type: object
+    Get-business-description-list:
+      description: List of business description data
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Business-description'
+    Get-web-page-by-id:
+      description: 'A web page with URL, page summary and a bunch of other info'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Web-page'
+    Get-web-page-list:
+      description: 'List of web pages with URL, page summary and a bunch of other information'
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Web-page'
+    Get-blog-title-list-by-id:
+      description: Get a blog title list by Id
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Blog-title-list'
+    Get-blog-title-lists:
+      description: Get blog title lists
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Blog-title-list'
+    Get-blog-by-id:
+      description: A blog article
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Blog'
+    Get-blog-list:
+      description: List of blog articles
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Blog'
+    Get-meeting-minutes-by-id:
+      description: Meeting minutes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Meeting-minutes'
+    Get-meeting-minutes-list:
+      description: List of meeting minutes
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Meeting-minutes'
+    Get-vmail-summary-by-id:
+      description: Voicemail summary
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Voicemail-summary'
+    Get-vmail-summary-list:
+      description: List of voicemail summaries
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Voicemail-summary'
+    Get-call-summary-by-id:
+      description: Call summary
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Call-summary'
+    Get-call-summary-list:
+      description: List of call summaries
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Call-summary'
+  schemas:
+    InUseWith:
+      type: array
+      title: InUseWith
+      description: List of services a text is in use with.
+      items:
+        type: object
+        properties:
+          service:
+            type: string
+            enum:
+              - meeting-minutes
+              - business-desc
+              - blog-title-list
+              - blog
+              - vmail-summary
+              - call-summary
+            description: The service the text is in use with
+          auto_expire:
+            type: string
+            description: Automatic expiry timestamp when the text is no longer required by the service. An empty value implies that the text is never automatically deleted.
+            format: date-time
+    Text-version-object-no-Id:
+      type: object
+      title: Text-version-object-no-id
+      description: 'A version of text with the various text data, status and meta-data'
+      properties:
+        processed_text:
+          type: string
+        completion_text:
+          type: string
+        status:
+          type: string
+          enum:
+            - not_started
+            - in_progress
+            - completed
+          default: not_started
+          examples:
+            - in_progress
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: The error code in case of failure
+            error_description:
+              type: string
+              description: A textual description of the error
+        meta_data:
+          $ref: '#/components/schemas/Meta-data'
+        user_input:
+          type: string
+      required:
+        - status
+    Meta-data:
+      title: Meta-data
+      description: The meta data associated to a version of the text. The meta-data may take the structure of any of any of the text types depending on the type of text stored
+      oneOf:
+        - $ref: '#/components/schemas/Business-description'
+        - $ref: '#/components/schemas/Web-page'
+        - $ref: '#/components/schemas/Blog-title-list'
+        - $ref: '#/components/schemas/Blog'
+        - $ref: '#/components/schemas/Meeting-minutes'
+        - $ref: '#/components/schemas/Call-summary'
+    Business-description:
+      $ref: '#/components/schemas/Text-data-simple'
+      title: Business description
+      description: |-
+        Business description with partially (still being written) or completed text.
+        If status is `in_progress`, `text_data` may have part of the text available. The `text_data` continues to get updated until the status changes to `ready`.
+    Text-data-simple:
+      type: object
+      title: Text-data-simple
+      description: Simple text data with status
+      properties:
+        text_data:
+          type: string
+          description: The completed or partially ready (still being written) text data
+        status:
+          type: string
+          enum:
+            - not_started
+            - in_progress
+            - ready
+            - ready_limited
+          description: |-
+            The status of the text data.
+
+            `ready`: Text is fully ready and available on `text_data`
+            <br>`ready-limited`: Text is ready, but API only returns a part of the text or no text. This is due to restrictions with your account. An upgrade or purchase may be required to get access to full text.
+            <br>`not_started`: no part of text is available yet
+            <br>`in_progress`: text is being written. The `text_data` may have partially written text
+            his text)
+            <br>`failed`: Text generation has failed. The `error_code` and `error_description` provide more details
+          examples:
+            - in_progress
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: The error code in case of failure
+              examples:
+                - 4001233-yt
+            error_description:
+              type: string
+              description: A textual description of the error
+              examples:
+                - Not enough AI credits
+    Web-page:
+      type: object
+      title: Web-page
+      description: 'Web page information along with the URL, raw text references and additional fields'
+      properties:
+        url:
+          type: string
+          description: The page URL
+          format: uri-reference
+          examples:
+            - 'https://sonetel.com/en/services/virtual-phone-numbers/'
+        page_summary:
+          $ref: '#/components/schemas/Text-data-simple'
+          description: A summary of the web page with status
+        page_type:
+          type: string
+          enum:
+            - home
+            - contact
+            - product
+            - other
+          description: The type of page
+          examples:
+            - contact
+        meta_description:
+          type: string
+          description: Meta description for the page
+          examples:
+            - Have your own local phone number in any city and country of choice. Answer calls anywhere. From $1.79 per month.
+        title:
+          type: string
+          description: The title of the page
+          examples:
+            - Be a Global Entrepreneur
+        text_info:
+          $ref: '#/components/schemas/Text-info'
+    Text-info:
+      type: object
+      title: Text-info
+      description: Information about the text
+      properties:
+        text_id:
+          type: string
+          description: Text Id of the text object
+        account_id:
+          type: string
+        business_id:
+          type: string
+        user_id:
+          type: string
+        update_date:
+          type: string
+          format: date-time
+        version:
+          type: number
+          minimum: 1
+          examples:
+            - 2
+        user_input:
+          type: string
+          description: User feedback provided for generating description
+        language:
+          type: string
+        status:
+          type: string
+          enum:
+            - not_started
+            - in_progress
+            - completed
+          description: The overall status of the latest version of the text
+          examples:
+            - in_progress
+        in_use_with:
+          $ref: '#/components/schemas/InUseWith'
+          description: The services this text is in use with
+    Blog-title-list:
+      type: object
+      title: Blog-title-list
+      description: List of blog titles
+      properties:
+        titles:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Unique Id of the title in the blog title list
+              title:
+                type: string
+                description: The blog title
+                examples:
+                  - How to select the best communication provider for your business
+              blogTextId:
+                type: string
+                examples:
+                  - hng37y539j
+              seoKeyphrase:
+                type: string
+              nextId:
+                type: string
+                description: The title Id of the next title for sorting
+              isFirst:
+                type: boolean
+                description: Indicates of this title is the first in the list. Absence of this field indicates `false`.
+              blog_status:
+                type: string
+                enum:
+                  - not_started
+                  - in_progress
+                  - ready
+                description: "The status of the blog article with this title\r\nnot_started"
+                readOnly: true
+                default: not_started
+                examples:
+                  - in_progress
+            required:
+              - id
+        status:
+          type: string
+          enum:
+            - not_started
+            - ready
+          description: 'Status of the blog title list, if it is ready or not'
+          examples:
+            - ready
+        text_info:
+          $ref: '#/components/schemas/Text-info'
+    Blog:
+      type: object
+      title: Blog
+      description: A blog article along with a bunch of information about it. Blog article is broken down into ordered sections with text. Each section is assigned a type.
+      properties:
+        title:
+          type: string
+          description: The blog title
+        seo_keywords:
+          type: string
+          description: SEO keywords associated to this blog article
+        sections:
+          type: array
+          description: List of text sections that form the blog
+          items:
+            $ref: '#/components/schemas/Text-section'
+        text_info:
+          $ref: '#/components/schemas/Text-info'
+      examples:
+        - title: Writing great quality python code for the cloud
+          seo_keywords: python code cloud
+          sections:
+            - id: gb36765
+              type: title
+              text_data:
+                text_data: string
+                status: in_progress
+              text_list: {}
+              next_id: nj3ju876
+    Text-section:
+      type: object
+      title: Text-section
+      description: |-
+        A section of text which is a part of a longer text. A section has a `type` and `status`
+        `type` may be used by user interfaces to render the section in a certain way
+        `status` indicates if the text in the section is ready or still being written
+      properties:
+        id:
+          type: string
+          description: The Id of the section
+          examples:
+            - gb36765
+        type:
+          type: string
+          enum:
+            - title
+            - intro
+            - list-numbered
+            - list-bulleted
+            - list-item
+            - h1
+            - h2
+            - text
+          description: 'The type of text in this section. If the type is a list type, the `text_list` field carries the list of texts. If type is a non-list type, the field  `text_data` carries the text'
+        text_data:
+          $ref: '#/components/schemas/Text-data-simple'
+        text_list:
+          type: array
+          description: 'If the text section is of type `list-numbered` or `list-bulleted`, the text_list contains the text sections for each item in the list.'
+          items:
+            $ref: '#/components/schemas/Text-section'
+        next_id:
+          type: string
+          description: The reference pointing to the Id of the next section in sequence
+          examples:
+            - nj3ju876
+        is_first:
+          type: boolean
+          description: Indicates if this item is the first item in the list. Only one item (the first one) in a list has this set true. Absence of this field indicates `false`
+    Meeting-minutes:
+      type: object
+      title: Meeting-minutes
+      description: 'Meeting minutes and meeting details including meeting name, agreement, summary, action items.'
+      properties:
+        name:
+          type: string
+          description: The meeting name
+          examples:
+            - Europe sales
+        meeting_date:
+          type: string
+          description: The date/time of the meeting.
+          format: date-time
+        participants:
+          type: array
+          description: List of participants and their names
+          items:
+            type: string
+            examples:
+              - Davy Jones
+        transcript:
+          $ref: '#/components/schemas/Text-data-simple'
+          description: Raw transcript of the meeting
+        minutes:
+          type: array
+          description: Meeting minutes broken down into various sections
+          items:
+            $ref: '#/components/schemas/Text-section'
+        notes:
+          type: string
+          description: Notes input by the user
+        text_info:
+          $ref: '#/components/schemas/Text-info'
+        file:
+          $ref: '#/components/schemas/File-single'
+          description: The file used as input for generating meeting minutes
+        word_count:
+          type: string
+          description: Number of words in the transcript
+    File-single:
+      type: object
+      title: File-single
+      description: A single file information
+      oneOf:
+        - type: object
+          properties:
+            file_id:
+              type: string
+        - type: object
+          properties:
+            file_url:
+              type: string
+    Call-summary:
+      type: object
+      title: Call-summary
+      description: Call summary text object
+      properties:
+        call_rec_id:
+          type: string
+          description: Unique Id of the call recording
+        transcript:
+          $ref: '#/components/schemas/Text-data-simple'
+          description: Raw transcript of the call
+        summary:
+          type: array
+          description: The call summary with its various sections
+          items:
+            $ref: '#/components/schemas/Text-section'
+        call_details:
+          type: object
+          properties:
+            from_name:
+              type: string
+              description: The name or number of the person calling
+            to_name:
+              type: string
+              description: The name or number of the person called
+            sip_call_id:
+              type: string
+              description: Unique SIP call identifer that can be used to retrieve call summaries
+            call_success:
+              type: boolean
+              description: True If there was a conversation that occurred in the call
+              readOnly: true
+        classification:
+          type: object
+          properties:
+            caller_role:
+              type: string
+              enum:
+                - employee
+                - customer
+                - business_partner
+                - job_applicant
+                - investor
+                - private_contact
+                - lead
+                - government
+                - public_relations
+                - unsolicited
+                - other
+            callee_role:
+              type: string
+              enum:
+                - employee
+                - customer
+                - business_partner
+                - job_applicant
+                - investor
+                - private_contact
+                - lead
+                - government
+                - public_relations
+                - unsolicited
+                - other
+            direction:
+              type: string
+              enum:
+                - inbound
+                - outbound
+                - internal
+            intent:
+              type: string
+              enum:
+                - sales
+                - purchasing
+                - customer_service
+                - order_placement
+                - billing_payment
+                - marketing_promotions
+                - business_partner_issue
+                - internal_coordination
+                - job_related
+                - investor_relations
+                - project_updates_coordination
+                - compliance_regulations
+                - unsolicited_sales
+                - other
+        analysis:
+          oneOf:
+            - $ref: '#/components/schemas/Call-analysis-support'
+            - $ref: '#/components/schemas/Call-analysis-sales'
+            - $ref: '#/components/schemas/Call-analysis-other'
+        follow_up_email:
+          type: array
+          items:
+            $ref: '#/components/schemas/Text-section'
+        text_info:
+          $ref: '#/components/schemas/Text-info'
+        file:
+          $ref: '#/components/schemas/File-single'
+          description: The file used as input for generating summary
+        word_count:
+          type: integer
+          format: int32
+          minimum: 0
+          examples:
+            - 457
+    Call-analysis-support:
+      type: object
+      title: Call-analysis-support
+      properties:
+        resolution:
+          type: boolean
+        general:
+          $ref: '#/components/schemas/Call-summary-common'
+        sentiment:
+          $ref: '#/components/schemas/Call-analysis-sentiment-customer'
+        score:
+          $ref: '#/components/schemas/Call-analysis-score'
+        suggestion:
+          $ref: '#/components/schemas/Call-analysis-suggestions'
+        tactics:
+          $ref: '#/components/schemas/Call-summary-tactics'
+    Call-summary-common:
+      type: object
+      title: Call-summary-common
+      properties:
+        summary:
+          type: object
+          properties:
+            one_sentence:
+              type: string
+            phrase:
+              type: string
+            detailed:
+              type: string
+            short:
+              type: string
+            headers:
+              $ref: '#/components/schemas/Headers'
+        topics:
+          type: object
+          properties:
+            main:
+              type: string
+            list:
+              type: array
+              items:
+                type: string
+        agreements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Text-section'
+        action_items:
+          type: array
+          items:
+            type: object
+            properties:
+              action_for:
+                type: string
+                enum:
+                  - general
+                  - agent
+                  - customer
+                  - management
+              action:
+                type: string
+    Headers:
+      type: array
+      title: Headers
+      description: Headers to be shown on the UI
+      items:
+        type: object
+        properties:
+          field:
+            type: string
+            description: The field (typically maps to the JSON field) to which this header applies
+          header:
+            type: string
+            description: The header text that must be shown on the UI
+      x-internal: true
+    Call-analysis-sentiment-customer:
+      type: object
+      title: Call-analysis-sentiment-customer
+      properties:
+        overall:
+          type: number
+          format: float
+          minimum: -1
+          maximum: 1
+          examples:
+            - 1
+        agent:
+          type: number
+          format: float
+          minimum: -1
+          maximum: 1
+          examples:
+            - 1
+        customer:
+          type: number
+          format: float
+          minimum: -1
+          maximum: 1
+          examples:
+            - 1
+        customer_h1:
+          type: number
+          format: float
+          minimum: -1
+          maximum: 1
+          examples:
+            - 1
+        customer_h2:
+          type: number
+          format: float
+          minimum: -1
+          maximum: 1
+          examples:
+            - 1
+        sentiment_decline_reason:
+          type: string
+        header:
+          type: string
+          description: Header indicating change in customer sentiment
+    Call-analysis-score:
+      type: object
+      title: Call-analysis-score
+      description: Scores from call analysis
+      properties:
+        overall:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 10
+          examples:
+            - 7.5
+        scores:
+          type: array
+          items:
+            type: object
+            properties:
+              seq_num:
+                type: number
+                minimum: 1
+                examples:
+                  - 2
+              category:
+                type: string
+                enum:
+                  - engagement
+                  - politeness
+                  - emotional
+                  - communication_style
+                  - intent_to_buy
+              value_type:
+                type: string
+                enum:
+                  - 0-10
+                  - 0-5
+                default: 0-10
+              value:
+                type: integer
+                examples:
+                  - 5
+              explanation:
+                type: string
+              header:
+                type: string
+                description: The header for each score type
+        header:
+          type: string
+          description: Header for overall score
+    Call-analysis-suggestions:
+      type: object
+      title: Call-analysis-suggestions
+      properties:
+        list:
+          type: array
+          items:
+            type: object
+            properties:
+              suggestion_by:
+                type: string
+                enum:
+                  - sonetel-ai
+                  - agent
+                  - customer
+              suggestion_for:
+                type: string
+                enum:
+                  - agent
+                  - management
+              summary:
+                type: string
+              details:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Text-section'
+              header:
+                type: string
+                description: The header shown on UI for each suggestion type
+    Call-summary-tactics:
+      type: array
+      title: Call-summary-tactics
+      items:
+        type: object
+        properties:
+          type:
+            type: string
+            enum:
+              - successful
+              - failed
+          summary:
+            type: string
+          list:
+            type: array
+            items:
+              type: string
+          header:
+            type: string
+            description: The header for successful or failed sales tactics
+    Call-analysis-sales:
+      type: object
+      title: Call-analysis-sales
+      properties:
+        general:
+          $ref: '#/components/schemas/Call-summary-common'
+        sentiment:
+          $ref: '#/components/schemas/Call-analysis-sentiment-customer'
+        score:
+          $ref: '#/components/schemas/Call-analysis-score'
+        suggestion:
+          $ref: '#/components/schemas/Call-analysis-suggestions'
+        tactics:
+          $ref: '#/components/schemas/Call-summary-tactics'
+    Call-analysis-other:
+      type: object
+      title: Call-analysis-other
+      properties:
+        general:
+          $ref: '#/components/schemas/Call-summary-common'
+    Text:
+      type: object
+      title: Text
+      description: The text object with the latest version of the text
+      properties:
+        text_id:
+          type: string
+          description: The unique text Id
+          examples:
+            - hn3h8645s
+        account_id:
+          type: string
+          description: The Sonetel account id
+          examples:
+            - '52688784'
+        business_id:
+          type: string
+          description: The business Id if specified
+          examples:
+            - 2hngtre
+        language:
+          type: string
+          description: 'Text available in this language should be returned. [2 char ISO](https://en.wikipedia.org/wiki/ISO_639-1) or [IETF language tags](https://en.wikipedia.org/wiki/IETF_language_tag)'
+          minLength: 2
+          maxLength: 35
+          default: en
+          examples:
+            - sv-sv
+        user_id:
+          type: string
+          description: The user Id to which the text is associated
+          examples:
+            - '19876'
+        created_date:
+          type: string
+          description: The date/time when this version was created
+          format: date-time
+        updated_date:
+          type: string
+          description: The date/time when this version was last updated
+          format: date-time
+        type:
+          type: string
+          enum:
+            - business-description
+            - blog-title-list
+            - blog-article
+            - poem
+            - marketing-email
+            - website
+            - webpage
+            - meeting-minutes
+            - vm-summary
+            - call-summary
+          description: The text type
+        version_count:
+          type: integer
+          description: The number of versions that exist for this text
+          format: int32
+          examples:
+            - 2
+        parent_text_id:
+          type: string
+          description: The reference to the parent text_id of this text
+          examples:
+            - hn3h8645s
+        latest_version:
+          $ref: '#/components/schemas/Text-version-object'
+          description: Latest version of the text
+        in_use_with:
+          $ref: '#/components/schemas/InUseWith'
+          description: The services this text is in use with
+      examples: []
+    Text-version-object:
+      type: object
+      title: Text-version-object
+      description: 'A version of text with the various text data, status and meta-data'
+      properties:
+        version:
+          type: integer
+          default: 1
+          examples:
+            - 2
+        processed_text:
+          type: string
+        completion_text:
+          type: string
+        status:
+          type: string
+          enum:
+            - not_started
+            - in_progress
+            - completed
+          default: not_started
+          examples:
+            - in_progress
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: The error code in case of failure
+              examples:
+                - 4001233-yt
+            error_description:
+              type: string
+              description: A textual description of the error
+              examples:
+                - Not enough AI credits
+        meta_data:
+          $ref: '#/components/schemas/Meta-data'
+        create_date:
+          type: string
+          format: date-time
+        update_date:
+          type: string
+          format: date-time
+        user_input:
+          type: string
+      required:
+        - version
+        - status
+        - create_date
+        - update_date
+    Text-many-versions:
+      type: object
+      title: Text-many-versions
+      description: The text object with the latest version of the text
+      properties:
+        text_id:
+          type: string
+          description: The unique text Id
+          examples:
+            - hn3h8645s
+        account_id:
+          type: string
+          description: The Sonetel account id
+          examples:
+            - '52688784'
+        business_id:
+          type: string
+          description: The business Id if specified
+          examples:
+            - 2hngtre
+        language:
+          type: string
+          description: 'Text available in this language should be returned. [2 char ISO](https://en.wikipedia.org/wiki/ISO_639-1) or [IETF language tags](https://en.wikipedia.org/wiki/IETF_language_tag)'
+          minLength: 2
+          maxLength: 35
+          default: en
+          examples:
+            - sv-sv
+        user_id:
+          type: string
+          description: The user Id to which the text is associated
+          examples:
+            - '19876'
+        created_date:
+          type: string
+          description: The date/time when this version was created
+          format: date-time
+        updated_date:
+          type: string
+          description: The date/time when this version was last updated
+          format: date-time
+        type:
+          type: string
+          enum:
+            - business-description
+            - blog-title-list
+            - blog-article
+            - poem
+            - marketing-email
+            - website
+            - webpage
+            - meeting-minutes
+            - vm-summary
+            - call-summary
+          description: The text type
+        version_count:
+          type: integer
+          description: The number of versions that exist for this text
+          format: int32
+          examples:
+            - 2
+        parent_text_id:
+          type: string
+          description: The reference to the parent text_id of this text
+          examples:
+            - hn3h8645s
+        latest_version:
+          $ref: '#/components/schemas/Text-version-object'
+        other_versions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Text-version-object'
+        in_use_with:
+          $ref: '#/components/schemas/InUseWith'
+          description: The services this text is in use with
+      required:
+        - text_id
+        - account_id
+        - business_id
+        - language
+        - created_date
+        - updated_date
+        - type
+        - version_count
+        - parent_text_id
+    Voicemail-summary:
+      type: object
+      title: Voicemail-summary
+      description: Voicemail summary text object
+      properties:
+        vmail_id:
+          type: string
+          description: Unique Id of the voicemail
+          examples:
+            - Tht34uyh
+        transcript:
+          $ref: '#/components/schemas/Text-data-simple'
+          description: Raw transcript of the voicemail
+        summary:
+          type: array
+          description: The voicemail summary with its various sections
+          items:
+            $ref: '#/components/schemas/Text-section'
+        caller_name:
+          type: string
+          description: The name of the caller that left the voicemail
+        company_name:
+          type: string
+          description: The company name of the caller that left the voicemail
+        sentiment:
+          type: integer
+          description: "The sentiment of the caller with values\r\n`-1`: Negative\r\n`0`: Neutral\r\n`1`: Positive"
+          format: int32
+          minimum: -1
+          maximum: 1
+          readOnly: true
+          examples:
+            - 0
+        text_info:
+          $ref: '#/components/schemas/Text-info'
+        file:
+          $ref: '#/components/schemas/File-single'
+          description: The file used as input for generating summary
+        word_count:
+          type: string
+          description: Number of words in the transcript
+x-internal: true

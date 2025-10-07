@@ -1,0 +1,510 @@
+openapi: 3.1.0
+info:
+  version: '2.0'
+  title: Text to speech
+  description: |
+    Use our text-to-speech (TTS) API to quickly create professional voice messages for your IVR and other voice apps.
+
+    ## Convert text to a voice message
+
+    Get started in a few easy steps.
+
+    - **Prepare the text**<br>Prepare the message that you wish to record.
+    - **Get access token**<br>Use the `/oauth/token` endpoint to get an access token.
+    - **Select the language & voice**<br>The TTS API allows you to convert text from almost any language into a voice message. Within each language we also offer variations in voices such as male or female. Send a `GET` request to `/tts/prompt/voice` to get a list of all the voice and language variations available.
+    - **Send the request**<br>Issue a `POST` request to the `/convert` endpoint with the text to be converted, the language and the name of the voice to be used sent as a `JSON` body.
+    - **Download the file**<br>The response contains a link to the recorded audio file - download the file and use it in your voice apps.
+
+    > The audio file is in the WAV format.
+
+    ### Sample code
+
+    <!--
+    type: tab
+    title: curl
+    -->
+
+    ```bash
+    curl \
+      --request GET 'https://public-api.sonetel.com/tts/prompt/convert' \
+      --header 'Accept: application/json, text/plain, */*' \
+      --header 'Authorization: Bearer YOUR_ACCESS_TOKEN' \
+      --data-raw '{ "text": "Hello, welcome to Company", "language": "en_GB", "voice": "en-GB-Neural2-A" }'
+    ```
+
+    <!--
+    type: tab
+    title: Python
+    -->
+
+    ```python
+    import requests
+    import os
+    from sonetel import api
+    import json
+
+    user = os.environ.get('sonetelUserName')
+    pswd = os.environ.get('sonetelPassword')
+
+    s = api.Account(username=user,password=pswd)
+
+    url = "https://public-api.sonetel.com/tts/prompt/convert"
+
+    payload = json.dumps({
+      "text": "Hello, welcome to ABC Company",
+      "language": "en_GB",
+      "voice": "en-GB-Neural2-A"
+    })
+
+    headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json, text/plain, */*',
+      'Authorization': f'Bearer {s.get_token()}'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.json())
+
+    ```
+
+    > **Note**: Enter the command `pip install sonetel` in a terminal window to install our [Python module](https://pypi.org/project/sonetel/) used in the code above.
+
+    <!-- type: tab-end -->
+
+
+    ## What languages and voices are available?
+
+    The TTS API supports many different languages and voices. To get a list, follow these instructions.
+
+    - **Get access token**<br>Use the `/oauth/token` endpoint to get an access token.
+    - **Send API request**<br>Send a `GET` request to `/tts/prompt/voice` with the access token in the `Authorization` header.
+    - **Review the results**<br>The JSON response contains all the possible voices and languages that can be used.
+
+    ### Sample code
+
+    <!--
+    type: tab
+    title: curl
+    -->
+
+    ```bash
+    curl \
+      --request GET 'https://public-api.sonetel.com/tts/prompt/voice' \
+      --header 'Accept: application/json, text/plain, */*' \
+      --header 'Authorization: Bearer YOUR_ACCESS_TOKEN'
+    ```
+
+    <!--
+    type: tab
+    title: Python
+    -->
+
+    ```python
+    import requests
+    import os
+    from sonetel import api
+
+    user = os.environ.get('sonetelUserName')
+    pswd = os.environ.get('sonetelPassword')
+
+    s = api.Account(username=user,password=pswd)
+
+    url = "https://public-api.sonetel.com/tts/prompt/voice"
+
+
+    headers = {
+      'Accept': 'application/json, text/plain, */*',
+      'Authorization': f'Bearer {s.get_token()}'
+    }
+
+    response = requests.request("GET", url, headers=headers)
+
+    print(response.text)
+
+    ```
+
+    > **Note**: Enter the command `pip install sonetel` in a terminal window to install our [Python module](https://pypi.org/project/sonetel/) used in the code above.
+
+    <!-- type: tab-end -->
+
+
+    ### Sample response Arabic
+
+    ```json
+    {
+        "statusCode": 200,
+        "response": [
+            {
+                "language": "ar_XA",
+                "language_label": "Arabic (XA)",
+                "voice": "ar-XA-Wavenet-A",
+                "speaker": "A",
+                "gender": "Female",
+                "default_variant": true,
+                "default_voice": true
+            },
+            {
+                "language": "ar_XA",
+                "language_label": "Arabic (XA)",
+                "voice": "ar-XA-Wavenet-B",
+                "speaker": "B",
+                "gender": "Male",
+                "default_variant": false,
+                "default_voice": false
+            }
+          ]
+      }
+    ```
+
+    ## What are the charges?
+
+    Charges for using the TTS API depends on your plan.
+
+    |Plan |Free usage (requests per month) | Overuse charges (per started minute) |
+    |-----|------|------------|
+    | Free | 100| $0.05|
+    | Premium | 500 | $0.02 |
+    | Business | 1500 | $0.015 |
+
+
+    > Please note that there is no charge for playing the generated audio files to callers. We only charge for creating the file.
+servers:
+  - url: 'https://public-api.sonetel.com'
+    description: Production
+paths:
+  /tts/prompt/convert:
+    post:
+      summary: Convert voice message
+      description: |
+        This endpoint can be used to convert text into a voice message which can then be played to any IVR or voice app of your choice.
+
+        Use the sample code below to get started.
+
+
+        <!--
+        type: tab
+        title: curl
+        -->
+
+        ```bash
+        curl \
+          --request GET 'https://public-api.sonetel.com/tts/prompt/convert' \
+          --header 'Accept: application/json, text/plain, */*' \
+          --header 'Authorization: Bearer YOUR_ACCESS_TOKEN' \
+          --data-raw '{ "text": "Hello, welcome to Company", "language": "en_GB", "voice": "en-GB-Neural2-A" }'
+        ```
+
+        <!--
+        type: tab
+        title: Python
+        -->
+
+        ```python
+        import requests
+        import os
+        from sonetel import api
+        import json
+
+        user = os.environ.get('sonetelUserName')
+        pswd = os.environ.get('sonetelPassword')
+
+        s = api.Account(username=user,password=pswd)
+
+        url = "https://public-api.sonetel.com/tts/prompt/convert"
+
+        payload = json.dumps({
+          "text": "Hello, welcome to ABC Company",
+          "language": "en_GB",
+          "voice": "en-GB-Neural2-A"
+        })
+
+        headers = {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json, text/plain, */*',
+          'Authorization': f'Bearer {s.get_token()}'
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+
+        print(response.json())
+
+        ```
+
+        > **Note**: Enter the command `pip install sonetel` in a terminal window to install our [Python module](https://pypi.org/project/sonetel/) used in the code above.
+
+        <!-- type: tab-end -->
+      operationId: post-prompt-convert
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
+      requestBody:
+        $ref: '#/components/requestBodies/convert-text'
+      responses:
+        '200':
+          $ref: '#/components/responses/convert-success'
+        '400':
+          $ref: '#/components/responses/convert-error'
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+  /tts/prompt/voice:
+    get:
+      summary: List available voices
+      description: |
+        Messages can be recorded in a variery of languages and voice accents. Use the `/voice` endpoint to get a list of voices that are available.
+
+        <!--
+        type: tab
+        title: curl
+        -->
+
+        ```bash
+        curl \
+          --request GET 'https://public-api.sonetel.com/tts/prompt/voice' \
+          --header 'Accept: application/json, text/plain, */*' \
+          --header 'Authorization: Bearer YOUR_ACCESS_TOKEN'
+        ```
+
+        <!--
+        type: tab
+        title: Python
+        -->
+
+        ```python
+        import requests
+        import os
+        from sonetel import api
+
+        user = os.environ.get('sonetelUserName')
+        pswd = os.environ.get('sonetelPassword')
+
+        s = api.Account(username=user,password=pswd)
+
+        url = "https://public-api.sonetel.com/tts/prompt/voice"
+
+
+        headers = {
+          'Accept': 'application/json, text/plain, */*',
+          'Authorization': f'Bearer {s.get_token()}'
+        }
+
+        response = requests.request("GET", url, headers=headers)
+
+        print(response.text)
+
+        ```
+
+        > **Note**: Enter the command `pip install sonetel` in a terminal window to install our [Python module](https://pypi.org/project/sonetel/) used in the code above.
+
+        <!-- type: tab-end -->
+      operationId: get-tts-prompt-voice
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
+      responses:
+        '200':
+          $ref: '#/components/responses/list-of-voices'
+      servers:
+        - url: 'https://public-api.sonetel.com'
+          description: Production
+components:
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: The authorization header contains your access token and is used to authenticate requests. Generate an `access_token` using the `/oauth/token` endpoint.
+      required: true
+      schema:
+        type: string
+        examples:
+          - Bearer <ACCESS_TOKEN>
+    Accept:
+      name: Accept
+      in: header
+      description: The content type that should be returned in the response.
+      required: true
+      schema:
+        type: string
+        default: application/json
+    Content-Type:
+      name: Content-Type
+      in: header
+      description: The content type of the request
+      required: false
+      schema:
+        type: string
+        default: application/json
+  requestBodies:
+    convert-text:
+      description: |-
+        Convert the given text to a voice message using the voice and language defined in the request.
+
+        Example request:
+        ```json
+        {
+          "text": "Hello, welcome to Company",
+          "language": "en_GB",
+          "voice": "en-GB-Neural2-A"
+        }
+        ```
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              text:
+                type: string
+                description: The text to be converted into audio.
+              language:
+                type: string
+                description: The language to be used for recorded audio.
+                examples:
+                  - en_GB
+              voice:
+                type: string
+                description: 'A unique identifier for the language, accent and variation of the voice to be used.'
+                examples:
+                  - en-GB-Neural2-A
+            required:
+              - text
+              - language
+              - voice
+            x-examples:
+              example-1:
+                text: Hej hur mår du?
+                language: sv_SE
+                voice: sv-SE-Wavenet-A
+  securitySchemes:
+    Bearer:
+      type: oauth2
+      description: Get an access token from the `/oauth/token` and pass it as a Bearer token in the `Authorization` header.
+      flows:
+        password:
+          refreshUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          tokenUrl: 'https://api.sonetel.com/SonetelAuth/beta/oauth/token'
+          scopes: {}
+  responses:
+    list-of-voices:
+      description: Response containing the list of voices and languages that are available for use with the TTS API.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: integer
+                description: The status of the request
+              response:
+                type: array
+                description: Response object
+                items:
+                  type: object
+                  properties:
+                    language:
+                      type: string
+                      description: The ISO code for the language and the accent.
+                      examples:
+                        - en_GB
+                    language_label:
+                      type: string
+                      description: The language and accent of the voice.
+                      examples:
+                        - English (United Kingdom)
+                    voice:
+                      type: string
+                      description: The ID of the voice.
+                      examples:
+                        - en-GB-Wavenet-D
+                    speaker:
+                      type: string
+                      description: 'This identifies different voices available for a given language and gender. For example, there are multiple `Female English UK` voices available, each one with a different identifier.'
+                      examples:
+                        - A
+                    gender:
+                      type: string
+                      enum:
+                        - male
+                        - female
+                      description: The gender of the speaker
+                    default_variant:
+                      type: boolean
+                      description: The default voice variation used if no valid option is detected in the request body.
+                    default_voice:
+                      type: boolean
+                      description: The default voice used in the given language if no valid option is detected in the request body.
+            x-examples:
+              example-1:
+                statusCode: 200
+                response:
+                  - language: ar_XA
+                    language_label: Arabic (XA)
+                    voice: ar-XA-Wavenet-A
+                    speaker: Female
+                    gender: A
+                    default_variant: true
+                    default_voice: true
+                  - language: ar_XA
+                    language_label: Arabic (XA)
+                    voice: ar-XA-Wavenet-B
+                    speaker: Male
+                    gender: B
+                    default_variant: false
+                    default_voice: false
+                  - language: ar_XA
+                    language_label: Arabic (XA)
+                    voice: ar-XA-Wavenet-C
+                    speaker: Male
+                    gender: C
+                    default_variant: false
+                    default_voice: false
+                  - language: ar_XA
+                    language_label: Arabic (XA)
+                    voice: ar-XA-Wavenet-D
+                    speaker: Female
+                    gender: D
+                    default_variant: false
+                    default_voice: false
+    convert-error:
+      description: The response when the request fails.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                description: Status of the request
+              message:
+                type: string
+                description: The error message
+              errors:
+                type: array
+                description: Details of the error message.
+                items:
+                  type: string
+            x-examples:
+              example-1:
+                status: BAD_REQUEST
+                message: language
+                errors:
+                  - 'language: may not be empty'
+    convert-success:
+      description: The response sent when the audio file has been successfully generated. Download the .wav file from the URL in the request.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: integer
+                description: The status of the response
+              response:
+                type: string
+                description: The URL from where the recorded file can be downloaded.
+            x-examples:
+              example-1:
+                statusCode: 200
+                response: 'https://sonetel-tts-prompts-prod.s3.amazonaws.com/voice-files/eR4FwCmUX2yc5ArP4gV1Yw%3D%3D/Z1%2BaJOufwivSqaTfvnoo3A%3D%3D.wav'

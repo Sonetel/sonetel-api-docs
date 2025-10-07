@@ -1,24 +1,21 @@
 openapi: 3.1.0
 info:
-  title: Authentication
   version: '2.0'
+  title: Authentication
   summary: Auth API allows the user to generate the JWT token
   description: |-
     All API requests that deal with private data such as user details, phone number subscriptions and so on require authentication in the form of a [bearer token](https://www.oauth.com/oauth2-servers/differences-between-oauth-1-2/bearer-tokens/).
 
-    You can use this endpoint to create a token using your registered email address & password. This token is passed in the Authorization header of the request.
-
-    Copy the `access_token` from the response body and add it to the request header to authenticate your API requests. Usage: `Authorization: Bearer <ACCESS_TOKEN>`
+    Use this endpoint to create an access token using the email address & password registered with Sonetel. This token can then be passed in the `Authorization` header of the request.
 
     <!-- theme: info -->
+    > When generating the token, your Sonetel email address and password are sent in the request body. However, you also need to supply HTTP BASIC authentication with the request using `sonetel-api` as the username as well as the password.
 
-    > Access tokens have an expiry of 24 hours. Use the `refresh_token` to generate a new access token.
+    **Access tokens are valid for 30 days. Use the `refresh_token` to generate a new access token.**
 
     ## Request access token
 
     You need your Sonetel username and password to generate an OAuth2 token.
-
-    > The username & password to be used are same as the ones you use to log in at [app.sonetel.com](https://app.sonetel.com/).
 
     <!--
     type: tab
@@ -27,8 +24,8 @@ info:
 
     ```c
     curl \
-      -u sonetel-web:sonetel-web \
-      --request POST 'https://api.sonetel.com/SonetelAuth/beta/oauth/token' \
+      -u sonetel-api:sonetel-api \
+      --request POST 'https://api.sonetel.com/SonetelAuth/oauth/token' \
       --header 'Accept: application/json' \
       --header 'Content-Type: application/x-www-form-urlencoded' \
       --form 'grant_type=password' \
@@ -50,16 +47,13 @@ info:
 
     '''
     This script uses the Content-Type 'application/x-www-form-urlencoded' to demonstrate that your application can use either 'multipart/form-data' or 'application/x-www-form-urlencoded' when requesting for an access token.
-    '''
 
-    url = "https://api.sonetel.com/SonetelAuth/beta/oauth/token"
-
-    '''
     This script assumes that your Sonetel credentials are present as environment variables.
 
     Do not hard code your credentials in your application, use the security best practices to protect your credentials from being compromised.
     '''
 
+    url = "https://api.sonetel.com/SonetelAuth/oauth/token"
     sonetelUsername = os.environ.get('SonetelUsername')
     sonetelPassword = os.environ.get('SonetelPassword')
     grantType = 'password'
@@ -80,7 +74,8 @@ info:
 
     response = requests.request(
         "POST", 
-        url, 
+        url,
+        auth=('sonetel-api', 'sonetel-api'), 
         data=payloadEncoded, 
         headers=headers
         )
@@ -107,27 +102,82 @@ info:
 
     ## Refresh the access token
 
-    The default expiry of an `access_token` is 6 months. After this, you will can use the [refresh token](https://www.oauth.com/oauth2-servers/making-authenticated-requests/refreshing-an-access-token/) to generate a new access token.
+    The default expiry of an `access_token` is 30 days. After this, you will can use the [refresh token](https://www.oauth.com/oauth2-servers/making-authenticated-requests/refreshing-an-access-token/) to generate a new access token.
 
     <!-- theme: warning -->
 
-    > Be sure to include the parameter `refresh=yes` in your request to `oauth/token` in order to receive the `refresh_token` in the response.
+    > Include the parameter `refresh=yes` when sending a request to `/oauth/token` to receive a `refresh_token` in the response.
+
+    <!--
+    type: tab
+    title: curl
+    -->
 
     ```c
     curl \
-      -u sonetel-web:sonetel-web \
-      --request POST 'https://api.sonetel.com/SonetelAuth/beta/oauth/token' \
+      -u sonetel-api:sonetel-api \
+      --request POST 'https://api.sonetel.com/SonetelAuth/oauth/token' \
       --header 'Accept: application/json' \
       --form 'grant_type=refresh_token' \
-      --form 'password=YOUR_SONETEL_PASSWORD' \
       --form 'refresh=yes' \
-      --form 'username=YOUR_SONETEL_USERNAME' \
       --form 'refresh_token=REFRESH_TOKEN_FROM_LAST_AUTH_REQUEST'
     ```
 
+    <!--
+    type: tab
+    title: Python
+    -->
+
+    ```python
+    import requests
+    import urllib.parse
+    import os
+
+    '''
+    This script uses the Content-Type 'application/x-www-form-urlencoded' to demonstrate that your application can use either 'multipart/form-data' or 'application/x-www-form-urlencoded' when requesting for an access token.
+
+    This script assumes that your Sonetel credentials are present as environment variables.
+
+    Do not hard code your credentials in your application, use the security best practices to protect your credentials from being compromised.
+    '''
+
+    url = "https://api.sonetel.com/SonetelAuth/oauth/token"
+    sonetelUsername = os.environ.get('SonetelUsername')
+    sonetelPassword = os.environ.get('SonetelPassword')
+    grantType = 'refresh_token'
+
+    payload= { 
+        'grant_type' : grantType,
+        'refresh_token' : "REFRESH_TOKEN_FROM_LAST_AUTH_REQUEST",
+        'refresh':'yes'
+        }
+
+    payloadEncoded = urllib.parse.urlencode(payload)
+
+    headers = {
+      'Accept': 'application/json, text/plain',
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    response = requests.request(
+        "POST", 
+        url,
+        auth=('sonetel-api', 'sonetel-api'), 
+        data=payloadEncoded, 
+        headers=headers
+        )
+
+    if response.status_code == 200:
+        print(response.json())
+    else:
+        print(response.text)
+    ```
+
+    <!-- type: tab-end -->
+
     ## Authenticate your API requests
 
-    Once you have obtained an access token using the [/oauth/token](../../reference/Authentication.yaml), you can authenticate your API requests by including it in the authrization header like this.
+    Once you have obtained an access token using the [/oauth/token](../../reference/Authentication.yaml), you can authenticate your API requests by including it in the authorization header like this.
 
     <!--
     type: tab
@@ -172,10 +222,77 @@ servers:
     description: Production
 paths:
   /oauth/token:
-    parameters: []
     post:
       summary: Create token
+      description: |
+        Use this endpoint to generate tokens needed to authenticate API requests.
       operationId: create-JWT-token
+      parameters:
+        - name: Content-Type
+          in: header
+          description: multipart/form-data
+          required: true
+          schema:
+            type: string
+            default: multipart/form-data
+        - name: Authorization
+          in: header
+          description: Use `sonetel-api` as both username and password
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: |-
+          The `username` & `password` in the request body are the email address & password that are used to login at [app.sonetel.com](https://app.sonetel.com).
+
+          In accordance with [OAuth2](https://oauth.net/2/) guidelines, you are also required to specify the `grant_type` in the request body. If requesting for a new token, set it to `password` otherwise set it to `refresh_token` to refresh an expired access token.
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                  enum:
+                    - password
+                    - refresh_token
+                  description: 'The OAuth2 grant type, usually set to ''password'' to generate a new token.'
+                  default: password
+                password:
+                  type: string
+                  description: The password you use to login at app.sonetel.com
+                  format: password
+                refresh:
+                  type: string
+                  enum:
+                    - 'yes'
+                    - 'no'
+                  description: Optional. Flag to control whether or not a refresh token is included in the response.
+                  default: 'yes'
+                username:
+                  type: string
+                  description: Your email address registered with Sonetel.
+                  format: email
+                refresh_token:
+                  type: string
+                  description: Optional. Pass the refresh_token in this field to generate a new access_token.
+              required:
+                - grant_type
+                - refresh
+            examples:
+              New Token:
+                value:
+                  grant_type: password
+                  password: pa$$word
+                  refresh: 'yes'
+                  username: user@example.com
+              Refresh Token:
+                value:
+                  grant_type: refresh_token
+                  password: pa$$word
+                  refresh: 'yes'
+                  username: user@example.com
+                  refresh_token: refresh_token_from_old_request
       responses:
         '200':
           description: |-
@@ -185,13 +302,7 @@ paths:
           content:
             application/json:
               schema:
-                description: ''
                 type: object
-                x-examples:
-                  example-1:
-                    access_token: ACCESS_TOKEN
-                    token_type: bearer
-                    refresh_token: REFRESH_TOKEN
                 properties:
                   access_token:
                     type: string
@@ -199,10 +310,16 @@ paths:
                   token_type:
                     type: string
                     description: 'Specifies the type of token returned. '
-                    example: bearer
+                    examples:
+                      - bearer
                   refresh_token:
                     type: string
                     description: Contains the refresh token if requested
+                x-examples:
+                  example-1:
+                    access_token: ACCESS_TOKEN
+                    token_type: bearer
+                    refresh_token: REFRESH_TOKEN
               examples:
                 Example:
                   value:
@@ -219,7 +336,6 @@ paths:
           content:
             application/json:
               schema:
-                description: ''
                 type: object
                 properties:
                   error:
@@ -248,7 +364,6 @@ paths:
           content:
             application/json:
               schema:
-                description: ''
                 type: object
                 properties:
                   error:
@@ -269,87 +384,8 @@ paths:
                   value:
                     error: unauthorized
                     error_description: User with name user@example.com not found
-      description: |
-        Use this endpoint to generate tokens needed to authenticate API requests.
-      parameters:
-        - schema:
-            type: string
-            default: multipart/form-data
-          in: header
-          name: Content-Type
-          required: true
-          description: multipart/form-data
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                grant_type:
-                  type: string
-                  enum:
-                    - password
-                    - refresh_token
-                  default: password
-                  description: 'The OAuth2 grant type, usually set to ''password'' to generate a new token.'
-                password:
-                  type: string
-                  format: password
-                  description: The password you use to login at app.sonetel.com
-                refresh:
-                  type: string
-                  enum:
-                    - 'yes'
-                    - 'no'
-                  description: Optional. Flag to control whether or not a refresh token is included in the response.
-                  default: 'yes'
-                username:
-                  type: string
-                  format: email
-                  description: Your email address registered with Sonetel.
-                refresh_token:
-                  type: string
-                  description: Optional. Pass the refresh_token in this field to generate a new access_token.
-              required:
-                - grant_type
-                - password
-                - username
-            examples:
-              New Token:
-                value:
-                  grant_type: password
-                  password: pa$$word
-                  refresh: 'yes'
-                  username: user@example.com
-              Refresh Token:
-                value:
-                  grant_type: refresh_token
-                  password: pa$$word
-                  refresh: 'yes'
-                  username: user@example.com
-                  refresh_token: refresh_token_from_old_request
-        description: |-
-          The `username` & `password` in the request body are the email address & password that are used to login at [app.sonetel.com](https://app.sonetel.com).
-
-          In accordance with [OAuth2](https://oauth.net/2/) guidelines, you are also required to specify the `grant_type` in the request body. If requesting for a new token, set it to `password` otherwise set it to `refresh_token` to refresh an expired access token.
-components:
-  schemas: {}
-  securitySchemes:
-    'sonetel-dev:sonetel-dev':
-      type: http
-      scheme: basic
-      description: ''
-  parameters:
-    grant_type:
-      name: grant_type
-      in: header
-      required: true
-      schema:
-        type: string
-        enum:
-          - password
-          - refresh_token
-      description: Type of grant such as password or refresh_token.
-  examples: {}
+      servers:
+        - url: 'https://api.sonetel.com/SonetelAuth/beta/'
+          description: Production
 security:
-  - 'sonetel-conversations:sonetel-conversations': []
+  - {}
